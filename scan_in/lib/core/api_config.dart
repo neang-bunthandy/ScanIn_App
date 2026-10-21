@@ -37,8 +37,20 @@ class ApiConfig {
 
   static String get baseUrl => 'http://$host:$port/api';
 
-  // Endpoints
+  // Auth Endpoints
   static String get loginUrl => '$baseUrl/login';
   static String get meUrl => '$baseUrl/me';
   static String get logoutUrl => '$baseUrl/logout';
+
+  // Classes Endpoints (Laravel REST API)
+  static String get classesUrl => '$baseUrl/classes';
+  static String classDetailUrl(int id) => '$baseUrl/classes/$id';
+  static String classToggleQrUrl(int id) => '$baseUrl/classes/$id/toggle-qr';
+  static String get studentClassesUrl => '$baseUrl/student/classes';
+
+  // Attendance Endpoints
+  static String get attendancesUrl => '$baseUrl/attendances';
+  static String classAttendancesUrl(int classId) => '$baseUrl/classes/$classId/attendances';
+  static String get scanAttendanceUrl => '$baseUrl/attendances/scan';
+  static String get studentAttendancesUrl => '$baseUrl/student/attendances';
 }

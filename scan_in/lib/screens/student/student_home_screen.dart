@@ -5,6 +5,8 @@ import '../../models/user_model.dart';
 import '../../models/class_model.dart';
 import '../lecturer/class_detail_screen.dart';
 import '../../services/auth_service.dart';
+import '../../services/class_service.dart';
+import '../../services/attendance_service.dart';
 import '../login_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
@@ -19,9 +21,12 @@ class StudentHomeScreen extends StatefulWidget {
 
 class _StudentHomeScreenState extends State<StudentHomeScreen> {
   int _currentIndex = 0;
+  UserModel? _cachedStudent;
+  List<ClassModel> _classes = List.from(MockData.sampleClasses);
 
   UserModel get student {
     if (widget.user != null) return widget.user!;
+    if (_cachedStudent != null) return _cachedStudent!;
     if (widget.studentEmail != null && widget.studentEmail!.isNotEmpty) {
       return UserModel(
         id: MockData.currentStudent.id,
@@ -37,7 +42,25 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     }
     return MockData.currentStudent;
   }
-  List<ClassModel> get classes => MockData.sampleClasses;
+
+  List<ClassModel> get classes => _classes;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBackendData();
+  }
+
+  Future<void> _loadBackendData() async {
+    final cached = await AuthService.getCurrentUser();
+    if (cached != null && mounted) {
+      setState(() => _cachedStudent = cached);
+    }
+    final remoteClasses = await ClassService.getStudentClasses();
+    if (mounted && remoteClasses.isNotEmpty) {
+      setState(() => _classes = remoteClasses);
+    }
+  }
 
   void _handleScanQr() {
     showModalBottomSheet(
@@ -97,18 +120,25 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   width: double.infinity,
                   height: 46,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(context);
                       Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      final result = await AttendanceService.scanAttendance('SCANIN-TOKEN-CS301-2026');
+                      messenger.showSnackBar(
                         SnackBar(
-                          content: const Row(
+                          content: Row(
                             children: [
-                              Icon(Icons.check_circle_rounded, color: Colors.white),
-                              SizedBox(width: 10),
-                              Text('ស្កេនជោគជ័យ! កត់វត្តមានបានសម្រេច'),
+                              Icon(
+                                result['success'] == true ? Icons.check_circle_rounded : Icons.info_rounded,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(result['message'] as String),
+                              ),
                             ],
                           ),
-                          backgroundColor: AppColors.success,
+                          backgroundColor: result['success'] == true ? AppColors.success : AppColors.error,
                           behavior: SnackBarBehavior.floating,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),

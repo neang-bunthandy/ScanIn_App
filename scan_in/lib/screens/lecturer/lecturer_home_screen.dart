@@ -9,6 +9,7 @@ import 'show_qr_screen.dart';
 import 'create_class_screen.dart';
 import 'attendance_list_screen.dart';
 import '../../services/auth_service.dart';
+import '../../services/class_service.dart';
 import '../login_screen.dart';
 
 class LecturerHomeScreen extends StatefulWidget {
@@ -23,9 +24,11 @@ class LecturerHomeScreen extends StatefulWidget {
 
 class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   int _currentIndex = 0;
+  UserModel? _cachedLecturer;
 
   UserModel get lecturer {
     if (widget.user != null) return widget.user!;
+    if (_cachedLecturer != null) return _cachedLecturer!;
     if (widget.lecturerEmail != null && widget.lecturerEmail!.isNotEmpty) {
       return UserModel(
         id: MockData.currentLecturer.id,
@@ -58,14 +61,34 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
       for (var c in _classes) c.id: c.isQrActive,
     };
     _attendanceRecords = List.from(MockData.sampleAttendances);
+    _loadBackendData();
+  }
+
+  Future<void> _loadBackendData() async {
+    final cached = await AuthService.getCurrentUser();
+    if (cached != null && mounted) {
+      setState(() => _cachedLecturer = cached);
+    }
+    final remoteClasses = await ClassService.getLecturerClasses();
+    if (mounted && remoteClasses.isNotEmpty) {
+      setState(() {
+        _classes = remoteClasses;
+        _classQrActive = {
+          for (var c in _classes) c.id: c.isQrActive,
+        };
+      });
+    }
   }
 
   // បើក/បិទ QR សម្រាប់ថ្នាក់រៀន
   void _toggleQrForClass(ClassModel c) {
     final currentStatus = _classQrActive[c.id] ?? false;
+    final newStatus = !currentStatus;
     setState(() {
-      _classQrActive[c.id] = !currentStatus;
+      _classQrActive[c.id] = newStatus;
     });
+
+    ClassService.toggleQr(c.id, newStatus);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -454,6 +477,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
     );
 
     if (result != null) {
+      ClassService.createClass(result);
       setState(() {
         final existingIndex = _classes.indexWhere((c) => c.id == result.id);
         if (existingIndex != -1) {
