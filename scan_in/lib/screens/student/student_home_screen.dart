@@ -1098,37 +1098,44 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   // មុខងារ Dark Mode
                   Material(
                     color: Colors.transparent,
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: avatarBg,
-                        child: Icon(
-                          isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                          size: 20,
-                          color: AppColors.primary,
+                    child: Theme(
+                      data: Theme.of(context).copyWith(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                      ),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        leading: CircleAvatar(
+                          radius: 18,
+                          backgroundColor: avatarBg,
+                          child: Icon(
+                            isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                            size: 20,
+                            color: AppColors.primary,
+                          ),
                         ),
-                      ),
-                      title: Text(
-                        'មុខងារងងឹត (Dark Mode)',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
-                      ),
-                      subtitle: Text(
-                        isDark ? 'កំពុងបើកប្រើពណ៌ងងឹត' : 'កំពុងប្រើពណ៌ធម្មតា (Light)',
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      ),
-                      trailing: Switch(
-                        value: isDark,
-                        activeThumbColor: AppColors.primary,
-                        onChanged: (val) {
-                          AppTheme.toggleTheme(val);
+                        title: Text(
+                          'មុខងារងងឹត (Dark Mode)',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
+                        ),
+                        subtitle: Text(
+                          isDark ? 'កំពុងបើកប្រើពណ៌ងងឹត' : 'កំពុងប្រើពណ៌ធម្មតា (Light)',
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
+                        trailing: Switch(
+                          value: isDark,
+                          activeThumbColor: AppColors.primary,
+                          onChanged: (val) {
+                            AppTheme.toggleTheme(val);
+                            setState(() {});
+                          },
+                        ),
+                        onTap: () {
+                          AppTheme.toggleTheme(!isDark);
                           setState(() {});
                         },
                       ),
-                      onTap: () {
-                        AppTheme.toggleTheme(!isDark);
-                        setState(() {});
-                      },
                     ),
                   ),
                   Divider(height: 12, color: dividerCol),
@@ -1136,41 +1143,48 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   // Notifications switch
                   Material(
                     color: Colors.transparent,
-                    child: ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: CircleAvatar(
-                        radius: 18,
-                        backgroundColor: avatarBg,
-                        child: const Icon(Icons.notifications_active_outlined, size: 20, color: AppColors.primary),
+                    child: Theme(
+                      data: Theme.of(context).copyWith(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
                       ),
-                      title: Text(
-                        'ការជូនដំណឹងម៉ោងរៀន',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
-                      ),
-                      subtitle: const Text('រំលឹកមុនពេលចូលរៀន ១៥ នាទី', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                      trailing: Switch(
-                        value: _notificationsEnabled,
-                        activeThumbColor: AppColors.primary,
-                        onChanged: (val) {
-                          setState(() => _notificationsEnabled = val);
+                      child: ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        leading: CircleAvatar(
+                          radius: 18,
+                          backgroundColor: avatarBg,
+                          child: const Icon(Icons.notifications_active_outlined, size: 20, color: AppColors.primary),
+                        ),
+                        title: Text(
+                          'ការជូនដំណឹងម៉ោងរៀន',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
+                        ),
+                        subtitle: const Text('រំលឹកមុនពេលចូលរៀន ១៥ នាទី', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        trailing: Switch(
+                          value: _notificationsEnabled,
+                          activeThumbColor: AppColors.primary,
+                          onChanged: (val) {
+                            setState(() => _notificationsEnabled = val);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(val ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
+                                duration: const Duration(seconds: 1),
+                              ),
+                            );
+                          },
+                        ),
+                        onTap: () {
+                          final newVal = !_notificationsEnabled;
+                          setState(() => _notificationsEnabled = newVal);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(val ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
+                              content: Text(newVal ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
                               duration: const Duration(seconds: 1),
                             ),
                           );
                         },
                       ),
-                      onTap: () {
-                        final newVal = !_notificationsEnabled;
-                        setState(() => _notificationsEnabled = newVal);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(newVal ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
-                            duration: const Duration(seconds: 1),
-                          ),
-                        );
-                      },
                     ),
                   ),
                   Divider(height: 12, color: dividerCol),

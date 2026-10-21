@@ -44,6 +44,9 @@ class AppTheme {
       surface: Colors.white,
       onSurface: AppColors.textPrimary,
     ),
+    listTileTheme: ListTileThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
   );
 
   // Dark Theme (ពណ៌ងងឹត)
@@ -64,6 +67,9 @@ class AppTheme {
       primary: AppColors.primary,
       surface: Color(0xFF1E293B),
       onSurface: Colors.white,
+    ),
+    listTileTheme: ListTileThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
   );
 }
