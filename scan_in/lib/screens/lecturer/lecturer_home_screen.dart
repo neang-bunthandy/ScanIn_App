@@ -52,6 +52,8 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   // Filter & Search in Attendance Tab
   int? _selectedClassFilterId;
   String _searchQuery = '';
+  bool _notificationsEnabled = true;
+  String _selectedLanguage = 'ភាសាខ្មែរ (Khmer)';
 
   @override
   void initState() {
@@ -1571,33 +1573,288 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   // ==========================================
   // Tab 3: គណនីខ្ញុំ (Profile Tab)
   // ==========================================
+  void _showChangeAvatarSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'ប្តូររូបថត Profile',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: AppColors.primaryLight,
+                  child: Icon(Icons.camera_alt_rounded, color: AppColors.primary),
+                ),
+                title: const Text('ថតរូបផ្ទាល់ (Camera)'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('មុខងារ Camera នឹងដំណើរការជាមួយកាមេរ៉ាពិត'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: AppColors.primaryLight,
+                  child: Icon(Icons.photo_library_rounded, color: AppColors.primary),
+                ),
+                title: const Text('ជ្រើសរើសពីរូបភាព (Gallery)'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('មុខងារ Gallery នឹងដំណើរការជាមួយរូបថត'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showChangePasswordDialog() {
+    final oldPasswordController = TextEditingController();
+    final newPasswordController = TextEditingController();
+    final confirmPasswordController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.lock_reset_rounded, color: AppColors.primary),
+            SizedBox(width: 8),
+            Text('ប្តូរពាក្យសម្ងាត់', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: oldPasswordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'ពាក្យសម្ងាត់ចាស់',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+                validator: (v) => v == null || v.isEmpty ? 'សូមបញ្ចូលពាក្យសម្ងាត់ចាស់' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: newPasswordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'ពាក្យសម្ងាត់ថ្មី',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+                validator: (v) => v == null || v.length < 6 ? 'ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ' : null,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: confirmPasswordController,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                ),
+                validator: (v) => v != newPasswordController.text ? 'ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ' : null,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('បោះបង់'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('បានប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              }
+            },
+            child: const Text('រក្សាទុក'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('ជ្រើសរើសភាសា (Language)', style: TextStyle(fontWeight: FontWeight.bold)),
+        children: [
+          SimpleDialogOption(
+            onPressed: () {
+              setState(() => _selectedLanguage = 'ភាសាខ្មែរ (Khmer)');
+              Navigator.pop(ctx);
+            },
+            child: Row(
+              children: [
+                const Text('🇰🇭  ភាសាខ្មែរ (Khmer)', style: TextStyle(fontSize: 16)),
+                const Spacer(),
+                if (_selectedLanguage.contains('Khmer'))
+                  const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
+              ],
+            ),
+          ),
+          const Divider(),
+          SimpleDialogOption(
+            onPressed: () {
+              setState(() => _selectedLanguage = 'English (US)');
+              Navigator.pop(ctx);
+            },
+            child: Row(
+              children: [
+                const Text('🇺🇸  English (US)', style: TextStyle(fontSize: 16)),
+                const Spacer(),
+                if (_selectedLanguage.contains('English'))
+                  const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline_rounded, color: AppColors.primary),
+            SizedBox(width: 8),
+            Text('អំពីកម្មវិធី ScanIn', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('ScanIn Attendance App', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            SizedBox(height: 4),
+            Text('កំណែទម្រង់៖ v1.0.0 (Build 2026)', style: TextStyle(color: AppColors.textSecondary)),
+            SizedBox(height: 12),
+            Text(
+              'កម្មវិធីស្កេនវត្តមានទំនើប និងឆាប់រហ័សសម្រាប់សាកលវិទ្យាល័យ និងស្ថាប័នអប់រំ។ គាំទ្រការបង្កើត Dynamic QR Code និងតាមដានវត្តមានផ្ទាល់ភ្លាមៗ។',
+              style: TextStyle(fontSize: 13, height: 1.4),
+            ),
+            SizedBox(height: 12),
+            Text('ជំនួយបច្ចេកទេស៖ support@scanin.app', style: TextStyle(fontSize: 12, color: AppColors.primary)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('យល់ព្រម'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProfileTab() {
+    final totalStudents = _classes.fold<int>(0, (sum, c) => sum + c.studentCount);
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Column(
         children: [
-          // Profile Avatar & Identity Card
+          // Profile Header Card
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.border),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.02),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Column(
               children: [
-                const CircleAvatar(
-                  radius: 42,
-                  backgroundColor: AppColors.primaryLight,
-                  child: Icon(Icons.person, size: 48, color: AppColors.primary),
+                Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    const CircleAvatar(
+                      radius: 44,
+                      backgroundColor: AppColors.primaryLight,
+                      child: Icon(Icons.person, size: 52, color: AppColors.primary),
+                    ),
+                    InkWell(
+                      onTap: _showChangeAvatarSheet,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.4),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 14),
                 Text(
@@ -1614,31 +1871,39 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                   style: const TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withValues(alpha: 0.35),
+                    color: AppColors.primaryLight.withValues(alpha: 0.4),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    lecturer.department ?? 'ដេប៉ាតឺម៉ង់ព័ត៌មានវិទ្យា',
-                    style: const TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.badge_rounded, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 6),
+                      Text(
+                        lecturer.department ?? 'ដេប៉ាតឺម៉ង់ព័ត៌មានវិទ្យា',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
 
-          // Contact Details Card
+          // Teaching Statistics Card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -1647,23 +1912,208 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
               border: Border.all(color: AppColors.border),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildInfoTile(
+                const Row(
+                  children: [
+                    Icon(Icons.analytics_outlined, size: 18, color: AppColors.primary),
+                    SizedBox(width: 8),
+                    Text(
+                      'ស្ថិតិការបង្រៀន (ឆមាសនេះ)',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                    Spacer(),
+                    Text(
+                      'សកម្មភាព ៩៤%',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.success,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMiniStatBox(
+                        title: 'ថ្នាក់បង្រៀន',
+                        count: '${_classes.length}',
+                        color: AppColors.primary,
+                        icon: Icons.menu_book_rounded,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildMiniStatBox(
+                        title: 'សិស្សសរុប',
+                        count: '$totalStudents',
+                        color: AppColors.secondary,
+                        icon: Icons.people_alt_rounded,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildMiniStatBox(
+                        title: 'កំណត់ត្រា',
+                        count: '${_attendanceRecords.length}',
+                        color: AppColors.success,
+                        icon: Icons.verified_user_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Information Details Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'ព័ត៌មានបុគ្គលិក និងការងារ',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const SizedBox(height: 12),
+                _buildProfileDetailRow(
                   icon: Icons.email_outlined,
-                  title: 'អ៊ីមែល',
+                  title: 'អ៊ីមែលផ្លូវការ',
                   value: lecturer.email,
                 ),
                 const Divider(height: 20, color: Color(0xFFF1F5F9)),
-                _buildInfoTile(
+                _buildProfileDetailRow(
                   icon: Icons.phone_outlined,
                   title: 'លេខទូរស័ព្ទ',
                   value: lecturer.phone ?? '098 765 432',
                 ),
                 const Divider(height: 20, color: Color(0xFFF1F5F9)),
-                _buildInfoTile(
+                _buildProfileDetailRow(
+                  icon: Icons.business_rounded,
+                  title: 'ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ',
+                  value: lecturer.department ?? 'ដេប៉ាតឺម៉ង់ព័ត៌មានវិទ្យា',
+                ),
+                const Divider(height: 20, color: Color(0xFFF1F5F9)),
+                _buildProfileDetailRow(
                   icon: Icons.calendar_today_outlined,
                   title: 'ឆ្នាំសិក្សា',
                   value: '2026-2027 (ឆមាសទី ១)',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Settings & Security Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'ការកំណត់ និងសុវត្ថិភាព',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  secondary: const CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Color(0xFFF1F5F9),
+                    child: Icon(Icons.notifications_active_outlined, size: 20, color: AppColors.primary),
+                  ),
+                  title: const Text('ការជូនដំណឹងម៉ោងបង្រៀន', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  subtitle: const Text('រំលឹកមុនពេលចាប់ផ្តើមបង្រៀន ១៥ នាទី', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  value: _notificationsEnabled,
+                  activeThumbColor: AppColors.primary,
+                  onChanged: (val) {
+                    setState(() => _notificationsEnabled = val);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(val ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 12, color: Color(0xFFF1F5F9)),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Color(0xFFF1F5F9),
+                    child: Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.primary),
+                  ),
+                  title: const Text('ប្តូរពាក្យសម្ងាត់', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                  onTap: _showChangePasswordDialog,
+                ),
+                const Divider(height: 12, color: Color(0xFFF1F5F9)),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Color(0xFFF1F5F9),
+                    child: Icon(Icons.language_rounded, size: 20, color: AppColors.primary),
+                  ),
+                  title: const Text('ភាសា (Language)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  trailing: Text(
+                    _selectedLanguage,
+                    style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
+                  ),
+                  onTap: _showLanguageDialog,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Support & About Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'ជំនួយ និងព័ត៌មានកម្មវិធី',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Color(0xFFF1F5F9),
+                    child: Icon(Icons.info_outline_rounded, size: 20, color: AppColors.primary),
+                  ),
+                  title: const Text('អំពីកម្មវិធី ScanIn', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  trailing: const Text(
+                    'v1.0.0',
+                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  ),
+                  onTap: _showAboutDialog,
                 ),
               ],
             ),
@@ -1679,19 +2129,19 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
+                  builder: (dialogContext) => AlertDialog(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     title: const Text('ចាកចេញពីគណនី'),
                     content: const Text('តើលោកគ្រូពិតជាចង់ចាកចេញពីកម្មវិធីមែនទេ?'),
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => Navigator.pop(dialogContext),
                         child: const Text('បោះបង់'),
                       ),
                       ElevatedButton(
                         onPressed: () async {
                           final navigator = Navigator.of(context);
-                          navigator.pop(); // Close dialog
+                          Navigator.pop(dialogContext); // Close dialog
                           await AuthService.logout();
                           if (!mounted) return;
                           navigator.pushAndRemoveUntil(
@@ -1712,11 +2162,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
               icon: const Icon(Icons.logout_rounded, color: AppColors.error),
               label: const Text(
                 'ចាកចេញពីគណនី',
-                style: TextStyle(
-                  color: AppColors.error,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                ),
+                style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 15),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.error),
@@ -1726,35 +2172,80 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
               ),
             ),
           ),
+
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _buildInfoTile({
+  Widget _buildMiniStatBox({
+    required String title,
+    required String count,
+    required Color color,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 6),
+          Text(
+            count,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileDetailRow({
     required IconData icon,
     required String title,
     required String value,
   }) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 20, color: AppColors.primary),
-        const SizedBox(width: 14),
+        Icon(icon, size: 20, color: AppColors.textSecondary),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
                 style: const TextStyle(
+                  color: AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
                 ),
               ),
             ],
