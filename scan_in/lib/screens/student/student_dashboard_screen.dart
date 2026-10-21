@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../data/mock_data.dart';
 import '../../models/user_model.dart';
 import '../../models/class_model.dart';
@@ -43,7 +44,7 @@ class StudentDashboardScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'សួស្តី, ${student.name} 👋',
+                      '${AppLanguage.tr('សួស្តី, ', 'Hello, ')}${student.name} 👋',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
@@ -53,7 +54,7 @@ class StudentDashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'ថ្ងៃព្រហស្បតិ៍ 15 តុលា 2026',
+                      AppLanguage.tr('ថ្ងៃព្រហស្បតិ៍ 15 តុលា 2026', 'Thursday, Oct 15, 2026'),
                       style: TextStyle(
                         fontSize: 14,
                         color: subTextCol,
@@ -95,14 +96,14 @@ class StudentDashboardScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.camera_alt_rounded, size: 26, color: Colors.white),
-                  SizedBox(width: 12),
+                  const Icon(Icons.camera_alt_rounded, size: 26, color: Colors.white),
+                  const SizedBox(width: 12),
                   Text(
-                    'ស្កេនវត្តមាន',
-                    style: TextStyle(
+                    AppLanguage.tr('ស្កេនវត្តមាន', 'Scan Attendance'),
+                    style: const TextStyle(
                       fontSize: 19,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.3,
@@ -117,7 +118,7 @@ class StudentDashboardScreen extends StatelessWidget {
 
           // --- 3. Monthly Attendance Summary (វត្តមានខែនេះ) ---
           Text(
-            'វត្តមានខែនេះ',
+            AppLanguage.tr('វត្តមានខែនេះ', 'Monthly Attendance'),
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -132,7 +133,7 @@ class StudentDashboardScreen extends StatelessWidget {
               Expanded(
                 child: _buildStatCard(
                   count: MockData.presentCount.toString(),
-                  label: 'មក',
+                  label: AppLanguage.tr('មក', 'Present'),
                   bgColor: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.15) : const Color(0xFFF0FDF4),
                   borderColor: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.35) : const Color(0xFFBBF7D0),
                   textColor: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A),
@@ -144,7 +145,7 @@ class StudentDashboardScreen extends StatelessWidget {
               Expanded(
                 child: _buildStatCard(
                   count: MockData.lateCount.toString(),
-                  label: 'យឺត',
+                  label: AppLanguage.tr('យឺត', 'Late'),
                   bgColor: isDark ? const Color(0xFFD97706).withValues(alpha: 0.15) : const Color(0xFFFFFBEB),
                   borderColor: isDark ? const Color(0xFFD97706).withValues(alpha: 0.35) : const Color(0xFFFDE68A),
                   textColor: isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706),
@@ -156,7 +157,7 @@ class StudentDashboardScreen extends StatelessWidget {
               Expanded(
                 child: _buildStatCard(
                   count: MockData.absentCount.toString(),
-                  label: 'អវត្តមាន',
+                  label: AppLanguage.tr('អវត្តមាន', 'Absent'),
                   bgColor: isDark ? const Color(0xFFDC2626).withValues(alpha: 0.15) : const Color(0xFFFEF2F2),
                   borderColor: isDark ? const Color(0xFFDC2626).withValues(alpha: 0.35) : const Color(0xFFFECACA),
                   textColor: isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626),
@@ -169,7 +170,7 @@ class StudentDashboardScreen extends StatelessWidget {
 
           // --- 4. My Classes (ថ្នាក់របស់ខ្ញុំ) ---
           Text(
-            'ថ្នាក់របស់ខ្ញុំ',
+            AppLanguage.tr('ថ្នាក់របស់ខ្ញុំ', 'My Classes'),
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -307,7 +308,7 @@ class StudentDashboardScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${c.lecturerName ?? 'គ្រូបង្រៀន'} · ${c.dayOfWeek} ${c.time}',
+                    '${c.lecturerName ?? AppLanguage.tr('គ្រូបង្រៀន', 'Lecturer')} · ${c.dayOfWeek} ${c.time}',
                     style: TextStyle(
                       fontSize: 13,
                       color: subTextCol,

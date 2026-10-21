@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
+import '../../core/app_language.dart';
 import '../../models/user_model.dart';
 import '../../services/auth_service.dart';
 import '../login_screen.dart';
@@ -49,9 +50,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'ប្តូររូបថត Profile',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                AppLanguage.tr('ប្តូររូបថត Profile', 'Change Profile Photo'),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               Material(
@@ -61,12 +62,12 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     backgroundColor: AppColors.primaryLight,
                     child: Icon(Icons.camera_alt_rounded, color: AppColors.primary),
                   ),
-                  title: const Text('ថតរូបផ្ទាល់ (Camera)'),
+                  title: Text(AppLanguage.tr('ថតរូបផ្ទាល់ (Camera)', 'Take Photo (Camera)')),
                   onTap: () {
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('មុខងារ Camera នឹងដំណើរការជាមួយកាមេរ៉ាពិត'),
+                      SnackBar(
+                        content: Text(AppLanguage.tr('មុខងារ Camera នឹងដំណើរការជាមួយកាមេរ៉ាពិត', 'Camera feature will work on a real device')),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -80,12 +81,12 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     backgroundColor: AppColors.primaryLight,
                     child: Icon(Icons.photo_library_rounded, color: AppColors.primary),
                   ),
-                  title: const Text('ជ្រើសរើសពីរូបភាព (Gallery)'),
+                  title: Text(AppLanguage.tr('ជ្រើសរើសពីរូបភាព (Gallery)', 'Choose from Gallery')),
                   onTap: () {
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('មុខងារ Gallery នឹងដំណើរការជាមួយរូបថត'),
+                      SnackBar(
+                        content: Text(AppLanguage.tr('មុខងារ Gallery នឹងដំណើរការជាមួយរូបថត', 'Gallery feature will work with photo library')),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -109,11 +110,14 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.lock_reset_rounded, color: AppColors.primary),
-            SizedBox(width: 8),
-            Text('ប្តូរពាក្យសម្ងាត់', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Icon(Icons.lock_reset_rounded, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(
+              AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         content: Form(
@@ -125,33 +129,33 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 controller: oldPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'ពាក្យសម្ងាត់ចាស់',
+                  labelText: AppLanguage.tr('ពាក្យសម្ងាត់ចាស់', 'Current Password'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
-                validator: (v) => v == null || v.isEmpty ? 'សូមបញ្ចូលពាក្យសម្ងាត់ចាស់' : null,
+                validator: (v) => v == null || v.isEmpty ? AppLanguage.tr('សូមបញ្ចូលពាក្យសម្ងាត់ចាស់', 'Please enter current password') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: newPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'ពាក្យសម្ងាត់ថ្មី',
+                  labelText: AppLanguage.tr('ពាក្យសម្ងាត់ថ្មី', 'New Password'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
-                validator: (v) => v == null || v.length < 6 ? 'ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ' : null,
+                validator: (v) => v == null || v.length < 6 ? AppLanguage.tr('ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ', 'Must be at least 6 characters') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: confirmPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី',
+                  labelText: AppLanguage.tr('បញ្ជាក់ពាក្យសម្ងាត់ថ្មី', 'Confirm New Password'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
-                validator: (v) => v != newPasswordController.text ? 'ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ' : null,
+                validator: (v) => v != newPasswordController.text ? AppLanguage.tr('ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ', 'Passwords do not match') : null,
               ),
             ],
           ),
@@ -159,7 +163,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('បោះបង់'),
+            child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
@@ -167,15 +171,15 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
               if (formKey.currentState!.validate()) {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('បានប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!'),
+                  SnackBar(
+                    content: Text(AppLanguage.tr('បានប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!', 'Password changed successfully!')),
                     backgroundColor: AppColors.success,
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
               }
             },
-            child: const Text('រក្សាទុក', style: TextStyle(color: Colors.white)),
+            child: Text(AppLanguage.tr('រក្សាទុក', 'Save'), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -187,32 +191,37 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       context: context,
       builder: (ctx) => SimpleDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('ជ្រើសរើសភាសា (Language)', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          AppLanguage.tr('ជ្រើសរើសភាសា (Language)', 'Select Language'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         children: [
           SimpleDialogOption(
-            onPressed: () {
+            onPressed: () async {
+              await AppLanguage.changeLanguage('km');
               widget.onLanguageChanged('ខ្មែរ (Khmer)');
-              Navigator.pop(ctx);
+              if (ctx.mounted) Navigator.pop(ctx);
             },
             child: Row(
               children: [
                 const Text('🇰🇭  ខ្មែរ (Khmer)', style: TextStyle(fontSize: 16)),
                 const Spacer(),
-                if (widget.selectedLanguage.contains('Khmer'))
+                if (AppLanguage.isKhmer)
                   const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
               ],
             ),
           ),
           SimpleDialogOption(
-            onPressed: () {
+            onPressed: () async {
+              await AppLanguage.changeLanguage('en');
               widget.onLanguageChanged('English (US)');
-              Navigator.pop(ctx);
+              if (ctx.mounted) Navigator.pop(ctx);
             },
             child: Row(
               children: [
                 const Text('🇺🇸  English (US)', style: TextStyle(fontSize: 16)),
                 const Spacer(),
-                if (widget.selectedLanguage.contains('English'))
+                if (AppLanguage.isEnglish)
                   const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
               ],
             ),
@@ -227,33 +236,45 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.info_outline_rounded, color: AppColors.primary),
-            SizedBox(width: 8),
-            Text('អំពីកម្មវិធី ScanIn', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Icon(Icons.info_outline_rounded, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(
+              AppLanguage.tr('អំពីកម្មវិធី ScanIn', 'About ScanIn App'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('ScanIn Attendance App', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            SizedBox(height: 4),
-            Text('កំណែទម្រង់៖ v1.0.0 (Build 2026)', style: TextStyle(color: AppColors.textSecondary)),
-            SizedBox(height: 12),
+            const Text('ScanIn Attendance App', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 4),
             Text(
-              'កម្មវិធីស្កេនវត្តមានទំនើប និងឆាប់រហ័សសម្រាប់សាកលវិទ្យាល័យ និងស្ថាប័នអប់រំ។ គាំទ្រការស្កេន Dynamic QR Code ជាមួយប្រព័ន្ធសុវត្ថិភាពខ្ពស់។',
-              style: TextStyle(fontSize: 13, height: 1.4),
+              AppLanguage.tr('កំណែទម្រង់៖ v1.0.0 (Build 2026)', 'Version: v1.0.0 (Build 2026)'),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
-            SizedBox(height: 12),
-            Text('ជំនួយបច្ចេកទេស៖ support@scanin.app', style: TextStyle(fontSize: 12, color: AppColors.primary)),
+            const SizedBox(height: 12),
+            Text(
+              AppLanguage.tr(
+                'កម្មវិធីស្កេនវត្តមានទំនើប និងឆាប់រហ័សសម្រាប់សាកលវិទ្យាល័យ និងស្ថាប័នអប់រំ។ គាំទ្រការស្កេន Dynamic QR Code ជាមួយប្រព័ន្ធសុវត្ថិភាពខ្ពស់។',
+                'Modern and fast attendance scanning application for universities and educational institutions. Supports dynamic QR code scanning with high security.',
+              ),
+              style: const TextStyle(fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              AppLanguage.tr('ជំនួយបច្ចេកទេស៖ support@scanin.app', 'Technical Support: support@scanin.app'),
+              style: const TextStyle(fontSize: 12, color: AppColors.primary),
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('យល់ព្រម'),
+            child: Text(AppLanguage.tr('យល់ព្រម', 'OK')),
           ),
         ],
       ),
@@ -327,7 +348,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'អត្តលេខ៖ ${student.studentCode ?? 'STU001'}',
+                      '${AppLanguage.tr('អត្តលេខ៖ ', 'ID: ')}${student.studentCode ?? 'STU001'}',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
@@ -346,7 +367,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           const Icon(Icons.school_rounded, size: 16, color: AppColors.primary),
                           const SizedBox(width: 6),
                           Text(
-                            student.department ?? 'ព័ត៌មានវិទ្យា (IT)',
+                            student.department ?? AppLanguage.tr('ព័ត៌មានវិទ្យា (IT)', 'Information Technology (IT)'),
                             style: const TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
@@ -382,13 +403,13 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       const Icon(Icons.analytics_outlined, size: 18, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Text(
-                        'ស្ថិតិវត្តមានសរុប (ឆមាសនេះ)',
+                        AppLanguage.tr('ស្ថិតិវត្តមានសរុប (ឆមាសនេះ)', 'Attendance Statistics (This Semester)'),
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                       ),
                       const Spacer(),
-                      const Text(
-                        'អត្រាវត្តមាន ៩០%',
-                        style: TextStyle(
+                      Text(
+                        AppLanguage.tr('អត្រាវត្តមាន ៩០%', 'Attendance Rate 90%'),
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: AppColors.success,
@@ -401,7 +422,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     children: [
                       Expanded(
                         child: _buildMiniStatBox(
-                          title: 'វត្តមាន',
+                          title: AppLanguage.tr('វត្តមាន', 'Present'),
                           count: '18',
                           color: AppColors.success,
                           icon: Icons.check_circle_rounded,
@@ -410,7 +431,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: _buildMiniStatBox(
-                          title: 'យឺត',
+                          title: AppLanguage.tr('យឺត', 'Late'),
                           count: '2',
                           color: AppColors.warning,
                           icon: Icons.access_time_filled_rounded,
@@ -419,7 +440,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: _buildMiniStatBox(
-                          title: 'អវត្តមាន',
+                          title: AppLanguage.tr('អវត្តមាន', 'Absent'),
                           count: '1',
                           color: AppColors.error,
                           icon: Icons.cancel_rounded,
@@ -448,35 +469,35 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ព័ត៌មានលម្អិតនៃការសិក្សា',
+                    AppLanguage.tr('ព័ត៌មានលម្អិតនៃការសិក្សា', 'Academic Details'),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
                   const SizedBox(height: 14),
                   _buildProfileDetailRow(
                     icon: Icons.email_outlined,
-                    title: 'អ៊ីមែល',
+                    title: AppLanguage.tr('អ៊ីមែល', 'Email'),
                     value: student.email,
                     isDark: isDark,
                   ),
                   Divider(height: 18, color: dividerCol),
                   _buildProfileDetailRow(
                     icon: Icons.phone_outlined,
-                    title: 'លេខទូរស័ព្ទ',
+                    title: AppLanguage.tr('លេខទូរស័ព្ទ', 'Phone Number'),
                     value: student.phone ?? '012 345 678',
                     isDark: isDark,
                   ),
                   Divider(height: 18, color: dividerCol),
                   _buildProfileDetailRow(
                     icon: Icons.domain_rounded,
-                    title: 'មហាវិទ្យាល័យ / ដេប៉ាតឺម៉ង់',
-                    value: student.department ?? 'វិទ្យាសាស្ត្រកុំព្យូទ័រ',
+                    title: AppLanguage.tr('មហាវិទ្យាល័យ / ដេប៉ាតឺម៉ង់', 'Faculty / Department'),
+                    value: student.department ?? AppLanguage.tr('វិទ្យាសាស្ត្រកុំព្យូទ័រ', 'Computer Science'),
                     isDark: isDark,
                   ),
                   Divider(height: 18, color: dividerCol),
                   _buildProfileDetailRow(
                     icon: Icons.calendar_today_outlined,
-                    title: 'ឆ្នាំសិក្សា',
-                    value: '2026-2027 (ឆមាសទី ១)',
+                    title: AppLanguage.tr('ឆ្នាំសិក្សា', 'Academic Year'),
+                    value: AppLanguage.tr('2026-2027 (ឆមាសទី ១)', '2026-2027 (Semester 1)'),
                     isDark: isDark,
                   ),
                 ],
@@ -500,7 +521,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ការកំណត់ និងសុវត្ថិភាព',
+                    AppLanguage.tr('ការកំណត់ និងសុវត្ថិភាព', 'Settings & Security'),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
                   const SizedBox(height: 8),
@@ -526,11 +547,13 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           ),
                         ),
                         title: Text(
-                          'មុខងារងងឹត (Dark Mode)',
+                          AppLanguage.tr('មុខងារងងឹត (Dark Mode)', 'Dark Mode'),
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                         ),
                         subtitle: Text(
-                          isDark ? 'កំពុងបើកប្រើពណ៌ងងឹត' : 'កំពុងប្រើពណ៌ធម្មតា (Light)',
+                          isDark
+                              ? AppLanguage.tr('កំពុងបើកប្រើពណ៌ងងឹត', 'Dark theme enabled')
+                              : AppLanguage.tr('កំពុងប្រើពណ៌ធម្មតា (Light)', 'Light theme enabled'),
                           style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                         ),
                         trailing: Switch(
@@ -567,10 +590,13 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           child: const Icon(Icons.notifications_active_outlined, size: 20, color: AppColors.primary),
                         ),
                         title: Text(
-                          'ការជូនដំណឹងម៉ោងរៀន',
+                          AppLanguage.tr('ការជូនដំណឹងម៉ោងរៀន', 'Class Reminders'),
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                         ),
-                        subtitle: const Text('រំលឹកមុនពេលចូលរៀន ១៥ នាទី', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        subtitle: Text(
+                          AppLanguage.tr('រំលឹកមុនពេលចូលរៀន ១៥ នាទី', '15 minutes before class starts'),
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
                         trailing: Switch(
                           value: widget.notificationsEnabled,
                           activeThumbColor: AppColors.primary,
@@ -578,7 +604,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                             widget.onToggleNotifications(val);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(val ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
+                                content: Text(val
+                                    ? AppLanguage.tr('បានបើកការជូនដំណឹង', 'Notifications enabled')
+                                    : AppLanguage.tr('បានបិទការជូនដំណឹង', 'Notifications disabled')),
                                 duration: const Duration(seconds: 1),
                               ),
                             );
@@ -589,7 +617,9 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           widget.onToggleNotifications(newVal);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(newVal ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
+                              content: Text(newVal
+                                  ? AppLanguage.tr('បានបើកការជូនដំណឹង', 'Notifications enabled')
+                                  : AppLanguage.tr('បានបិទការជូនដំណឹង', 'Notifications disabled')),
                               duration: const Duration(seconds: 1),
                             ),
                           );
@@ -611,7 +641,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         child: const Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.primary),
                       ),
                       title: Text(
-                        'ប្តូរពាក្យសម្ងាត់',
+                        AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                       ),
                       trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
@@ -632,11 +662,11 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         child: const Icon(Icons.language_rounded, size: 20, color: AppColors.primary),
                       ),
                       title: Text(
-                        'ភាសា (Language)',
+                        AppLanguage.tr('ភាសា (Language)', 'Language'),
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                       ),
                       trailing: Text(
-                        widget.selectedLanguage,
+                        AppLanguage.displayName,
                         style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
                       ),
                       onTap: _showLanguageDialog,
@@ -663,7 +693,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ជំនួយ និងព័ត៌មានកម្មវិធី',
+                    AppLanguage.tr('ជំនួយ និងព័ត៌មានកម្មវិធី', 'Support & About'),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
                   const SizedBox(height: 8),
@@ -678,7 +708,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         child: const Icon(Icons.info_outline_rounded, size: 20, color: AppColors.primary),
                       ),
                       title: Text(
-                        'អំពីកម្មវិធី ScanIn',
+                        AppLanguage.tr('អំពីកម្មវិធី ScanIn', 'About ScanIn App'),
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                       ),
                       trailing: const Text(
@@ -705,12 +735,12 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   context: context,
                   builder: (dialogContext) => AlertDialog(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    title: const Text('ចាកចេញពីគណនី'),
-                    content: const Text('តើអ្នកពិតជាចង់ចាកចេញពីកម្មវិធីមែនទេ?'),
+                    title: Text(AppLanguage.tr('ចាកចេញពីគណនី', 'Log Out')),
+                    content: Text(AppLanguage.tr('តើអ្នកពិតជាចង់ចាកចេញពីកម្មវិធីមែនទេ?', 'Are you sure you want to log out of the application?')),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(dialogContext),
-                        child: const Text('បោះបង់'),
+                        child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
                       ),
                       ElevatedButton(
                         onPressed: () async {
@@ -727,16 +757,16 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                           backgroundColor: AppColors.error,
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('ចាកចេញ'),
+                        child: Text(AppLanguage.tr('ចាកចេញ', 'Log Out')),
                       ),
                     ],
                   ),
                 );
               },
               icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-              label: const Text(
-                'ចាកចេញពីគណនី',
-                style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 15),
+              label: Text(
+                AppLanguage.tr('ចាកចេញពីគណនី', 'Log Out'),
+                style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 15),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.error),

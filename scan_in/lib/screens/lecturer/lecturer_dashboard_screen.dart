@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../data/mock_data.dart';
 import '../../models/class_model.dart';
 import '../../models/user_model.dart';
@@ -72,7 +73,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'សួស្តី, លោកគ្រូ ${lecturer.name} 👋',
+                      '${AppLanguage.tr('សួស្តី, លោកគ្រូ ', 'Hello, Lecturer ')}${lecturer.name} 👋',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
@@ -82,7 +83,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'ថ្ងៃព្រហស្បតិ៍ 15 តុលា 2026 • ${lecturer.department ?? 'ដេប៉ាតឺម៉ង់ IT'}',
+                      '${AppLanguage.tr('ថ្ងៃព្រហស្បតិ៍ 15 តុលា 2026', 'Thursday, Oct 15, 2026')} • ${lecturer.department ?? AppLanguage.tr('ដេប៉ាតឺម៉ង់ IT', 'IT Department')}',
                       style: TextStyle(
                         fontSize: 13,
                         color: subTextCol,
@@ -154,9 +155,9 @@ class LecturerDashboardScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'បង្ហាញ QR កត់វត្តមាន',
-                              style: TextStyle(
+                            Text(
+                              AppLanguage.tr('បង្ហាញ QR កត់វត្តមាន', 'Show Attendance QR Code'),
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -166,8 +167,8 @@ class LecturerDashboardScreen extends StatelessWidget {
                             const SizedBox(height: 4),
                             Text(
                               activeQrCount > 0
-                                  ? 'កំពុងបើក QR សម្រាប់ $activeQrCount ថ្នាក់ (ចុចមើល)'
-                                  : 'ចុចដើម្បីបង្ហាញ QR សម្រាប់និស្សិតស្កេន',
+                                  ? (AppLanguage.tr('កំពុងបើក QR សម្រាប់ $activeQrCount ថ្នាក់ (ចុចមើល)', 'Active QR for $activeQrCount classes (tap to view)'))
+                                  : AppLanguage.tr('ចុចដើម្បីបង្ហាញ QR សម្រាប់និស្សិតស្កេន', 'Tap to show QR code for students to scan'),
                               style: TextStyle(
                                 fontSize: 13,
                                 color: Colors.white.withValues(alpha: 0.85),
@@ -192,7 +193,7 @@ class LecturerDashboardScreen extends StatelessWidget {
 
           // --- 3. Teaching Summary Cards (ស្ថិតិបង្រៀន) ---
           Text(
-            'ស្ថិតិបង្រៀន',
+            AppLanguage.tr('ស្ថិតិបង្រៀន', 'Teaching Statistics'),
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w700,
@@ -207,7 +208,7 @@ class LecturerDashboardScreen extends StatelessWidget {
               Expanded(
                 child: _buildStatCard(
                   count: '${classes.length}',
-                  label: 'ថ្នាក់បង្រៀន',
+                  label: AppLanguage.tr('ថ្នាក់បង្រៀន', 'Classes'),
                   bgColor: isDark ? const Color(0xFF1D4ED8).withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
                   borderColor: isDark ? const Color(0xFF1D4ED8).withValues(alpha: 0.35) : const Color(0xFFBFDBFE),
                   textColor: isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
@@ -219,7 +220,7 @@ class LecturerDashboardScreen extends StatelessWidget {
               Expanded(
                 child: _buildStatCard(
                   count: '$totalStudents',
-                  label: 'សិស្សសរុប',
+                  label: AppLanguage.tr('សិស្សសរុប', 'Total Students'),
                   bgColor: isDark ? const Color(0xFF7C3AED).withValues(alpha: 0.15) : const Color(0xFFF5F3FF),
                   borderColor: isDark ? const Color(0xFF7C3AED).withValues(alpha: 0.35) : const Color(0xFFDDD6FE),
                   textColor: isDark ? const Color(0xFFA78BFA) : const Color(0xFF7C3AED),
@@ -236,7 +237,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                     onTap: onGoToAttendanceTab,
                     child: _buildStatCard(
                       count: '94%',
-                      label: 'វត្តមានមធ្យម',
+                      label: AppLanguage.tr('វត្តមានមធ្យម', 'Avg Attendance'),
                       bgColor: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.15) : const Color(0xFFF0FDF4),
                       borderColor: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.35) : const Color(0xFFBBF7D0),
                       textColor: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A),
@@ -254,7 +255,7 @@ class LecturerDashboardScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'ថ្នាក់បង្រៀនរបស់ខ្ញុំ (${classes.length})',
+                '${AppLanguage.tr('ថ្នាក់បង្រៀនរបស់ខ្ញុំ', 'My Teaching Classes')} (${classes.length})',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
@@ -264,7 +265,7 @@ class LecturerDashboardScreen extends StatelessWidget {
               TextButton.icon(
                 onPressed: () => onNavigateToCreateClass(),
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('បង្កើតថ្នាក់'),
+                label: Text(AppLanguage.tr('បង្កើតថ្នាក់', 'Add Class')),
                 style: TextButton.styleFrom(
                   foregroundColor: AppColors.primary,
                   textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
@@ -284,14 +285,14 @@ class LecturerDashboardScreen extends StatelessWidget {
                     Icon(Icons.school_outlined, size: 54, color: isDark ? const Color(0xFF475569) : Colors.grey.shade400),
                     const SizedBox(height: 12),
                     Text(
-                      'លោកគ្រូមិនទាន់មានថ្នាក់បង្រៀននៅឡើយទេ',
+                      AppLanguage.tr('លោកគ្រូមិនទាន់មានថ្នាក់បង្រៀននៅឡើយទេ', 'No teaching classes available yet'),
                       style: TextStyle(color: subTextCol, fontSize: 14),
                     ),
                     const SizedBox(height: 14),
                     ElevatedButton.icon(
                       onPressed: () => onNavigateToCreateClass(),
                       icon: const Icon(Icons.add_rounded),
-                      label: const Text('បង្កើតថ្នាក់ដំបូង'),
+                      label: Text(AppLanguage.tr('បង្កើតថ្នាក់ដំបូង', 'Create First Class')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
@@ -454,7 +455,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                       ),
                       const SizedBox(width: 5),
                       Text(
-                        isQrActive ? 'បើក QR' : 'បិទ QR',
+                        isQrActive ? AppLanguage.tr('បើក QR', 'Active QR') : AppLanguage.tr('បិទ QR', 'Inactive QR'),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -492,23 +493,23 @@ class LecturerDashboardScreen extends StatelessWidget {
                     }
                   },
                   itemBuilder: (context) => [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'fullscreen_qr',
                       child: Row(
                         children: [
-                          Icon(Icons.fullscreen_rounded, size: 18, color: AppColors.primary),
-                          SizedBox(width: 8),
-                          Text('QR ពេញអេក្រង់ (Projector)'),
+                          const Icon(Icons.fullscreen_rounded, size: 18, color: AppColors.primary),
+                          const SizedBox(width: 8),
+                          Text(AppLanguage.tr('QR ពេញអេក្រង់ (Projector)', 'Projector Fullscreen QR')),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'attendance_list',
                       child: Row(
                         children: [
-                          Icon(Icons.fact_check_rounded, size: 18, color: Color(0xFF0D9488)),
-                          SizedBox(width: 8),
-                          Text('បញ្ជីវត្តមានថ្នាក់នេះ'),
+                          const Icon(Icons.fact_check_rounded, size: 18, color: Color(0xFF0D9488)),
+                          const SizedBox(width: 8),
+                          Text(AppLanguage.tr('បញ្ជីវត្តមានថ្នាក់នេះ', 'Attendance for this class')),
                         ],
                       ),
                     ),
@@ -518,17 +519,17 @@ class LecturerDashboardScreen extends StatelessWidget {
                         children: [
                           Icon(Icons.edit_outlined, size: 18, color: textCol),
                           const SizedBox(width: 8),
-                          const Text('កែប្រែព័ត៌មានថ្នាក់'),
+                          Text(AppLanguage.tr('កែប្រែព័ត៌មានថ្នាក់', 'Edit Class Info')),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                          SizedBox(width: 8),
-                          Text('លុបថ្នាក់នេះ', style: TextStyle(color: AppColors.error)),
+                          const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                          const SizedBox(width: 8),
+                          Text(AppLanguage.tr('លុបថ្នាក់នេះ', 'Delete this class'), style: const TextStyle(color: AppColors.error)),
                         ],
                       ),
                     ),
@@ -565,7 +566,7 @@ class LecturerDashboardScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'វគ្គសិក្សា ${c.completedSessions}/${c.totalSessions} (${(progress * 100).toInt()}%)',
+                  '${AppLanguage.tr('វគ្គសិក្សា', 'Sessions')} ${c.completedSessions}/${c.totalSessions} (${(progress * 100).toInt()}%)',
                   style: TextStyle(
                     fontSize: 12,
                     color: subTextCol,
@@ -577,7 +578,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                     const Icon(Icons.people_outline_rounded, size: 15, color: AppColors.primary),
                     const SizedBox(width: 4),
                     Text(
-                      '${c.studentCount} នាក់',
+                      '${c.studentCount} ${AppLanguage.tr('នាក់', 'students')}',
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -611,7 +612,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => onShowQr(c),
                     icon: const Icon(Icons.qr_code_2_rounded, size: 18),
-                    label: const Text('បង្ហាញ QR'),
+                    label: Text(AppLanguage.tr('បង្ហាញ QR', 'Show QR')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isQrActive ? AppColors.primary : const Color(0xFF0F766E),
                       foregroundColor: Colors.white,
@@ -637,7 +638,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                       );
                     },
                     icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                    label: const Text('មើលលម្អិត'),
+                    label: Text(AppLanguage.tr('មើលលម្អិត', 'View Details')),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: textCol,
                       side: BorderSide(color: borderCol),

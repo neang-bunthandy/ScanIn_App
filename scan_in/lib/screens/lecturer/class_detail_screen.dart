@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../data/mock_data.dart';
 import '../../models/class_model.dart';
 import '../../models/user_model.dart';
@@ -18,9 +19,9 @@ class ClassDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text(
-          'ព័ត៌មានថ្នាក់រៀន',
-          style: TextStyle(
+        title: Text(
+          AppLanguage.tr('ព័ត៌មានថ្នាក់រៀន', 'Class Details'),
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -80,10 +81,11 @@ class ClassDetailScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: c.isQrActive ? AppColors.success : Colors.white24,
-                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          c.isQrActive ? '● QR កំពុងបើក' : '○ QR បិទ',
+                          c.isQrActive
+                              ? AppLanguage.tr('● QR កំពុងបើក', '● Active QR')
+                              : AppLanguage.tr('○ QR បិទ', '○ Inactive QR'),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -105,7 +107,7 @@ class ClassDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${c.semester} · ឆ្នាំសិក្សា ${c.academicYear}',
+                    '${c.semester} · ${AppLanguage.tr('ឆ្នាំសិក្សា', 'Academic Year')} ${c.academicYear}',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.white.withValues(alpha: 0.85),
@@ -117,7 +119,7 @@ class ClassDetailScreen extends StatelessWidget {
                       const Icon(Icons.person_outline_rounded, size: 18, color: Colors.white),
                       const SizedBox(width: 8),
                       Text(
-                        'គ្រូបង្រៀន៖ ${c.lecturerName ?? "លោកគ្រូ"}',
+                        '${AppLanguage.tr('គ្រូបង្រៀន៖ ', 'Lecturer: ')}${c.lecturerName ?? AppLanguage.tr("លោកគ្រូ", "Lecturer")}',
                         style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                       ),
                     ],
@@ -128,7 +130,7 @@ class ClassDetailScreen extends StatelessWidget {
                       const Icon(Icons.location_on_outlined, size: 18, color: Colors.white),
                       const SizedBox(width: 8),
                       Text(
-                        'បន្ទប់៖ ${c.room}',
+                        '${AppLanguage.tr('បន្ទប់៖ ', 'Room: ')}${c.room}',
                         style: const TextStyle(color: Colors.white),
                       ),
                       const Spacer(),
@@ -151,8 +153,8 @@ class ClassDetailScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: _buildInfoBox(
-                    title: 'សិស្សសរុប',
-                    value: '${c.studentCount} នាក់',
+                    title: AppLanguage.tr('សិស្សសរុប', 'Total Students'),
+                    value: '${c.studentCount} ${AppLanguage.tr('នាក់', 'students')}',
                     icon: Icons.people_outline_rounded,
                     color: AppColors.primary,
                   ),
@@ -160,8 +162,8 @@ class ClassDetailScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildInfoBox(
-                    title: 'វគ្គសិក្សា',
-                    value: '${c.completedSessions}/${c.totalSessions} សប្តាហ៍',
+                    title: AppLanguage.tr('វគ្គសិក្សា', 'Sessions'),
+                    value: '${c.completedSessions}/${c.totalSessions} ${AppLanguage.tr('សប្តាហ៍', 'weeks')}',
                     icon: Icons.calendar_today_rounded,
                     color: const Color(0xFF0D9488),
                   ),
@@ -184,13 +186,13 @@ class ClassDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(Icons.info_outline_rounded, size: 18, color: AppColors.primary),
-                        SizedBox(width: 8),
+                        const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.primary),
+                        const SizedBox(width: 8),
                         Text(
-                          'អំពីមុខវិជ្ជា',
-                          style: TextStyle(
+                          AppLanguage.tr('អំពីមុខវិជ្ជា', 'About Subject'),
+                          style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
@@ -217,9 +219,9 @@ class ClassDetailScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់',
-                  style: TextStyle(
+                Text(
+                  AppLanguage.tr('បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់', 'Student Class Roster'),
+                  style: const TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
@@ -232,7 +234,7 @@ class ClassDetailScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${students.length} នាក់',
+                    '${students.length} ${AppLanguage.tr('នាក់', 'students')}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
@@ -303,9 +305,9 @@ class ClassDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(color: const Color(0xFFBBF7D0)),
                         ),
-                        child: const Text(
-                          'សកម្ម',
-                          style: TextStyle(
+                        child: Text(
+                          AppLanguage.tr('សកម្ម', 'Active'),
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF16A34A),

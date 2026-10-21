@@ -6,10 +6,12 @@ import 'screens/login_screen.dart';
 import 'screens/student/student_home_screen.dart';
 import 'screens/lecturer/lecturer_home_screen.dart';
 import 'core/app_theme.dart';
+import 'core/app_language.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppTheme.init();
+  await AppLanguage.init();
   runApp(const ScanInApp());
 }
 
@@ -21,13 +23,18 @@ class ScanInApp extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: AppTheme.isDarkMode,
       builder: (context, isDark, _) {
-        return MaterialApp(
-          title: 'ScanIn',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-          home: const AuthWrapper(),
+        return ValueListenableBuilder<String>(
+          valueListenable: AppLanguage.currentLanguage,
+          builder: (context, lang, _) {
+            return MaterialApp(
+              title: 'ScanIn',
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+              home: const AuthWrapper(),
+            );
+          },
         );
       },
     );

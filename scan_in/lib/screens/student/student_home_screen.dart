@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../data/mock_data.dart';
 import '../../models/user_model.dart';
 import '../../models/class_model.dart';
@@ -111,7 +112,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'កាមេរ៉ាស្កេន QR វត្តមាន',
+                  AppLanguage.tr('កាមេរ៉ាស្កេន QR វត្តមាន', 'Attendance QR Camera Scanner'),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -120,7 +121,10 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'សូមដាក់កាមេរ៉ាឱ្យចំ QR Code របស់គ្រូដើម្បីកត់វត្តមាន',
+                  AppLanguage.tr(
+                    'សូមដាក់កាមេរ៉ាឱ្យចំ QR Code របស់គ្រូដើម្បីកត់វត្តមាន',
+                    'Please point your camera at the teacher\'s QR code to mark attendance',
+                  ),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -165,9 +169,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'សាកល្បងស្កេនជោគជ័យ',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    child: Text(
+                      AppLanguage.tr('សាកល្បងស្កេនជោគជ័យ', 'Test Successful Scan'),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -181,82 +185,87 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
-    final navBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final navBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final unselectedCol = isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLanguage.currentLanguage,
+      builder: (context, currentLang, _) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+        final navBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+        final navBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+        final unselectedCol = isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
 
-    return Scaffold(
-      backgroundColor: scaffoldBg,
-      body: SafeArea(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: [
-            // Tab 1: ដើម (Dashboard)
-            StudentDashboardScreen(
-              student: student,
-              classes: classes,
-              onScanQr: _handleScanQr,
+        return Scaffold(
+          backgroundColor: scaffoldBg,
+          body: SafeArea(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: [
+                // Tab 1: ដើម (Dashboard)
+                StudentDashboardScreen(
+                  student: student,
+                  classes: classes,
+                  onScanQr: _handleScanQr,
+                ),
+                // Tab 2: ប្រវត្តិ (History)
+                StudentHistoryScreen(),
+                // Tab 3: ខ្ញុំ (Profile)
+                StudentProfileScreen(
+                  student: student,
+                  notificationsEnabled: _notificationsEnabled,
+                  selectedLanguage: _selectedLanguage,
+                  onToggleNotifications: (val) {
+                    setState(() => _notificationsEnabled = val);
+                  },
+                  onLanguageChanged: (lang) {
+                    setState(() => _selectedLanguage = lang);
+                  },
+                ),
+              ],
             ),
-            // Tab 2: ប្រវត្តិ (History)
-            const StudentHistoryScreen(),
-            // Tab 3: ខ្ញុំ (Profile)
-            StudentProfileScreen(
-              student: student,
-              notificationsEnabled: _notificationsEnabled,
-              selectedLanguage: _selectedLanguage,
-              onToggleNotifications: (val) {
-                setState(() => _notificationsEnabled = val);
-              },
-              onLanguageChanged: (lang) {
-                setState(() => _selectedLanguage = lang);
-              },
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: navBg,
-          border: Border(
-            top: BorderSide(color: navBorder, width: 1),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              color: navBg,
+              border: Border(
+                top: BorderSide(color: navBorder, width: 1),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: navBg,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: unselectedCol,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'ដើម',
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) => setState(() => _currentIndex = index),
+              backgroundColor: navBg,
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: unselectedCol,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+              elevation: 0,
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.home_rounded),
+                  label: AppLanguage.tr('ដើម', 'Home'),
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.fact_check_outlined),
+                  activeIcon: const Icon(Icons.fact_check_rounded),
+                  label: AppLanguage.tr('ប្រវត្តិ', 'History'),
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.person_outline_rounded),
+                  activeIcon: const Icon(Icons.person_rounded),
+                  label: AppLanguage.tr('ខ្ញុំ', 'Profile'),
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.fact_check_outlined),
-              activeIcon: Icon(Icons.fact_check_rounded),
-              label: 'ប្រវត្តិ',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'ខ្ញុំ',
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

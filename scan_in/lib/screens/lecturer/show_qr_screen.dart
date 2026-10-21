@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../models/class_model.dart';
 import '../../data/mock_data.dart';
 
@@ -53,9 +54,9 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
       _currentToken = 'SCANIN-${_class.subjectCode}-${DateTime.now().millisecondsSinceEpoch % 10000}';
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('បានបង្កើតកូដ QR ថ្មីដោយជោគជ័យ'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(AppLanguage.tr('បានបង្កើតកូដ QR ថ្មីដោយជោគជ័យ', 'Regenerated new QR code successfully')),
+        duration: const Duration(seconds: 2),
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
       ),
@@ -68,7 +69,9 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isQrActive ? 'បានបើកដំណើរការ QR ឡើងវិញ' : 'បានផ្អាកដំណើរការ QR'),
+        content: Text(_isQrActive
+            ? AppLanguage.tr('បានបើកដំណើរការ QR ឡើងវិញ', 'Resumed QR code')
+            : AppLanguage.tr('បានផ្អាកដំណើរការ QR', 'Paused QR code')),
         backgroundColor: _isQrActive ? AppColors.success : AppColors.textSecondary,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
@@ -121,7 +124,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: _isQrActive ? 'ផ្អាក QR' : 'បើក QR',
+            tooltip: _isQrActive ? AppLanguage.tr('ផ្អាក QR', 'Pause QR') : AppLanguage.tr('បើក QR', 'Resume QR'),
             icon: Icon(
               _isQrActive ? Icons.pause_circle_outline_rounded : Icons.play_circle_outline_rounded,
               color: _isQrActive ? Colors.amber : Colors.greenAccent,
@@ -130,7 +133,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
             onPressed: _toggleQrActive,
           ),
           IconButton(
-            tooltip: 'បង្កើត QR ថ្មី',
+            tooltip: AppLanguage.tr('បង្កើត QR ថ្មី', 'Regenerate QR'),
             icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 24),
             onPressed: _regenerateQr,
           ),
@@ -165,7 +168,9 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      _isQrActive ? 'QR កំពុងផ្សាយសម្រាប់ការស្កេន' : 'QR ត្រូវបានផ្អាកបណ្តោះអាសន្ន',
+                      _isQrActive
+                          ? AppLanguage.tr('QR កំពុងផ្សាយសម្រាប់ការស្កេន', 'QR is active for scanning')
+                          : AppLanguage.tr('QR ត្រូវបានផ្អាកបណ្តោះអាសន្ន', 'QR is temporarily paused'),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -282,15 +287,15 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                             color: Colors.white.withValues(alpha: 0.9),
                             borderRadius: BorderRadius.circular(18),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.pause_circle_filled_rounded, size: 54, color: Colors.amber),
-                                SizedBox(height: 8),
+                                const Icon(Icons.pause_circle_filled_rounded, size: 54, color: Colors.amber),
+                                const SizedBox(height: 8),
                                 Text(
-                                  'បានផ្អាកការស្កេន',
-                                  style: TextStyle(
+                                  AppLanguage.tr('បានផ្អាកការស្កេន', 'Scanning is paused'),
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                     color: AppColors.textPrimary,
@@ -321,7 +326,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                     const Icon(Icons.timer_outlined, color: Colors.amber, size: 18),
                     const SizedBox(width: 8),
                     Text(
-                      'នៅសល់៖ ${_formatTimer(_remainingSeconds)}',
+                      '${AppLanguage.tr('នៅសល់៖ ', 'Remaining: ')}${_formatTimer(_remainingSeconds)}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
@@ -359,13 +364,13 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
+                        Row(
                           children: [
-                            Icon(Icons.people_alt_rounded, color: Colors.greenAccent, size: 20),
-                            SizedBox(width: 8),
+                            const Icon(Icons.people_alt_rounded, color: Colors.greenAccent, size: 20),
+                            const SizedBox(width: 8),
                             Text(
-                              'និស្សិតបានកត់វត្តមានផ្ទាល់',
-                              style: TextStyle(
+                              AppLanguage.tr('និស្សិតបានកត់វត្តមានផ្ទាល់', 'Live Checked-in Students'),
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -374,7 +379,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                           ],
                         ),
                         Text(
-                          '$_scannedCount / ${_class.studentCount} នាក់',
+                          '$_scannedCount / ${_class.studentCount} ${AppLanguage.tr('នាក់', 'students')}',
                           style: const TextStyle(
                             color: Colors.greenAccent,
                             fontWeight: FontWeight.w800,
@@ -398,14 +403,14 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'វត្តមាន៖ ${(progress * 100).toInt()}%',
+                          '${AppLanguage.tr('វត្តមាន៖ ', 'Present: ')}${(progress * 100).toInt()}%',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.7),
                             fontSize: 12,
                           ),
                         ),
                         Text(
-                          'អវត្តមាន៖ ${_class.studentCount - _scannedCount} នាក់',
+                          '${AppLanguage.tr('អវត្តមាន៖ ', 'Absent: ')}${_class.studentCount - _scannedCount} ${AppLanguage.tr('នាក់', 'students')}',
                           style: const TextStyle(
                             color: Colors.redAccent,
                             fontSize: 12,
@@ -425,7 +430,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'និស្សិតទើបបានស្កេនថ្មីៗ (${students.take(5).length})',
+                    '${AppLanguage.tr('និស្សិតទើបបានស្កេនថ្មីៗ', 'Recently Scanned Students')} (${students.take(5).length})',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -486,14 +491,14 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                               color: const Color(0xFF16A34A).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.check_rounded, color: Color(0xFF4ADE80), size: 14),
-                                SizedBox(width: 4),
+                                const Icon(Icons.check_rounded, color: Color(0xFF4ADE80), size: 14),
+                                const SizedBox(width: 4),
                                 Text(
-                                  'បានស្កេន',
-                                  style: TextStyle(
+                                  AppLanguage.tr('បានស្កេន', 'Checked-in'),
+                                  style: const TextStyle(
                                     color: Color(0xFF4ADE80),
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,

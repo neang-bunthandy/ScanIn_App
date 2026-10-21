@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
+import '../../core/app_language.dart';
 import '../../models/user_model.dart';
 import '../../models/class_model.dart';
 import '../../models/attendance_model.dart';
@@ -55,9 +56,9 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'ប្តូររូបថត Profile',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Text(
+                AppLanguage.tr('ប្តូររូបថត Profile', 'Change Profile Photo'),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
               Material(
@@ -67,12 +68,12 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                     backgroundColor: AppColors.primaryLight,
                     child: Icon(Icons.camera_alt_rounded, color: AppColors.primary),
                   ),
-                  title: const Text('ថតរូបផ្ទាល់ (Camera)'),
+                  title: Text(AppLanguage.tr('ថតរូបផ្ទាល់ (Camera)', 'Take Photo (Camera)')),
                   onTap: () {
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('មុខងារ Camera នឹងដំណើរការជាមួយកាមេរ៉ាពិត'),
+                      SnackBar(
+                        content: Text(AppLanguage.tr('មុខងារ Camera នឹងដំណើរការជាមួយកាមេរ៉ាពិត', 'Camera feature will work on a real device')),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -86,12 +87,12 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                     backgroundColor: AppColors.primaryLight,
                     child: Icon(Icons.photo_library_rounded, color: AppColors.primary),
                   ),
-                  title: const Text('ជ្រើសរើសពីរូបភាព (Gallery)'),
+                  title: Text(AppLanguage.tr('ជ្រើសរើសពីរូបភាព (Gallery)', 'Choose from Gallery')),
                   onTap: () {
                     Navigator.pop(ctx);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('មុខងារ Gallery នឹងដំណើរការជាមួយរូបថត'),
+                      SnackBar(
+                        content: Text(AppLanguage.tr('មុខងារ Gallery នឹងដំណើរការជាមួយរូបថត', 'Gallery feature will work with photo library')),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -115,11 +116,14 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.lock_reset_rounded, color: AppColors.primary),
-            SizedBox(width: 8),
-            Text('ប្តូរពាក្យសម្ងាត់', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Icon(Icons.lock_reset_rounded, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(
+              AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
         content: Form(
@@ -131,33 +135,33 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                 controller: oldPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'ពាក្យសម្ងាត់ចាស់',
+                  labelText: AppLanguage.tr('ពាក្យសម្ងាត់ចាស់', 'Current Password'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
-                validator: (v) => v == null || v.isEmpty ? 'សូមបញ្ចូលពាក្យសម្ងាត់ចាស់' : null,
+                validator: (v) => v == null || v.isEmpty ? AppLanguage.tr('សូមបញ្ចូលពាក្យសម្ងាត់ចាស់', 'Please enter current password') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: newPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'ពាក្យសម្ងាត់ថ្មី',
+                  labelText: AppLanguage.tr('ពាក្យសម្ងាត់ថ្មី', 'New Password'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
-                validator: (v) => v == null || v.length < 6 ? 'ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ' : null,
+                validator: (v) => v == null || v.length < 6 ? AppLanguage.tr('ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ', 'Must be at least 6 characters') : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: confirmPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  labelText: 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី',
+                  labelText: AppLanguage.tr('បញ្ជាក់ពាក្យសម្ងាត់ថ្មី', 'Confirm New Password'),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
-                validator: (v) => v != newPasswordController.text ? 'ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ' : null,
+                validator: (v) => v != newPasswordController.text ? AppLanguage.tr('ពាក្យសម្ងាត់មិនត្រូវគ្នាទេ', 'Passwords do not match') : null,
               ),
             ],
           ),
@@ -165,7 +169,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('បោះបង់'),
+            child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
@@ -173,15 +177,15 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
               if (formKey.currentState!.validate()) {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('បានប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!'),
+                  SnackBar(
+                    content: Text(AppLanguage.tr('បានប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!', 'Password changed successfully!')),
                     backgroundColor: AppColors.success,
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
               }
             },
-            child: const Text('រក្សាទុក', style: TextStyle(color: Colors.white)),
+            child: Text(AppLanguage.tr('រក្សាទុក', 'Save'), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -193,32 +197,37 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
       context: context,
       builder: (ctx) => SimpleDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('ជ្រើសរើសភាសា (Language)', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          AppLanguage.tr('ជ្រើសរើសភាសា (Language)', 'Select Language'),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         children: [
           SimpleDialogOption(
-            onPressed: () {
-              widget.onLanguageChanged('ភាសាខ្មែរ (Khmer)');
-              Navigator.pop(ctx);
+            onPressed: () async {
+              await AppLanguage.changeLanguage('km');
+              widget.onLanguageChanged('ខ្មែរ (Khmer)');
+              if (ctx.mounted) Navigator.pop(ctx);
             },
             child: Row(
               children: [
-                const Text('🇰🇭  ភាសាខ្មែរ (Khmer)', style: TextStyle(fontSize: 16)),
+                const Text('🇰🇭  ខ្មែរ (Khmer)', style: TextStyle(fontSize: 16)),
                 const Spacer(),
-                if (widget.selectedLanguage.contains('Khmer'))
+                if (AppLanguage.isKhmer)
                   const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
               ],
             ),
           ),
           SimpleDialogOption(
-            onPressed: () {
+            onPressed: () async {
+              await AppLanguage.changeLanguage('en');
               widget.onLanguageChanged('English (US)');
-              Navigator.pop(ctx);
+              if (ctx.mounted) Navigator.pop(ctx);
             },
             child: Row(
               children: [
                 const Text('🇺🇸  English (US)', style: TextStyle(fontSize: 16)),
                 const Spacer(),
-                if (widget.selectedLanguage.contains('English'))
+                if (AppLanguage.isEnglish)
                   const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
               ],
             ),
@@ -233,33 +242,45 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.info_outline_rounded, color: AppColors.primary),
-            SizedBox(width: 8),
-            Text('អំពីកម្មវិធី ScanIn', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const Icon(Icons.info_outline_rounded, color: AppColors.primary),
+            const SizedBox(width: 8),
+            Text(
+              AppLanguage.tr('អំពីកម្មវិធី ScanIn', 'About ScanIn App'),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('ScanIn Attendance App', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            SizedBox(height: 4),
-            Text('កំណែទម្រង់៖ v1.0.0 (Lecturer Portal)', style: TextStyle(color: AppColors.textSecondary)),
-            SizedBox(height: 12),
+            const Text('ScanIn Attendance App', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 4),
             Text(
-              'កម្មវិធីស្កេនវត្តមានទំនើបសម្រាប់គ្រូបង្រៀន និងសាស្ត្រាចារ្យ។ គាំទ្រការបង្កើត Dynamic QR Code, គ្រប់គ្រងថ្នាក់រៀន និងរបាយការណ៍វត្តមានសិស្ស។',
-              style: TextStyle(fontSize: 13, height: 1.4),
+              AppLanguage.tr('កំណែទម្រង់៖ v1.0.0 (Lecturer Portal)', 'Version: v1.0.0 (Lecturer Portal)'),
+              style: const TextStyle(color: AppColors.textSecondary),
             ),
-            SizedBox(height: 12),
-            Text('ជំនួយបច្ចេកទេស៖ support@scanin.app', style: TextStyle(fontSize: 12, color: AppColors.primary)),
+            const SizedBox(height: 12),
+            Text(
+              AppLanguage.tr(
+                'កម្មវិធីស្កេនវត្តមានទំនើបសម្រាប់គ្រូបង្រៀន និងសាស្ត្រាចារ្យ។ គាំទ្រការបង្កើត Dynamic QR Code, គ្រប់គ្រងថ្នាក់រៀន និងរបាយការណ៍វត្តមានសិស្ស។',
+                'Modern attendance scanning app for teachers and lecturers. Supports generating dynamic QR codes, class management, and attendance reports.',
+              ),
+              style: const TextStyle(fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              AppLanguage.tr('ជំនួយបច្ចេកទេស៖ support@scanin.app', 'Technical Support: support@scanin.app'),
+              style: const TextStyle(fontSize: 12, color: AppColors.primary),
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('យល់ព្រម'),
+            child: Text(AppLanguage.tr('យល់ព្រម', 'OK')),
           ),
         ],
       ),
@@ -339,7 +360,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'អត្តលេខបុគ្គលិក៖ ${lecturer.staffId ?? 'STF001'}',
+                      '${AppLanguage.tr('អត្តលេខបុគ្គលិក៖ ', 'Staff ID: ')}${lecturer.staffId ?? 'STF001'}',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 13,
@@ -359,7 +380,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                           const Icon(Icons.badge_rounded, size: 16, color: AppColors.primary),
                           const SizedBox(width: 6),
                           Text(
-                            lecturer.department ?? 'ដេប៉ាតឺម៉ង់ព័ត៌មានវិទ្យា',
+                            lecturer.department ?? AppLanguage.tr('ដេប៉ាតឺម៉ង់ព័ត៌មានវិទ្យា', 'IT Department'),
                             style: const TextStyle(
                               color: AppColors.primary,
                               fontWeight: FontWeight.bold,
@@ -395,13 +416,13 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                       const Icon(Icons.analytics_outlined, size: 18, color: AppColors.primary),
                       const SizedBox(width: 8),
                       Text(
-                        'ស្ថិតិការបង្រៀន (ឆមាសនេះ)',
+                        AppLanguage.tr('ស្ថិតិការបង្រៀន (ឆមាសនេះ)', 'Teaching Statistics (This Semester)'),
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                       ),
                       const Spacer(),
-                      const Text(
-                        'សកម្មភាព ៩៤%',
-                        style: TextStyle(
+                      Text(
+                        AppLanguage.tr('សកម្មភាព ៩៤%', 'Activity 94%'),
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: AppColors.success,
@@ -414,7 +435,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                     children: [
                       Expanded(
                         child: _buildMiniStatBox(
-                          title: 'ថ្នាក់បង្រៀន',
+                          title: AppLanguage.tr('ថ្នាក់បង្រៀន', 'Classes'),
                           count: '${widget.classes.length}',
                           color: AppColors.primary,
                           icon: Icons.menu_book_rounded,
@@ -423,7 +444,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildMiniStatBox(
-                          title: 'សិស្សសរុប',
+                          title: AppLanguage.tr('សិស្សសរុប', 'Total Students'),
                           count: '$totalStudents',
                           color: AppColors.secondary,
                           icon: Icons.people_alt_rounded,
@@ -432,7 +453,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: _buildMiniStatBox(
-                          title: 'កំណត់ត្រា',
+                          title: AppLanguage.tr('កំណត់ត្រា', 'Records'),
                           count: '${widget.attendanceRecords.length}',
                           color: AppColors.success,
                           icon: Icons.verified_user_rounded,
@@ -461,35 +482,35 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ព័ត៌មានលម្អិតសាស្រ្តាចារ្យ',
+                    AppLanguage.tr('ព័ត៌មានលម្អិតសាស្រ្តាចារ្យ', 'Lecturer Details'),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
                   const SizedBox(height: 14),
                   _buildProfileDetailRow(
                     icon: Icons.email_outlined,
-                    title: 'អ៊ីមែលផ្លូវការ',
+                    title: AppLanguage.tr('អ៊ីមែលផ្លូវការ', 'Official Email'),
                     value: lecturer.email,
                     isDark: isDark,
                   ),
                   Divider(height: 18, color: dividerCol),
                   _buildProfileDetailRow(
                     icon: Icons.phone_outlined,
-                    title: 'លេខទូរស័ព្ទ',
+                    title: AppLanguage.tr('លេខទូរស័ព្ទ', 'Phone Number'),
                     value: lecturer.phone ?? '012 999 888',
                     isDark: isDark,
                   ),
                   Divider(height: 18, color: dividerCol),
                   _buildProfileDetailRow(
                     icon: Icons.domain_rounded,
-                    title: 'ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ',
-                    value: lecturer.department ?? 'វិទ្យាសាស្ត្រកុំព្យូទ័រ (IT)',
+                    title: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department / Faculty'),
+                    value: lecturer.department ?? AppLanguage.tr('វិទ្យាសាស្ត្រកុំព្យូទ័រ (IT)', 'Computer Science (IT)'),
                     isDark: isDark,
                   ),
                   Divider(height: 18, color: dividerCol),
                   _buildProfileDetailRow(
                     icon: Icons.calendar_today_outlined,
-                    title: 'ឆមាសបង្រៀន',
-                    value: 'ឆមាសទី ១ (2026-2027)',
+                    title: AppLanguage.tr('ឆមាសបង្រៀន', 'Teaching Semester'),
+                    value: AppLanguage.tr('ឆមាសទី ១ (2026-2027)', 'Semester 1 (2026-2027)'),
                     isDark: isDark,
                   ),
                 ],
@@ -513,7 +534,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ការកំណត់ និងសុវត្ថិភាព',
+                    AppLanguage.tr('ការកំណត់ និងសុវត្ថិភាព', 'Settings & Security'),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
                   const SizedBox(height: 8),
@@ -539,11 +560,13 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                           ),
                         ),
                         title: Text(
-                          'មុខងារងងឹត (Dark Mode)',
+                          AppLanguage.tr('មុខងារងងឹត (Dark Mode)', 'Dark Mode'),
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                         ),
                         subtitle: Text(
-                          isDark ? 'កំពុងបើកប្រើពណ៌ងងឹត' : 'កំពុងប្រើពណ៌ធម្មតា (Light)',
+                          isDark
+                              ? AppLanguage.tr('កំពុងបើកប្រើពណ៌ងងឹត', 'Dark theme enabled')
+                              : AppLanguage.tr('កំពុងប្រើពណ៌ធម្មតា (Light)', 'Light theme enabled'),
                           style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                         ),
                         trailing: Switch(
@@ -580,10 +603,13 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                           child: const Icon(Icons.notifications_active_outlined, size: 20, color: AppColors.primary),
                         ),
                         title: Text(
-                          'ការជូនដំណឹងម៉ោងបង្រៀន',
+                          AppLanguage.tr('ការជូនដំណឹងម៉ោងបង្រៀន', 'Teaching Reminders'),
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                         ),
-                        subtitle: const Text('រំលឹកមុនពេលចាប់ផ្តើមបង្រៀន ១៥ នាទី', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                        subtitle: Text(
+                          AppLanguage.tr('រំលឹកមុនពេលចាប់ផ្តើមបង្រៀន ១៥ នាទី', '15 minutes before class starts'),
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        ),
                         trailing: Switch(
                           value: widget.notificationsEnabled,
                           activeThumbColor: AppColors.primary,
@@ -591,7 +617,9 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                             widget.onToggleNotifications(val);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(val ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
+                                content: Text(val
+                                    ? AppLanguage.tr('បានបើកការជូនដំណឹង', 'Notifications enabled')
+                                    : AppLanguage.tr('បានបិទការជូនដំណឹង', 'Notifications disabled')),
                                 duration: const Duration(seconds: 1),
                               ),
                             );
@@ -602,7 +630,9 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                           widget.onToggleNotifications(newVal);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(newVal ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
+                              content: Text(newVal
+                                  ? AppLanguage.tr('បានបើកការជូនដំណឹង', 'Notifications enabled')
+                                  : AppLanguage.tr('បានបិទការជូនដំណឹង', 'Notifications disabled')),
                               duration: const Duration(seconds: 1),
                             ),
                           );
@@ -624,7 +654,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                         child: const Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.primary),
                       ),
                       title: Text(
-                        'ប្តូរពាក្យសម្ងាត់',
+                        AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                       ),
                       trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
@@ -645,11 +675,11 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                         child: const Icon(Icons.language_rounded, size: 20, color: AppColors.primary),
                       ),
                       title: Text(
-                        'ភាសា (Language)',
+                        AppLanguage.tr('ភាសា (Language)', 'Language'),
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                       ),
                       trailing: Text(
-                        widget.selectedLanguage,
+                        AppLanguage.displayName,
                         style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
                       ),
                       onTap: _showLanguageDialog,
@@ -676,7 +706,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ជំនួយ និងព័ត៌មានកម្មវិធី',
+                    AppLanguage.tr('ជំនួយ និងព័ត៌មានកម្មវិធី', 'Support & About'),
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
                   const SizedBox(height: 8),
@@ -691,7 +721,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                         child: const Icon(Icons.info_outline_rounded, size: 20, color: AppColors.primary),
                       ),
                       title: Text(
-                        'អំពីកម្មវិធី ScanIn',
+                        AppLanguage.tr('អំពីកម្មវិធី ScanIn', 'About ScanIn App'),
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
                       ),
                       trailing: const Text(
@@ -718,12 +748,12 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                   context: context,
                   builder: (dialogContext) => AlertDialog(
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    title: const Text('ចាកចេញពីគណនី'),
-                    content: const Text('តើលោកគ្រូពិតជាចង់ចាកចេញពីកម្មវិធីមែនទេ?'),
+                    title: Text(AppLanguage.tr('ចាកចេញពីគណនី', 'Log Out')),
+                    content: Text(AppLanguage.tr('តើលោកគ្រូពិតជាចង់ចាកចេញពីកម្មវិធីមែនទេ?', 'Are you sure you want to log out of the application?')),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(dialogContext),
-                        child: const Text('បោះបង់'),
+                        child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
                       ),
                       ElevatedButton(
                         onPressed: () async {
@@ -740,16 +770,16 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                           backgroundColor: AppColors.error,
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('ចាកចេញ'),
+                        child: Text(AppLanguage.tr('ចាកចេញ', 'Log Out')),
                       ),
                     ],
                   ),
                 );
               },
               icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-              label: const Text(
-                'ចាកចេញពីគណនី',
-                style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 15),
+              label: Text(
+                AppLanguage.tr('ចាកចេញពីគណនី', 'Log Out'),
+                style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.bold, fontSize: 15),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: AppColors.error),

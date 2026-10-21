@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../models/attendance_model.dart';
 import '../../models/class_model.dart';
 import 'attendance_list_screen.dart';
@@ -58,7 +59,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'កែប្រែវត្តមាន: ${item.studentName}',
+                  '${AppLanguage.tr('កែប្រែវត្តមាន: ', 'Edit Attendance: ')}${item.studentName}',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -66,7 +67,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                   ),
                 ),
                 Text(
-                  'អត្តលេខ៖ ${item.studentCode}',
+                  '${AppLanguage.tr('អត្តលេខ៖ ', 'Student ID: ')}${item.studentCode}',
                   style: TextStyle(fontSize: 13, color: subTextCol),
                 ),
                 const SizedBox(height: 20),
@@ -74,7 +75,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                   color: Colors.transparent,
                   child: ListTile(
                     leading: const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A)),
-                    title: Text('វត្តមាន (Present)', style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
+                    title: Text(AppLanguage.tr('វត្តមាន (Present)', 'Present'), style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
                     trailing: item.isPresent ? const Icon(Icons.done, color: Color(0xFF16A34A)) : null,
                     onTap: () {
                       Navigator.pop(context);
@@ -86,7 +87,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                   color: Colors.transparent,
                   child: ListTile(
                     leading: const Icon(Icons.access_time_filled_rounded, color: Color(0xFFD97706)),
-                    title: Text('មកយឺត (Late)', style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
+                    title: Text(AppLanguage.tr('មកយឺត (Late)', 'Late'), style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
                     trailing: item.isLate ? const Icon(Icons.done, color: Color(0xFFD97706)) : null,
                     onTap: () {
                       Navigator.pop(context);
@@ -98,7 +99,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                   color: Colors.transparent,
                   child: ListTile(
                     leading: const Icon(Icons.cancel_rounded, color: Color(0xFFDC2626)),
-                    title: Text('អវត្តមាន (Absent)', style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
+                    title: Text(AppLanguage.tr('អវត្តមាន (Absent)', 'Absent'), style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
                     trailing: item.isAbsent ? const Icon(Icons.done, color: Color(0xFFDC2626)) : null,
                     onTap: () {
                       Navigator.pop(context);
@@ -146,7 +147,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'របាយការណ៍វត្តមាន',
+                AppLanguage.tr('របាយការណ៍វត្តមាន', 'Attendance Report'),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -156,7 +157,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
               Row(
                 children: [
                   IconButton(
-                    tooltip: 'មើលបញ្ជីពេញលេញ',
+                    tooltip: AppLanguage.tr('មើលបញ្ជីពេញលេញ', 'View Full List'),
                     onPressed: () {
                       final selectedClass = _selectedClassFilterId != null
                           ? widget.classes.firstWhere(
@@ -176,12 +177,12 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                   IconButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Row(
                             children: [
-                              Icon(Icons.download_done_rounded, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text('បានទាញយករបាយការណ៍ Excel រួចរាល់'),
+                              const Icon(Icons.download_done_rounded, color: Colors.white),
+                              const SizedBox(width: 8),
+                              Text(AppLanguage.tr('បានទាញយករបាយការណ៍ Excel រួចរាល់', 'Downloaded Excel report successfully')),
                             ],
                           ),
                           backgroundColor: AppColors.success,
@@ -190,7 +191,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                       );
                     },
                     icon: const Icon(Icons.file_download_outlined, color: AppColors.primary),
-                    tooltip: 'ទាញយក Excel',
+                    tooltip: AppLanguage.tr('ទាញយក Excel', 'Export Excel'),
                   ),
                 ],
               ),
@@ -204,7 +205,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
             onChanged: (val) => setState(() => _searchQuery = val),
             style: TextStyle(color: textCol),
             decoration: InputDecoration(
-              hintText: 'ស្វែងរកសិស្ស ឬអត្តលេខ...',
+              hintText: AppLanguage.tr('ស្វែងរកសិស្ស ឬអត្តលេខ...', 'Search student or ID...'),
               hintStyle: TextStyle(color: subTextCol),
               prefixIcon: Icon(Icons.search_rounded, color: subTextCol),
               filled: true,
@@ -233,7 +234,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
             child: Row(
               children: [
                 _buildFilterChip(
-                  label: 'ទាំងអស់',
+                  label: AppLanguage.tr('ទាំងអស់', 'All'),
                   isSelected: _selectedClassFilterId == null,
                   onSelected: () => setState(() => _selectedClassFilterId = null),
                   cardBg: cardBg,
@@ -268,7 +269,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                         Icon(Icons.assignment_late_outlined, size: 48, color: isDark ? const Color(0xFF475569) : Colors.grey.shade400),
                         const SizedBox(height: 12),
                         Text(
-                          'មិនមានទិន្នន័យវត្តមានទេ',
+                          AppLanguage.tr('មិនមានទិន្នន័យវត្តមានទេ', 'No attendance records found'),
                           style: TextStyle(color: subTextCol, fontSize: 14),
                         ),
                       ],
@@ -340,7 +341,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        '${item.studentCode} · ${item.note ?? 'វត្តមាន'}',
+                                        '${item.studentCode} · ${item.note ?? AppLanguage.tr('វត្តមាន', 'Present')}',
                                         style: TextStyle(
                                           color: subTextCol,
                                           fontSize: 12,
@@ -360,7 +361,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        item.statusKhmer,
+                                        item.statusText,
                                         style: TextStyle(
                                           color: badgeColor,
                                           fontWeight: FontWeight.bold,

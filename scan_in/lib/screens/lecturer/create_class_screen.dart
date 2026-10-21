@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../models/class_model.dart';
 import '../../data/mock_data.dart';
 
@@ -111,8 +112,8 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
             const SizedBox(width: 10),
             Text(
               isEdit
-                  ? 'បានកែប្រែថ្នាក់ ${_subjectNameController.text.trim()} ជោគជ័យ'
-                  : 'បានបង្កើតថ្នាក់ ${_subjectNameController.text.trim()} ជោគជ័យ',
+                  ? AppLanguage.tr('បានកែប្រែថ្នាក់ ${_subjectNameController.text.trim()} ជោគជ័យ', 'Successfully updated ${_subjectNameController.text.trim()}')
+                  : AppLanguage.tr('បានបង្កើតថ្នាក់ ${_subjectNameController.text.trim()} ជោគជ័យ', 'Successfully created ${_subjectNameController.text.trim()}'),
             ),
           ],
         ),
@@ -122,285 +123,328 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     );
   }
 
+  String _formatDay(String d) {
+    switch (d) {
+      case 'ចន្ទ':
+        return AppLanguage.tr('ចន្ទ', 'Monday');
+      case 'អង្គារ':
+        return AppLanguage.tr('អង្គារ', 'Tuesday');
+      case 'ពុធ':
+        return AppLanguage.tr('ពុធ', 'Wednesday');
+      case 'ព្រហស្បតិ៍':
+        return AppLanguage.tr('ព្រហស្បតិ៍', 'Thursday');
+      case 'សុក្រ':
+        return AppLanguage.tr('សុក្រ', 'Friday');
+      case 'សៅរ៍':
+        return AppLanguage.tr('សៅរ៍', 'Saturday');
+      case 'អាទិត្យ':
+        return AppLanguage.tr('អាទិត្យ', 'Sunday');
+      default:
+        return d;
+    }
+  }
+
+  String _formatSemester(String s) {
+    switch (s) {
+      case 'ឆមាសទី ១':
+        return AppLanguage.tr('ឆមាសទី ១', 'Semester 1');
+      case 'ឆមាសទី ២':
+        return AppLanguage.tr('ឆមាសទី ២', 'Semester 2');
+      case 'វគ្គពិសេស (Summer)':
+        return AppLanguage.tr('វគ្គពិសេស (Summer)', 'Summer Term');
+      default:
+        return s;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.initialClass != null;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text(
-          isEdit ? 'កែប្រែថ្នាក់រៀន' : 'បង្កើតថ្នាក់រៀនថ្មី',
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLanguage.currentLanguage,
+      builder: (context, currentLang, _) {
+        return Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          appBar: AppBar(
+            title: Text(
+              isEdit
+                  ? AppLanguage.tr('កែប្រែថ្នាក់រៀន', 'Edit Class')
+                  : AppLanguage.tr('បង្កើតថ្នាក់រៀនថ្មី', 'Create New Class'),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            centerTitle: true,
+            backgroundColor: AppColors.primary,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.white),
           ),
-        ),
-        centerTitle: true,
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.primaryLight),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.school_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ព័ត៌មានមុខវិជ្ជា និងបន្ទប់សិក្សា',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'បំពេញទិន្នន័យដើម្បីបង្កើតកាលវិភាគ និងកូដ QR សម្រាប់និស្សិត',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Subject Name Field
-              _buildLabel('ឈ្មោះមុខវិជ្ជា (Subject Name) *'),
-              TextFormField(
-                controller: _subjectNameController,
-                decoration: _buildInputDecoration(
-                  hint: 'ឧ. Mobile Application Development',
-                  icon: Icons.menu_book_rounded,
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'សូមបញ្ចូលឈ្មោះមុខវិជ្ជា';
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              // Subject Code Field
-              _buildLabel('កូដមុខវិជ្ជា (Subject Code) *'),
-              TextFormField(
-                controller: _subjectCodeController,
-                textCapitalization: TextCapitalization.characters,
-                decoration: _buildInputDecoration(
-                  hint: 'ឧ. CS301',
-                  icon: Icons.tag_rounded,
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'សូមបញ្ចូលកូដមុខវិជ្ជា (ឧ. CS301)';
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              // Room Field
-              _buildLabel('បន្ទប់រៀន (Room / Lab) *'),
-              TextFormField(
-                controller: _roomController,
-                decoration: _buildInputDecoration(
-                  hint: 'ឧ. Lab 3 (អគារ A) ឬ B204',
-                  icon: Icons.room_rounded,
-                ),
-                validator: (val) {
-                  if (val == null || val.trim().isEmpty) {
-                    return 'សូមបញ្ចូលបន្ទប់រៀន';
-                  }
-                  return null;
-                },
-              ),
-
-              const SizedBox(height: 16),
-
-              // Day of Week & Time Row
-              Row(
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    flex: 4,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  // Header Card
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.primaryLight),
+                    ),
+                    child: Row(
                       children: [
-                        _buildLabel('ថ្ងៃបង្រៀន *'),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedDay,
-                          decoration: _buildInputDecoration(
-                            hint: 'ថ្ងៃ',
-                            icon: Icons.calendar_today_rounded,
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          items: _days
-                              .map((d) => DropdownMenuItem(value: d, child: Text(d)))
-                              .toList(),
-                          onChanged: (val) {
-                            if (val != null) setState(() => _selectedDay = val);
-                          },
+                          child: const Icon(
+                            Icons.school_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                AppLanguage.tr('ព័ត៌មានមុខវិជ្ជា និងបន្ទប់សិក្សា', 'Course & Classroom Information'),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                AppLanguage.tr('បំពេញទិន្នន័យដើម្បីបង្កើតកាលវិភាគ និងកូដ QR សម្រាប់និស្សិត', 'Fill in the information to schedule and generate QR code for students'),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 5,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('ម៉ោងរៀន *'),
-                        TextFormField(
-                          controller: _timeController,
-                          decoration: _buildInputDecoration(
-                            hint: '08:00 - 10:30',
-                            icon: Icons.access_time_rounded,
-                          ),
-                          validator: (val) {
-                            if (val == null || val.trim().isEmpty) {
-                              return 'សូមបញ្ចូលម៉ោង';
-                            }
-                            return null;
-                          },
+
+                  const SizedBox(height: 20),
+
+                  // Subject Name Field
+                  _buildLabel(AppLanguage.tr('ឈ្មោះមុខវិជ្ជា (Subject Name) *', 'Subject Name *')),
+                  TextFormField(
+                    controller: _subjectNameController,
+                    decoration: _buildInputDecoration(
+                      hint: AppLanguage.tr('ឧ. Mobile Application Development', 'e.g. Mobile Application Development'),
+                      icon: Icons.menu_book_rounded,
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return AppLanguage.tr('សូមបញ្ចូលឈ្មោះមុខវិជ្ជា', 'Please enter subject name');
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Subject Code Field
+                  _buildLabel(AppLanguage.tr('កូដមុខវិជ្ជា (Subject Code) *', 'Subject Code *')),
+                  TextFormField(
+                    controller: _subjectCodeController,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: _buildInputDecoration(
+                      hint: AppLanguage.tr('ឧ. CS301', 'e.g. CS301'),
+                      icon: Icons.tag_rounded,
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return AppLanguage.tr('សូមបញ្ចូលកូដមុខវិជ្ជា (ឧ. CS301)', 'Please enter subject code (e.g. CS301)');
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Room Field
+                  _buildLabel(AppLanguage.tr('បន្ទប់រៀន (Room / Lab) *', 'Room / Lab *')),
+                  TextFormField(
+                    controller: _roomController,
+                    decoration: _buildInputDecoration(
+                      hint: AppLanguage.tr('ឧ. Lab 3 (អគារ A) ឬ B204', 'e.g. Lab 3 (Building A) or B204'),
+                      icon: Icons.room_rounded,
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return AppLanguage.tr('សូមបញ្ចូលបន្ទប់រៀន', 'Please enter room');
+                      }
+                      return null;
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Day of Week & Time Row
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 4,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel(AppLanguage.tr('ថ្ងៃបង្រៀន *', 'Day *')),
+                            DropdownButtonFormField<String>(
+                              initialValue: _selectedDay,
+                              decoration: _buildInputDecoration(
+                                hint: AppLanguage.tr('ថ្ងៃ', 'Day'),
+                                icon: Icons.calendar_today_rounded,
+                              ),
+                              items: _days
+                                  .map((d) => DropdownMenuItem(value: d, child: Text(_formatDay(d))))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) setState(() => _selectedDay = val);
+                              },
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel(AppLanguage.tr('ម៉ោងរៀន *', 'Time *')),
+                            TextFormField(
+                              controller: _timeController,
+                              decoration: _buildInputDecoration(
+                                hint: '08:00 - 10:30',
+                                icon: Icons.access_time_rounded,
+                              ),
+                              validator: (val) {
+                                if (val == null || val.trim().isEmpty) {
+                                  return AppLanguage.tr('សូមបញ្ចូលម៉ោង', 'Please enter time');
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Semester & Student Count Row
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel(AppLanguage.tr('ឆមាសសិក្សា', 'Semester')),
+                            DropdownButtonFormField<String>(
+                              initialValue: _selectedSemester,
+                              decoration: _buildInputDecoration(
+                                hint: AppLanguage.tr('ឆមាស', 'Semester'),
+                                icon: Icons.timeline_rounded,
+                              ),
+                              items: _semesters
+                                  .map((s) => DropdownMenuItem(value: s, child: Text(_formatSemester(s), style: const TextStyle(fontSize: 13))))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) setState(() => _selectedSemester = val);
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 4,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel(AppLanguage.tr('ចំនួនសិស្ស', 'Student Count')),
+                            TextFormField(
+                              controller: _studentCountController,
+                              keyboardType: TextInputType.number,
+                              decoration: _buildInputDecoration(
+                                hint: '30',
+                                icon: Icons.people_outline_rounded,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Description Field
+                  _buildLabel(AppLanguage.tr('ការពិពណ៌នាមុខវិជ្ជា (Description)', 'Course Description')),
+                  TextFormField(
+                    controller: _descriptionController,
+                    maxLines: 3,
+                    decoration: _buildInputDecoration(
+                      hint: AppLanguage.tr('សេចក្តីសង្ខេបអំពីគោលបំណង និងខ្លឹមសារមេរៀន...', 'Summary of course objectives and outline...'),
+                      icon: Icons.notes_rounded,
+                    ),
+                  ),
+
+                  const SizedBox(height: 32),
+
+                  // Submit Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: _saveClass,
+                      icon: Icon(isEdit ? Icons.save_rounded : Icons.add_circle_outline_rounded, color: Colors.white),
+                      label: Text(
+                        isEdit
+                            ? AppLanguage.tr('រក្សាទុកការផ្លាស់ប្តូរ', 'Save Changes')
+                            : AppLanguage.tr('បង្កើតថ្នាក់រៀន', 'Create Class'),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
-
-              const SizedBox(height: 16),
-
-              // Semester & Student Count Row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 5,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('ឆមាសសិក្សា'),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedSemester,
-                          decoration: _buildInputDecoration(
-                            hint: 'ឆមាស',
-                            icon: Icons.timeline_rounded,
-                          ),
-                          items: _semesters
-                              .map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 13))))
-                              .toList(),
-                          onChanged: (val) {
-                            if (val != null) setState(() => _selectedSemester = val);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 4,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('ចំនួនសិស្ស'),
-                        TextFormField(
-                          controller: _studentCountController,
-                          keyboardType: TextInputType.number,
-                          decoration: _buildInputDecoration(
-                            hint: '30',
-                            icon: Icons.people_outline_rounded,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 16),
-
-              // Description Field
-              _buildLabel('ការពិពណ៌នាមុខវិជ្ជា (Description)'),
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 3,
-                decoration: _buildInputDecoration(
-                  hint: 'សេចក្តីសង្ខេបអំពីគោលបំណង និងខ្លឹមសារមេរៀន...',
-                  icon: Icons.notes_rounded,
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Submit Button
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton.icon(
-                  onPressed: _saveClass,
-                  icon: Icon(isEdit ? Icons.save_rounded : Icons.add_circle_outline_rounded, color: Colors.white),
-                  label: Text(
-                    isEdit ? 'រក្សាទុកការផ្លាស់ប្តូរ' : 'បង្កើតថ្នាក់រៀន',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../models/attendance_model.dart';
 import '../../models/class_model.dart';
 import '../../data/mock_data.dart';
@@ -47,8 +48,8 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
           scannedAt: newStatus == 'absent' ? null : DateTime.now(),
           date: item.date,
           note: newStatus == 'present'
-              ? 'បានកែប្រែដោយគ្រូ'
-              : (newStatus == 'late' ? 'មកយឺត' : 'អវត្តមាន'),
+              ? AppLanguage.tr('បានកែប្រែដោយគ្រូ', 'Updated by lecturer')
+              : (newStatus == 'late' ? AppLanguage.tr('មកយឺត', 'Late') : AppLanguage.tr('អវត្តមាន', 'Absent')),
           createdAt: item.createdAt,
         );
       }
@@ -56,7 +57,10 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('បានកែប្រែវត្តមាន ${item.studentName} ទៅជា "${_getStatusKhmer(newStatus)}"'),
+        content: Text(AppLanguage.tr(
+          'បានកែប្រែវត្តមាន ${item.studentName} ទៅជា "${_getStatusKhmer(newStatus)}"',
+          'Updated ${item.studentName}\'s attendance to "${_getStatusKhmer(newStatus)}"',
+        )),
         duration: const Duration(seconds: 1),
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
@@ -90,7 +94,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'កែប្រែវត្តមាន: ${item.studentName}',
+                  '${AppLanguage.tr('កែប្រែវត្តមាន: ', 'Edit Attendance: ')}${item.studentName}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -98,7 +102,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   ),
                 ),
                 Text(
-                  'អត្តលេខ៖ ${item.studentCode}',
+                  '${AppLanguage.tr('អត្តលេខ៖ ', 'Student ID: ')}${item.studentCode}',
                   style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 20),
@@ -106,7 +110,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   color: Colors.transparent,
                   child: ListTile(
                     leading: const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A)),
-                    title: const Text('វត្តមាន (Present)', style: TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(AppLanguage.tr('វត្តមាន (Present)', 'Present'), style: const TextStyle(fontWeight: FontWeight.w600)),
                     trailing: item.isPresent ? const Icon(Icons.done, color: Color(0xFF16A34A)) : null,
                     onTap: () {
                       Navigator.pop(context);
@@ -118,7 +122,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   color: Colors.transparent,
                   child: ListTile(
                     leading: const Icon(Icons.access_time_filled_rounded, color: Color(0xFFD97706)),
-                    title: const Text('មកយឺត (Late)', style: TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(AppLanguage.tr('មកយឺត (Late)', 'Late'), style: const TextStyle(fontWeight: FontWeight.w600)),
                     trailing: item.isLate ? const Icon(Icons.done, color: Color(0xFFD97706)) : null,
                     onTap: () {
                       Navigator.pop(context);
@@ -130,7 +134,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   color: Colors.transparent,
                   child: ListTile(
                     leading: const Icon(Icons.cancel_rounded, color: Color(0xFFDC2626)),
-                    title: const Text('អវត្តមាន (Absent)', style: TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(AppLanguage.tr('អវត្តមាន (Absent)', 'Absent'), style: const TextStyle(fontWeight: FontWeight.w600)),
                     trailing: item.isAbsent ? const Icon(Icons.done, color: Color(0xFFDC2626)) : null,
                     onTap: () {
                       Navigator.pop(context);
@@ -149,11 +153,11 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
   String _getStatusKhmer(String status) {
     switch (status) {
       case 'present':
-        return 'វត្តមាន';
+        return AppLanguage.tr('វត្តមាន', 'Present');
       case 'late':
-        return 'យឺត';
+        return AppLanguage.tr('យឺត', 'Late');
       case 'absent':
-        return 'អវត្តមាន';
+        return AppLanguage.tr('អវត្តមាន', 'Absent');
       default:
         return status;
     }
@@ -184,8 +188,8 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
       appBar: AppBar(
         title: Text(
           widget.classModel != null
-              ? 'វត្តមាន៖ ${widget.classModel!.subjectName}'
-              : 'របាយការណ៍វត្តមានសរុប',
+              ? '${AppLanguage.tr('វត្តមាន៖ ', 'Attendance: ')}${widget.classModel!.subjectName}'
+              : AppLanguage.tr('របាយការណ៍វត្តមានសរុប', 'Overall Attendance Report'),
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -198,12 +202,12 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           IconButton(
-            tooltip: 'ទាញយករបាយការណ៍ Excel',
+            tooltip: AppLanguage.tr('ទាញយករបាយការណ៍ Excel', 'Export Excel Report'),
             icon: const Icon(Icons.file_download_outlined, color: Colors.white),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('បានទាញយកទិន្នន័យ Excel រួចរាល់'),
+                SnackBar(
+                  content: Text(AppLanguage.tr('បានទាញយកទិន្នន័យ Excel រួចរាល់', 'Downloaded Excel report successfully')),
                   backgroundColor: AppColors.success,
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -222,7 +226,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
               children: [
                 Expanded(
                   child: _buildMiniStat(
-                    label: 'វត្តមាន',
+                    label: AppLanguage.tr('វត្តមាន', 'Present'),
                     count: '$presentCount',
                     color: const Color(0xFF16A34A),
                     bg: const Color(0xFFF0FDF4),
@@ -231,7 +235,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildMiniStat(
-                    label: 'យឺត',
+                    label: AppLanguage.tr('យឺត', 'Late'),
                     count: '$lateCount',
                     color: const Color(0xFFD97706),
                     bg: const Color(0xFFFFFBEB),
@@ -240,7 +244,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _buildMiniStat(
-                    label: 'អវត្តមាន',
+                    label: AppLanguage.tr('អវត្តមាន', 'Absent'),
                     count: '$absentCount',
                     color: const Color(0xFFDC2626),
                     bg: const Color(0xFFFEF2F2),
@@ -258,7 +262,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                 TextField(
                   onChanged: (val) => setState(() => _searchQuery = val),
                   decoration: InputDecoration(
-                    hintText: 'ស្វែងរកឈ្មោះសិស្ស ឬអត្តលេខ...',
+                    hintText: AppLanguage.tr('ស្វែងរកឈ្មោះសិស្ស ឬអត្តលេខ...', 'Search student name or ID...'),
                     hintStyle: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                     prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
                     filled: true,
@@ -279,13 +283,13 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _buildFilterChip('ទាំងអស់', 'all'),
+                      _buildFilterChip(AppLanguage.tr('ទាំងអស់', 'All'), 'all'),
                       const SizedBox(width: 8),
-                      _buildFilterChip('វត្តមាន ($presentCount)', 'present'),
+                      _buildFilterChip('${AppLanguage.tr('វត្តមាន', 'Present')} ($presentCount)', 'present'),
                       const SizedBox(width: 8),
-                      _buildFilterChip('យឺត ($lateCount)', 'late'),
+                      _buildFilterChip('${AppLanguage.tr('យឺត', 'Late')} ($lateCount)', 'late'),
                       const SizedBox(width: 8),
-                      _buildFilterChip('អវត្តមាន ($absentCount)', 'absent'),
+                      _buildFilterChip('${AppLanguage.tr('អវត្តមាន', 'Absent')} ($absentCount)', 'absent'),
                     ],
                   ),
                 ),
@@ -296,10 +300,10 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
           // Student Attendance List
           Expanded(
             child: filtered.isEmpty
-                ? const Center(
+                ? Center(
                     child: Text(
-                      'មិនមានទិន្នន័យត្រូវបង្ហាញទេ',
-                      style: TextStyle(color: AppColors.textSecondary),
+                      AppLanguage.tr('មិនមានទិន្នន័យត្រូវបង្ហាញទេ', 'No data to display'),
+                      style: const TextStyle(color: AppColors.textSecondary),
                     ),
                   )
                 : ListView.separated(
@@ -362,7 +366,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        '${item.studentCode} · ${item.note ?? "វត្តមាន"}',
+                                        '${item.studentCode} · ${item.note ?? AppLanguage.tr("វត្តមាន", "Present")}',
                                         style: const TextStyle(
                                           color: AppColors.textSecondary,
                                           fontSize: 12,
@@ -382,7 +386,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Text(
-                                        item.statusKhmer,
+                                        item.statusText,
                                         style: TextStyle(
                                           color: badgeColor,
                                           fontWeight: FontWeight.bold,

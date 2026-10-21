@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
+import '../core/app_language.dart';
 import '../core/api_config.dart';
 import '../services/auth_service.dart';
 import 'student/student_home_screen.dart';
@@ -65,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'សូមស្វាគមន៍ ${result.user!.name}!',
+                  '${AppLanguage.tr('សូមស្វាគមន៍ ', 'Welcome ')}${result.user!.name}!',
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -131,20 +132,20 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (ctx) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.dns_rounded, color: AppColors.primary),
-              SizedBox(width: 8),
-              Text('កំណត់ Server IP', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Icon(Icons.dns_rounded, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(AppLanguage.tr('កំណត់ Server IP', 'Set Server IP'), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ],
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'សូមជ្រើសរើស ឬបញ្ចូល IP ម៉ាស៊ីន Server (Laravel)៖',
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              Text(
+                AppLanguage.tr('សូមជ្រើសរើស ឬបញ្ចូល IP ម៉ាស៊ីន Server (Laravel)៖', 'Select or enter Laravel Server IP:'),
+                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -179,7 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('បោះបង់'),
+              child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
@@ -190,12 +191,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 Navigator.pop(ctx);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('បានប្តូរ Server ទៅកាន់៖ ${ApiConfig.baseUrl}'),
+                    content: Text(AppLanguage.tr('បានប្តូរ Server ទៅកាន់៖ ${ApiConfig.baseUrl}', 'Server changed to: ${ApiConfig.baseUrl}')),
                     duration: const Duration(seconds: 2),
                   ),
                 );
               },
-              child: const Text('រក្សាទុក', style: TextStyle(color: Colors.white)),
+              child: Text(AppLanguage.tr('រក្សាទុក', 'Save'), style: const TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -205,30 +206,49 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isStudent = _selectedRole == UserRole.student;
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLanguage.currentLanguage,
+      builder: (context, currentLang, _) {
+        final isStudent = _selectedRole == UserRole.student;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'ចូលប្រើប្រាស់',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: AppBar(
+            title: Text(
+              AppLanguage.tr('ចូលប្រើប្រាស់', 'Sign In'),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            centerTitle: true,
+            backgroundColor: AppColors.primary,
+            elevation: 0,
+            actions: [
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                ),
+                icon: const Icon(Icons.language_rounded, size: 18, color: Colors.white),
+                label: Text(
+                  AppLanguage.isKhmer ? 'EN' : 'ខ្មែរ',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+                onPressed: () async {
+                  final newLang = AppLanguage.isKhmer ? 'en' : 'km';
+                  await AppLanguage.changeLanguage(newLang);
+                  if (mounted) setState(() {});
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.settings_ethernet_rounded, color: Colors.white),
+                tooltip: AppLanguage.tr('កំណត់ Server IP (${ApiConfig.host})', 'Set Server IP (${ApiConfig.host})'),
+                onPressed: _showServerConfigDialog,
+              ),
+            ],
           ),
-        ),
-        centerTitle: true,
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings_ethernet_rounded, color: Colors.white),
-            tooltip: 'កំណត់ Server IP (${ApiConfig.host})',
-            onPressed: _showServerConfigDialog,
-          ),
-        ],
-      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(top: 12.0),
@@ -263,9 +283,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // Label: អ៊ីមែល
-                          const Text(
-                            'អ៊ីមែល',
-                            style: TextStyle(
+                          Text(
+                            AppLanguage.tr('អ៊ីមែល', 'Email'),
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: AppColors.textPrimary,
@@ -279,7 +299,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.next,
                             decoration: InputDecoration(
-                              hintText: 'បញ្ចូលអ៊ីមែលរបស់អ្នក',
+                              hintText: AppLanguage.tr('បញ្ចូលអ៊ីមែលរបស់អ្នក', 'Enter your email'),
                               hintStyle: const TextStyle(
                                 color: AppColors.textMuted,
                                 fontSize: 14,
@@ -317,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'សូមបញ្ចូលអ៊ីមែល';
+                                return AppLanguage.tr('សូមបញ្ចូលអ៊ីមែល', 'Please enter your email');
                               }
                               return null;
                             },
@@ -325,9 +345,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 18),
           
                           // Label: ពាក្យសម្ងាត់
-                          const Text(
-                            'ពាក្យសម្ងាត់',
-                            style: TextStyle(
+                          Text(
+                            AppLanguage.tr('ពាក្យសម្ងាត់', 'Password'),
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: AppColors.textPrimary,
@@ -342,7 +362,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             textInputAction: TextInputAction.done,
                             onFieldSubmitted: (_) => _handleLogin(),
                             decoration: InputDecoration(
-                              hintText: 'បញ្ចូលពាក្យសម្ងាត់',
+                              hintText: AppLanguage.tr('បញ្ចូលពាក្យសម្ងាត់', 'Enter your password'),
                               hintStyle: const TextStyle(
                                 color: AppColors.textMuted,
                                 fontSize: 14,
@@ -394,10 +414,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'សូមបញ្ចូលពាក្យសម្ងាត់';
+                                return AppLanguage.tr('សូមបញ្ចូលពាក្យសម្ងាត់', 'Please enter your password');
                               }
                               if (value.length < 6) {
-                                return 'ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ';
+                                return AppLanguage.tr('ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ', 'Password must be at least 6 characters');
                               }
                               return null;
                             },
@@ -409,10 +429,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
           
                     // --- Text: ចូលជា ---
-                    const Center(
+                    Center(
                       child: Text(
-                        'ចូលជា',
-                        style: TextStyle(
+                        AppLanguage.tr('ចូលជា', 'Sign In As'),
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
@@ -459,7 +479,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'សិស្ស',
+                                        AppLanguage.tr('សិស្ស', 'Student'),
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: isStudent
@@ -504,7 +524,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'គ្រូ / បុគ្គលិក',
+                                        AppLanguage.tr('គ្រូ / បុគ្គលិក', 'Lecturer / Staff'),
                                         style: TextStyle(
                                           fontSize: 15,
                                           fontWeight: !isStudent
@@ -549,9 +569,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   color: Colors.white,
                                 ),
                               )
-                            : const Text(
-                                'ចូលប្រើ',
-                                style: TextStyle(
+                            : Text(
+                                AppLanguage.tr('ចូលប្រើ', 'Sign In'),
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 0.3,
@@ -567,5 +587,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  },
+);
   }
 }

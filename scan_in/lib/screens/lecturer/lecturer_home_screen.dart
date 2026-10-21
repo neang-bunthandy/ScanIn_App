@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../data/mock_data.dart';
 import '../../models/class_model.dart';
 import '../../models/user_model.dart';
@@ -104,8 +105,8 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
             Expanded(
               child: Text(
                 !currentStatus
-                    ? 'បានបើកដំណើរការ QR សម្រាប់ ${c.subjectName}'
-                    : 'បានបិទដំណើរការ QR សម្រាប់ ${c.subjectName}',
+                    ? AppLanguage.tr('បានបើកដំណើរការ QR សម្រាប់ ${c.subjectName}', 'Activated QR for ${c.subjectName}')
+                    : AppLanguage.tr('បានបិទដំណើរការ QR សម្រាប់ ${c.subjectName}', 'Deactivated QR for ${c.subjectName}'),
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
@@ -188,7 +189,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                           ),
                         ),
                         IconButton(
-                          tooltip: 'បញ្ចាំងពេញអេក្រង់ (Projector)',
+                          tooltip: AppLanguage.tr('បញ្ចាំងពេញអេក្រង់ (Projector)', 'Projector Fullscreen'),
                           icon: const Icon(Icons.fullscreen_rounded, color: AppColors.primary, size: 28),
                           onPressed: () {
                             Navigator.pop(context);
@@ -338,7 +339,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                                   const Icon(Icons.people_alt_rounded, size: 18, color: AppColors.primary),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'និស្សិតបានស្កេនចូលរៀន',
+                                    AppLanguage.tr('និស្សិតបានស្កេនចូលរៀន', 'Students scanned attendance'),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
@@ -348,7 +349,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                                 ],
                               ),
                               Text(
-                                '$scannedCount / ${c.studentCount} នាក់',
+                                '$scannedCount / ${c.studentCount} ${AppLanguage.tr('នាក់', 'students')}',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -381,14 +382,14 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                             onPressed: () {
                               setSheetState(() {});
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('បានបន្តសុពលភាព QR Code ថ្មី'),
-                                  duration: Duration(seconds: 1),
+                                SnackBar(
+                                  content: Text(AppLanguage.tr('បានបន្តសុពលភាព QR Code ថ្មី', 'Regenerated new QR Code token')),
+                                  duration: const Duration(seconds: 1),
                                 ),
                               );
                             },
                             icon: const Icon(Icons.refresh_rounded, size: 18),
-                            label: const Text('បង្កើតថ្មី'),
+                            label: Text(AppLanguage.tr('បង្កើតថ្មី', 'Regenerate')),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.primary,
                               side: const BorderSide(color: AppColors.primary),
@@ -406,7 +407,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                               _toggleQrForClass(c);
                             },
                             icon: const Icon(Icons.stop_circle_outlined, size: 18),
-                            label: const Text('បិទ QR'),
+                            label: Text(AppLanguage.tr('បិទ QR', 'Close QR')),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.error,
                               foregroundColor: Colors.white,
@@ -485,18 +486,23 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: AppColors.error),
-            SizedBox(width: 8),
-            Text('លុបថ្នាក់រៀន'),
+            const Icon(Icons.warning_amber_rounded, color: AppColors.error),
+            const SizedBox(width: 8),
+            Text(AppLanguage.tr('លុបថ្នាក់រៀន', 'Delete Class')),
           ],
         ),
-        content: Text('តើលោកគ្រូពិតជាចង់លុបថ្នាក់ "${c.subjectName}" (${c.subjectCode}) មែនទេ?'),
+        content: Text(
+          AppLanguage.tr(
+            'តើលោកគ្រូពិតជាចង់លុបថ្នាក់ "${c.subjectName}" (${c.subjectCode}) មែនទេ?',
+            'Are you sure you want to delete "${c.subjectName}" (${c.subjectCode})?',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('បោះបង់', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(AppLanguage.tr('បោះបង់', 'Cancel'), style: const TextStyle(color: AppColors.textSecondary)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -507,7 +513,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('បានលុបថ្នាក់ ${c.subjectName} រួចរាល់'),
+                  content: Text(AppLanguage.tr('បានលុបថ្នាក់ ${c.subjectName} រួចរាល់', 'Deleted class ${c.subjectName}')),
                   backgroundColor: AppColors.error,
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -517,7 +523,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
               backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
             ),
-            child: const Text('លុបចេញ'),
+            child: Text(AppLanguage.tr('លុបចេញ', 'Delete')),
           ),
         ],
       ),
@@ -538,8 +544,8 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
           scannedAt: newStatus == 'absent' ? null : DateTime.now(),
           date: item.date,
           note: newStatus == 'present'
-              ? 'កែប្រែដោយគ្រូ'
-              : (newStatus == 'late' ? 'មកយឺត' : 'អវត្តមាន'),
+              ? AppLanguage.tr('កែប្រែដោយគ្រូ', 'Updated by lecturer')
+              : (newStatus == 'late' ? AppLanguage.tr('មកយឺត', 'Late') : AppLanguage.tr('អវត្តមាន', 'Absent')),
           createdAt: item.createdAt,
         );
       }
@@ -547,7 +553,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('បានកែប្រែវត្តមាន ${item.studentName} រួចរាល់'),
+        content: Text(AppLanguage.tr('បានកែប្រែវត្តមាន ${item.studentName} រួចរាល់', 'Updated attendance for ${item.studentName}')),
         duration: const Duration(seconds: 1),
         backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
@@ -557,93 +563,98 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
-    final navBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final navBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
-    final unselectedCol = isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
+    return ValueListenableBuilder<String>(
+      valueListenable: AppLanguage.currentLanguage,
+      builder: (context, currentLang, _) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+        final navBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+        final navBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+        final unselectedCol = isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
 
-    return Scaffold(
-      backgroundColor: scaffoldBg,
-      body: SafeArea(
-        child: IndexedStack(
-          index: _currentIndex,
-          children: [
-            // Tab 1: ដើម (Dashboard)
-            LecturerDashboardScreen(
-              lecturer: lecturer,
-              classes: _classes,
-              classQrActive: _classQrActive,
-              onShowQr: _showQrBottomSheet,
-              onToggleQr: _toggleQrForClass,
-              onNavigateToCreateClass: _navigateToCreateClass,
-              onConfirmDeleteClass: _confirmDeleteClass,
-              onGoToAttendanceTab: () => setState(() => _currentIndex = 1),
+        return Scaffold(
+          backgroundColor: scaffoldBg,
+          body: SafeArea(
+            child: IndexedStack(
+              index: _currentIndex,
+              children: [
+                // Tab 1: ដើម (Dashboard)
+                LecturerDashboardScreen(
+                  lecturer: lecturer,
+                  classes: _classes,
+                  classQrActive: _classQrActive,
+                  onShowQr: _showQrBottomSheet,
+                  onToggleQr: _toggleQrForClass,
+                  onNavigateToCreateClass: _navigateToCreateClass,
+                  onConfirmDeleteClass: _confirmDeleteClass,
+                  onGoToAttendanceTab: () => setState(() => _currentIndex = 1),
+                ),
+                // Tab 2: វត្តមាន (Attendance)
+                LecturerAttendanceScreen(
+                  classes: _classes,
+                  attendanceRecords: _attendanceRecords,
+                  onUpdateAttendanceStatus: _updateAttendanceStatus,
+                ),
+                // Tab 3: ខ្ញុំ (Profile)
+                LecturerProfileScreen(
+                  lecturer: lecturer,
+                  classes: _classes,
+                  attendanceRecords: _attendanceRecords,
+                  notificationsEnabled: _notificationsEnabled,
+                  selectedLanguage: _selectedLanguage,
+                  onToggleNotifications: (val) {
+                    setState(() => _notificationsEnabled = val);
+                  },
+                  onLanguageChanged: (lang) {
+                    setState(() => _selectedLanguage = lang);
+                  },
+                ),
+              ],
             ),
-            // Tab 2: វត្តមាន (Attendance)
-            LecturerAttendanceScreen(
-              classes: _classes,
-              attendanceRecords: _attendanceRecords,
-              onUpdateAttendanceStatus: _updateAttendanceStatus,
-            ),
-            // Tab 3: ខ្ញុំ (Profile)
-            LecturerProfileScreen(
-              lecturer: lecturer,
-              classes: _classes,
-              attendanceRecords: _attendanceRecords,
-              notificationsEnabled: _notificationsEnabled,
-              selectedLanguage: _selectedLanguage,
-              onToggleNotifications: (val) {
-                setState(() => _notificationsEnabled = val);
-              },
-              onLanguageChanged: (lang) {
-                setState(() => _selectedLanguage = lang);
-              },
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: navBg,
-          border: Border(
-            top: BorderSide(color: navBorder, width: 1),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+          bottomNavigationBar: Container(
+            decoration: BoxDecoration(
+              color: navBg,
+              border: Border(
+                top: BorderSide(color: navBorder, width: 1),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: navBg,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: unselectedCol,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
-          elevation: 0,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_rounded),
-              label: 'ដើម',
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: (index) => setState(() => _currentIndex = index),
+              backgroundColor: navBg,
+              selectedItemColor: AppColors.primary,
+              unselectedItemColor: unselectedCol,
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+              elevation: 0,
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.home_rounded),
+                  label: AppLanguage.tr('ដើម', 'Dashboard'),
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.fact_check_outlined),
+                  activeIcon: const Icon(Icons.fact_check_rounded),
+                  label: AppLanguage.tr('វត្តមាន', 'Attendance'),
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.person_outline_rounded),
+                  activeIcon: const Icon(Icons.person_rounded),
+                  label: AppLanguage.tr('ខ្ញុំ', 'Profile'),
+                ),
+              ],
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.fact_check_outlined),
-              activeIcon: Icon(Icons.fact_check_rounded),
-              label: 'វត្តមាន',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline_rounded),
-              activeIcon: Icon(Icons.person_rounded),
-              label: 'ខ្ញុំ',
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

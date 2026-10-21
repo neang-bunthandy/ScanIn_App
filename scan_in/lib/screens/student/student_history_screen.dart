@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_language.dart';
 import '../../data/mock_data.dart';
 
 /// អេក្រង់ប្រវត្តិវត្តមានសិស្ស (Tab 2: ប្រវត្តិ)
@@ -23,7 +24,7 @@ class StudentHistoryScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'ប្រវត្តិវត្តមានទាំងអស់',
+            AppLanguage.tr('ប្រវត្តិវត្តមានទាំងអស់', 'All Attendance History'),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -67,7 +68,7 @@ class StudentHistoryScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            item.note ?? 'វត្តមាន',
+                            item.note ?? AppLanguage.tr('វត្តមាន', 'Attendance'),
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
@@ -76,7 +77,7 @@ class StudentHistoryScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'កាលបរិច្ឆេទ៖ ${item.date}',
+                            '${AppLanguage.tr('កាលបរិច្ឆេទ៖ ', 'Date: ')}${item.date}',
                             style: TextStyle(
                               color: subTextCol,
                               fontSize: 13,
@@ -94,7 +95,7 @@ class StudentHistoryScreen extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          item.statusKhmer,
+                          item.statusText,
                           style: TextStyle(
                             color: badgeColor,
                             fontWeight: FontWeight.bold,

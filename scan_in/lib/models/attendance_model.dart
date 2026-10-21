@@ -1,3 +1,5 @@
+import '../core/app_language.dart';
+
 class AttendanceModel {
   final int id;
   final int classId;
@@ -39,6 +41,23 @@ class AttendanceModel {
       default:
         return status;
     }
+  }
+
+  // ឈ្មោះស្ថានភាពតាមភាសាដែលបានជ្រើសរើស (Khmer / English)
+  String get statusText {
+    if (AppLanguage.isEnglish) {
+      switch (status) {
+        case 'present':
+          return 'Present';
+        case 'late':
+          return 'Late';
+        case 'absent':
+          return 'Absent';
+        default:
+          return status;
+      }
+    }
+    return statusKhmer;
   }
 
   // បំលែងពី JSON របស់ Laravel API (Snake_case)
