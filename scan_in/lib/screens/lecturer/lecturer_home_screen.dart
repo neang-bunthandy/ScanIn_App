@@ -11,8 +11,9 @@ import 'attendance_list_screen.dart';
 
 class LecturerHomeScreen extends StatefulWidget {
   final String? lecturerEmail;
+  final UserModel? user;
 
-  const LecturerHomeScreen({super.key, this.lecturerEmail});
+  const LecturerHomeScreen({super.key, this.lecturerEmail, this.user});
 
   @override
   State<LecturerHomeScreen> createState() => _LecturerHomeScreenState();
@@ -22,6 +23,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   int _currentIndex = 0;
 
   UserModel get lecturer {
+    if (widget.user != null) return widget.user!;
     if (widget.lecturerEmail != null && widget.lecturerEmail!.isNotEmpty) {
       return UserModel(
         id: MockData.currentLecturer.id,

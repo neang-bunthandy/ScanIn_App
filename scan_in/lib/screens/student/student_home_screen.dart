@@ -7,8 +7,9 @@ import '../lecturer/class_detail_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   final String? studentEmail;
+  final UserModel? user;
 
-  const StudentHomeScreen({super.key, this.studentEmail});
+  const StudentHomeScreen({super.key, this.studentEmail, this.user});
 
   @override
   State<StudentHomeScreen> createState() => _StudentHomeScreenState();
@@ -17,7 +18,23 @@ class StudentHomeScreen extends StatefulWidget {
 class _StudentHomeScreenState extends State<StudentHomeScreen> {
   int _currentIndex = 0;
 
-  UserModel get student => MockData.currentStudent;
+  UserModel get student {
+    if (widget.user != null) return widget.user!;
+    if (widget.studentEmail != null && widget.studentEmail!.isNotEmpty) {
+      return UserModel(
+        id: MockData.currentStudent.id,
+        name: MockData.currentStudent.name,
+        email: widget.studentEmail!,
+        role: MockData.currentStudent.role,
+        studentCode: MockData.currentStudent.studentCode,
+        department: MockData.currentStudent.department,
+        phone: MockData.currentStudent.phone,
+        avatarUrl: MockData.currentStudent.avatarUrl,
+        createdAt: MockData.currentStudent.createdAt,
+      );
+    }
+    return MockData.currentStudent;
+  }
   List<ClassModel> get classes => MockData.sampleClasses;
 
   void _handleScanQr() {

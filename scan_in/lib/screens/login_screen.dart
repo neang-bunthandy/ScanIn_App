@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
+import '../core/api_config.dart';
+import '../services/auth_service.dart';
 import 'student/student_home_screen.dart';
 import 'lecturer/lecturer_home_screen.dart';
 
@@ -58,30 +60,164 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final roleString = _selectedRole == UserRole.student ? 'student' : 'lecturer';
+
+    final result = await AuthService.login(
+      email: email,
+      password: password,
+      role: roleString,
+    );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    final email = _emailController.text.trim();
-
-    if (_selectedRole == UserRole.student) {
-      // ចូលទៅកាន់ StudentHomeScreen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => StudentHomeScreen(studentEmail: email),
+    if (result.success && result.user != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle_rounded, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'សូមស្វាគមន៍ ${result.user!.name}!',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 2),
         ),
       );
+
+      if (result.user!.isStudent) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => StudentHomeScreen(
+              studentEmail: result.user!.email,
+              user: result.user,
+            ),
+          ),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LecturerHomeScreen(
+              lecturerEmail: result.user!.email,
+              user: result.user,
+            ),
+          ),
+        );
+      }
     } else {
-      // ចូលទៅកាន់ LecturerHomeScreen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LecturerHomeScreen(lecturerEmail: email),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline_rounded, color: Colors.white),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  result.message,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          duration: const Duration(seconds: 4),
         ),
       );
     }
+  }
+
+  void _showServerConfigDialog() {
+    final hostController = TextEditingController(text: ApiConfig.host);
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.dns_rounded, color: AppColors.primary),
+              SizedBox(width: 8),
+              Text('កំណត់ Server IP', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'សូមជ្រើសរើស ឬបញ្ចូល IP ម៉ាស៊ីន Server (Laravel)៖',
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: hostController,
+                decoration: InputDecoration(
+                  labelText: 'Host IP',
+                  hintText: 'ឧ. 10.0.2.2 ឬ 192.168.42.165',
+                  prefixIcon: const Icon(Icons.router_rounded),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ActionChip(
+                    label: const Text('Emulator (10.0.2.2)'),
+                    onPressed: () => hostController.text = '10.0.2.2',
+                  ),
+                  ActionChip(
+                    label: const Text('Wi-Fi PC (192.168.42.165)'),
+                    onPressed: () => hostController.text = '192.168.42.165',
+                  ),
+                  ActionChip(
+                    label: const Text('Localhost (127.0.0.1)'),
+                    onPressed: () => hostController.text = '127.0.0.1',
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('បោះបង់'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              onPressed: () {
+                setState(() {
+                  ApiConfig.customHost = hostController.text.trim();
+                });
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('បានប្តូរ Server ទៅកាន់៖ ${ApiConfig.baseUrl}'),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: const Text('រក្សាទុក', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -102,6 +238,13 @@ class _LoginScreenState extends State<LoginScreen> {
         centerTitle: true,
         backgroundColor: AppColors.primary,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_ethernet_rounded, color: Colors.white),
+            tooltip: 'កំណត់ Server IP (${ApiConfig.host})',
+            onPressed: _showServerConfigDialog,
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
