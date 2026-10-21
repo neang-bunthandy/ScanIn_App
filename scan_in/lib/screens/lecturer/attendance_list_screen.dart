@@ -102,32 +102,41 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 20),
-                ListTile(
-                  leading: const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A)),
-                  title: const Text('វត្តមាន (Present)', style: TextStyle(fontWeight: FontWeight.w600)),
-                  trailing: item.isPresent ? const Icon(Icons.done, color: Color(0xFF16A34A)) : null,
-                  onTap: () {
-                    Navigator.pop(context);
-                    _changeAttendanceStatus(item, 'present');
-                  },
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A)),
+                    title: const Text('វត្តមាន (Present)', style: TextStyle(fontWeight: FontWeight.w600)),
+                    trailing: item.isPresent ? const Icon(Icons.done, color: Color(0xFF16A34A)) : null,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _changeAttendanceStatus(item, 'present');
+                    },
+                  ),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.access_time_filled_rounded, color: Color(0xFFD97706)),
-                  title: const Text('មកយឺត (Late)', style: TextStyle(fontWeight: FontWeight.w600)),
-                  trailing: item.isLate ? const Icon(Icons.done, color: Color(0xFFD97706)) : null,
-                  onTap: () {
-                    Navigator.pop(context);
-                    _changeAttendanceStatus(item, 'late');
-                  },
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: const Icon(Icons.access_time_filled_rounded, color: Color(0xFFD97706)),
+                    title: const Text('មកយឺត (Late)', style: TextStyle(fontWeight: FontWeight.w600)),
+                    trailing: item.isLate ? const Icon(Icons.done, color: Color(0xFFD97706)) : null,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _changeAttendanceStatus(item, 'late');
+                    },
+                  ),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.cancel_rounded, color: Color(0xFFDC2626)),
-                  title: const Text('អវត្តមាន (Absent)', style: TextStyle(fontWeight: FontWeight.w600)),
-                  trailing: item.isAbsent ? const Icon(Icons.done, color: Color(0xFFDC2626)) : null,
-                  onTap: () {
-                    Navigator.pop(context);
-                    _changeAttendanceStatus(item, 'absent');
-                  },
+                Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    leading: const Icon(Icons.cancel_rounded, color: Color(0xFFDC2626)),
+                    title: const Text('អវត្តមាន (Absent)', style: TextStyle(fontWeight: FontWeight.w600)),
+                    trailing: item.isAbsent ? const Icon(Icons.done, color: Color(0xFFDC2626)) : null,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _changeAttendanceStatus(item, 'absent');
+                    },
+                  ),
                 ),
               ],
             ),

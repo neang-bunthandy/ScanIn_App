@@ -22,10 +22,12 @@ class ClassService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final list = (data['data'] ?? data['classes'] ?? data) as List;
-        return list
-            .map((json) => ClassModel.fromJson(json as Map<String, dynamic>))
-            .toList();
+        final List list = (data['data'] ?? data['classes'] ?? data) as List;
+        final List<ClassModel> classes = [];
+        for (var item in list) {
+          classes.add(ClassModel.fromJson(item as Map<String, dynamic>));
+        }
+        return classes;
       }
     } catch (_) {
       // បើ Server មិនទាន់ដំណើរការ យក MockData ជំនួសដើម្បីកុំឱ្យ Error
@@ -49,10 +51,12 @@ class ClassService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final list = (data['data'] ?? data['classes'] ?? data) as List;
-        return list
-            .map((json) => ClassModel.fromJson(json as Map<String, dynamic>))
-            .toList();
+        final List list = (data['data'] ?? data['classes'] ?? data) as List;
+        final List<ClassModel> classes = [];
+        for (var item in list) {
+          classes.add(ClassModel.fromJson(item as Map<String, dynamic>));
+        }
+        return classes;
       }
     } catch (_) {}
     return MockData.sampleClasses;

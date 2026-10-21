@@ -22,10 +22,12 @@ class AttendanceService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final list = (data['data'] ?? data['attendances'] ?? data) as List;
-        return list
-            .map((json) => AttendanceModel.fromJson(json as Map<String, dynamic>))
-            .toList();
+        final List list = (data['data'] ?? data['attendances'] ?? data) as List;
+        final List<AttendanceModel> attendances = [];
+        for (var item in list) {
+          attendances.add(AttendanceModel.fromJson(item as Map<String, dynamic>));
+        }
+        return attendances;
       }
     } catch (_) {}
     return MockData.getAttendanceForClass(classId);
@@ -84,10 +86,12 @@ class AttendanceService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final list = (data['data'] ?? data['attendances'] ?? data) as List;
-        return list
-            .map((json) => AttendanceModel.fromJson(json as Map<String, dynamic>))
-            .toList();
+        final List list = (data['data'] ?? data['attendances'] ?? data) as List;
+        final List<AttendanceModel> attendances = [];
+        for (var item in list) {
+          attendances.add(AttendanceModel.fromJson(item as Map<String, dynamic>));
+        }
+        return attendances;
       }
     } catch (_) {}
     return MockData.sampleAttendances;

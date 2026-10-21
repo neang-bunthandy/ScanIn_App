@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
+import '../../core/app_theme.dart';
 import '../../data/mock_data.dart';
 import '../../models/user_model.dart';
 import '../../models/class_model.dart';
@@ -648,37 +649,43 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: AppColors.primaryLight,
-                  child: Icon(Icons.camera_alt_rounded, color: AppColors.primary),
+              Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: AppColors.primaryLight,
+                    child: Icon(Icons.camera_alt_rounded, color: AppColors.primary),
+                  ),
+                  title: const Text('ថតរូបផ្ទាល់ (Camera)'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('មុខងារ Camera នឹងដំណើរការជាមួយកាមេរ៉ាពិត'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
                 ),
-                title: const Text('ថតរូបផ្ទាល់ (Camera)'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('មុខងារ Camera នឹងដំណើរការជាមួយកាមេរ៉ាពិត'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
               ),
-              ListTile(
-                leading: const CircleAvatar(
-                  backgroundColor: AppColors.primaryLight,
-                  child: Icon(Icons.photo_library_rounded, color: AppColors.primary),
+              Material(
+                color: Colors.transparent,
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: AppColors.primaryLight,
+                    child: Icon(Icons.photo_library_rounded, color: AppColors.primary),
+                  ),
+                  title: const Text('ជ្រើសរើសពីរូបភាព (Gallery)'),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('មុខងារ Gallery នឹងដំណើរការជាមួយរូបថត'),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
                 ),
-                title: const Text('ជ្រើសរើសពីរូបភាព (Gallery)'),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('មុខងារ Gallery នឹងដំណើរការជាមួយរូបថត'),
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                },
               ),
             ],
           ),
@@ -849,324 +856,395 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   }
 
   Widget _buildProfileTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderCol = isDark ? const Color(0xFF334155) : AppColors.border;
+    final textCol = isDark ? Colors.white : AppColors.textPrimary;
+    final dividerCol = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+    final avatarBg = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Column(
         children: [
           // --- ១. Header Card ព័ត៌មានសិស្ស ---
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
+          Card(
+            color: cardBg,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.border),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              side: BorderSide(color: borderCol),
             ),
-            child: Column(
-              children: [
-                // Avatar with Camera Badge
-                Stack(
-                  alignment: Alignment.bottomRight,
-                  children: [
-                    CircleAvatar(
-                      radius: 44,
-                      backgroundColor: AppColors.primaryLight,
-                      child: const Icon(Icons.person, size: 52, color: AppColors.primary),
-                    ),
-                    InkWell(
-                      onTap: _showChangeAvatarSheet,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.4),
-                              blurRadius: 6,
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.camera_alt_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  student.name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'អត្តលេខ៖ ${student.studentCode ?? 'STU001'}',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight.withValues(alpha: 0.4),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  // Avatar with Camera Badge
+                  Stack(
+                    alignment: Alignment.bottomRight,
                     children: [
-                      const Icon(Icons.school_rounded, size: 16, color: AppColors.primary),
-                      const SizedBox(width: 6),
-                      Text(
-                        student.department ?? 'ព័ត៌មានវិទ្យា (IT)',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                      const CircleAvatar(
+                        radius: 44,
+                        backgroundColor: AppColors.primaryLight,
+                        child: Icon(Icons.person, size: 52, color: AppColors.primary),
+                      ),
+                      InkWell(
+                        onTap: _showChangeAvatarSheet,
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            size: 14,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 14),
+                  Text(
+                    student.name,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: textCol,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'អត្តលេខ៖ ${student.studentCode ?? 'STU001'}',
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF0F172A) : AppColors.primaryLight.withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.school_rounded, size: 16, color: AppColors.primary),
+                        const SizedBox(width: 6),
+                        Text(
+                          student.department ?? 'ព័ត៌មានវិទ្យា (IT)',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
           const SizedBox(height: 16),
 
           // --- ២. ស្ថិតិវត្តមានសង្ខេប (Attendance Quick Stats) ---
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
+          Card(
+            color: cardBg,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+              side: BorderSide(color: borderCol),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.analytics_outlined, size: 18, color: AppColors.primary),
-                    SizedBox(width: 8),
-                    Text(
-                      'ស្ថិតិវត្តមានសរុប (ឆមាសនេះ)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                    ),
-                    Spacer(),
-                    Text(
-                      'អត្រាវត្តមាន ៩០%',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.success,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.analytics_outlined, size: 18, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        'ស្ថិតិវត្តមានសរុប (ឆមាសនេះ)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildMiniStatBox(
-                        title: 'វត្តមាន',
-                        count: '18',
-                        color: AppColors.success,
-                        icon: Icons.check_circle_rounded,
+                      const Spacer(),
+                      const Text(
+                        'អត្រាវត្តមាន ៩០%',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.success,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _buildMiniStatBox(
-                        title: 'យឺត',
-                        count: '2',
-                        color: AppColors.warning,
-                        icon: Icons.access_time_filled_rounded,
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildMiniStatBox(
+                          title: 'វត្តមាន',
+                          count: '18',
+                          color: AppColors.success,
+                          icon: Icons.check_circle_rounded,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _buildMiniStatBox(
-                        title: 'អវត្តមាន',
-                        count: '1',
-                        color: AppColors.error,
-                        icon: Icons.cancel_rounded,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildMiniStatBox(
+                          title: 'យឺត',
+                          count: '2',
+                          color: AppColors.warning,
+                          icon: Icons.access_time_filled_rounded,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildMiniStatBox(
+                          title: 'អវត្តមាន',
+                          count: '1',
+                          color: AppColors.error,
+                          icon: Icons.cancel_rounded,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
 
           const SizedBox(height: 16),
 
           // --- ៣. ព័ត៌មានការសិក្សា & ទំនាក់ទំនង (Academic Details) ---
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
+          Card(
+            color: cardBg,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+              side: BorderSide(color: borderCol),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'ព័ត៌មានសិក្សា និងទំនាក់ទំនង',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                const SizedBox(height: 12),
-                _buildProfileDetailRow(
-                  icon: Icons.email_outlined,
-                  title: 'អ៊ីមែល',
-                  value: student.email,
-                ),
-                const Divider(height: 18, color: Color(0xFFF1F5F9)),
-                _buildProfileDetailRow(
-                  icon: Icons.phone_outlined,
-                  title: 'លេខទូរស័ព្ទ',
-                  value: student.phone ?? '012 345 678',
-                ),
-                const Divider(height: 18, color: Color(0xFFF1F5F9)),
-                _buildProfileDetailRow(
-                  icon: Icons.domain_rounded,
-                  title: 'មហាវិទ្យាល័យ / ដេប៉ាតឺម៉ង់',
-                  value: student.department ?? 'វិទ្យាសាស្ត្រកុំព្យូទ័រ',
-                ),
-                const Divider(height: 18, color: Color(0xFFF1F5F9)),
-                _buildProfileDetailRow(
-                  icon: Icons.calendar_today_outlined,
-                  title: 'ឆ្នាំសិក្សា',
-                  value: '2026-2027 (ឆមាសទី ១)',
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ព័ត៌មានសិក្សា និងទំនាក់ទំនង',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildProfileDetailRow(
+                    icon: Icons.email_outlined,
+                    title: 'អ៊ីមែល',
+                    value: student.email,
+                    isDark: isDark,
+                  ),
+                  Divider(height: 18, color: dividerCol),
+                  _buildProfileDetailRow(
+                    icon: Icons.phone_outlined,
+                    title: 'លេខទូរស័ព្ទ',
+                    value: student.phone ?? '012 345 678',
+                    isDark: isDark,
+                  ),
+                  Divider(height: 18, color: dividerCol),
+                  _buildProfileDetailRow(
+                    icon: Icons.domain_rounded,
+                    title: 'មហាវិទ្យាល័យ / ដេប៉ាតឺម៉ង់',
+                    value: student.department ?? 'វិទ្យាសាស្ត្រកុំព្យូទ័រ',
+                    isDark: isDark,
+                  ),
+                  Divider(height: 18, color: dividerCol),
+                  _buildProfileDetailRow(
+                    icon: Icons.calendar_today_outlined,
+                    title: 'ឆ្នាំសិក្សា',
+                    value: '2026-2027 (ឆមាសទី ១)',
+                    isDark: isDark,
+                  ),
+                ],
+              ),
             ),
           ),
 
           const SizedBox(height: 16),
 
-          // --- ៤. ការកំណត់ និងសុវត្ថិភាព (Settings) ---
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
+          // --- ៤. ការកំណត់ និងសុវត្ថិភាព (Settings & Security) ---
+          Card(
+            color: cardBg,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+              side: BorderSide(color: borderCol),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'ការកំណត់ និងសុវត្ថិភាព',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                const SizedBox(height: 8),
-                // Notifications switch
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  secondary: const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Color(0xFFF1F5F9),
-                    child: Icon(Icons.notifications_active_outlined, size: 20, color: AppColors.primary),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ការកំណត់ និងសុវត្ថិភាព',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
-                  title: const Text('ការជូនដំណឹងម៉ោងរៀន', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                  subtitle: const Text('រំលឹកមុនពេលចូលរៀន ១៥ នាទី', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  value: _notificationsEnabled,
-                  activeThumbColor: AppColors.primary,
-                  onChanged: (val) {
-                    setState(() => _notificationsEnabled = val);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(val ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
-                        duration: const Duration(seconds: 1),
+                  const SizedBox(height: 8),
+
+                  // មុខងារ Dark Mode
+                  Material(
+                    color: Colors.transparent,
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      secondary: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: avatarBg,
+                        child: Icon(
+                          isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                          size: 20,
+                          color: AppColors.primary,
+                        ),
                       ),
-                    );
-                  },
-                ),
-                const Divider(height: 12, color: Color(0xFFF1F5F9)),
-                // Change Password
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Color(0xFFF1F5F9),
-                    child: Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.primary),
+                      title: Text(
+                        'មុខងារងងឹត (Dark Mode)',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
+                      ),
+                      subtitle: Text(
+                        isDark ? 'កំពុងបើកប្រើពណ៌ងងឹត' : 'កំពុងប្រើពណ៌ធម្មតា (Light)',
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                      value: isDark,
+                      activeThumbColor: AppColors.primary,
+                      onChanged: (val) {
+                        AppTheme.toggleTheme(val);
+                        setState(() {});
+                      },
+                    ),
                   ),
-                  title: const Text('ប្តូរពាក្យសម្ងាត់', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                  trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                  onTap: _showChangePasswordDialog,
-                ),
-                const Divider(height: 12, color: Color(0xFFF1F5F9)),
-                // Language
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Color(0xFFF1F5F9),
-                    child: Icon(Icons.language_rounded, size: 20, color: AppColors.primary),
+                  Divider(height: 12, color: dividerCol),
+
+                  // Notifications switch
+                  Material(
+                    color: Colors.transparent,
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      secondary: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: avatarBg,
+                        child: const Icon(Icons.notifications_active_outlined, size: 20, color: AppColors.primary),
+                      ),
+                      title: Text(
+                        'ការជូនដំណឹងម៉ោងរៀន',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
+                      ),
+                      subtitle: const Text('រំលឹកមុនពេលចូលរៀន ១៥ នាទី', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                      value: _notificationsEnabled,
+                      activeThumbColor: AppColors.primary,
+                      onChanged: (val) {
+                        setState(() => _notificationsEnabled = val);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(val ? 'បានបើកការជូនដំណឹង' : 'បានបិទការជូនដំណឹង'),
+                            duration: const Duration(seconds: 1),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                  title: const Text('ភាសា (Language)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                  trailing: Text(
-                    _selectedLanguage,
-                    style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
+                  Divider(height: 12, color: dividerCol),
+
+                  // Change Password
+                  Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: avatarBg,
+                        child: const Icon(Icons.lock_outline_rounded, size: 20, color: AppColors.primary),
+                      ),
+                      title: Text(
+                        'ប្តូរពាក្យសម្ងាត់',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
+                      ),
+                      trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                      onTap: _showChangePasswordDialog,
+                    ),
                   ),
-                  onTap: _showLanguageDialog,
-                ),
-              ],
+                  Divider(height: 12, color: dividerCol),
+
+                  // Language
+                  Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: avatarBg,
+                        child: const Icon(Icons.language_rounded, size: 20, color: AppColors.primary),
+                      ),
+                      title: Text(
+                        'ភាសា (Language)',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
+                      ),
+                      trailing: Text(
+                        _selectedLanguage,
+                        style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600),
+                      ),
+                      onTap: _showLanguageDialog,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
           const SizedBox(height: 16),
 
           // --- ៥. ជំនួយ និងព័ត៌មានកម្មវិធី (Support & About) ---
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
+          Card(
+            color: cardBg,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
+              side: BorderSide(color: borderCol),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'ជំនួយ និងព័ត៌មានកម្មវិធី',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                const SizedBox(height: 8),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const CircleAvatar(
-                    radius: 18,
-                    backgroundColor: Color(0xFFF1F5F9),
-                    child: Icon(Icons.info_outline_rounded, size: 20, color: AppColors.primary),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ជំនួយ និងព័ត៌មានកម្មវិធី',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
-                  title: const Text('អំពីកម្មវិធី ScanIn', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                  trailing: const Text(
-                    'v1.0.0',
-                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  const SizedBox(height: 8),
+                  Material(
+                    color: Colors.transparent,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: CircleAvatar(
+                        radius: 18,
+                        backgroundColor: avatarBg,
+                        child: const Icon(Icons.info_outline_rounded, size: 20, color: AppColors.primary),
+                      ),
+                      title: Text(
+                        'អំពីកម្មវិធី ScanIn',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textCol),
+                      ),
+                      trailing: const Text(
+                        'v1.0.0',
+                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      ),
+                      onTap: _showAboutDialog,
+                    ),
                   ),
-                  onTap: _showAboutDialog,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
@@ -1273,6 +1351,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     required IconData icon,
     required String title,
     required String value,
+    bool isDark = false,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1293,8 +1372,8 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: isDark ? Colors.white : AppColors.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
