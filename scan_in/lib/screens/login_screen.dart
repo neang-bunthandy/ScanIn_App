@@ -25,22 +25,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    _updateSampleText();
-  }
-
-  void _updateSampleText() {
-    if (_selectedRole == UserRole.student) {
-      _emailController.text = 'student@scanin.app';
-      _passwordController.text = '12345678';
-    } else {
-      _emailController.text = 'dara@scanin.app';
-      _passwordController.text = '223232323'; // តាមទិន្នន័យក្នុង screenshot
-    }
-  }
-
-  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -51,7 +35,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_selectedRole == role) return;
     setState(() {
       _selectedRole = role;
-      _updateSampleText();
     });
   }
 
