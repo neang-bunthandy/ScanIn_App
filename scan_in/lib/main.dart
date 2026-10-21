@@ -7,6 +7,7 @@ import 'screens/student/student_home_screen.dart';
 import 'screens/lecturer/lecturer_home_screen.dart';
 import 'core/app_theme.dart';
 import 'core/app_language.dart';
+import 'core/app_routes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,7 @@ class ScanInApp extends StatelessWidget {
               darkTheme: AppTheme.darkTheme,
               themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
               home: const AuthWrapper(),
+              routes: AppRoutes.routes,
             );
           },
         );

@@ -238,14 +238,25 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
   }
 
   void _showAboutDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+    final borderCol = isDark ? const Color(0xFF334155) : AppColors.border;
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            const Icon(Icons.info_outline_rounded, color: AppColors.primary),
-            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 22),
+            ),
+            const SizedBox(width: 10),
             Text(
               AppLanguage.tr('អំពីកម្មវិធី ScanIn', 'About ScanIn App'),
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -256,13 +267,37 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('ScanIn Attendance App', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 4),
-            Text(
-              AppLanguage.tr('កំណែទម្រង់៖ v1.0.0 (Lecturer Portal)', 'Version: v1.0.0 (Lecturer Portal)'),
-              style: const TextStyle(color: AppColors.textSecondary),
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'ScanIn Attendance App',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        AppLanguage.tr('កំណែទម្រង់៖ v1.0.0 (Lecturer Portal)', 'Version: v1.0.0 (Lecturer Portal)'),
+                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Text(
               AppLanguage.tr(
                 'កម្មវិធីស្កេនវត្តមានទំនើបសម្រាប់គ្រូបង្រៀន និងសាស្ត្រាចារ្យ។ គាំទ្រការបង្កើត Dynamic QR Code, គ្រប់គ្រងថ្នាក់រៀន និងរបាយការណ៍វត្តមានសិស្ស។',
@@ -270,10 +305,53 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
               ),
               style: const TextStyle(fontSize: 13, height: 1.4),
             ),
-            const SizedBox(height: 12),
-            Text(
-              AppLanguage.tr('ជំនួយបច្ចេកទេស៖ support@scanin.app', 'Technical Support: support@scanin.app'),
-              style: const TextStyle(fontSize: 12, color: AppColors.primary),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: borderCol),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.code_rounded, size: 18, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppLanguage.tr('អ្នកអភិវឌ្ឍន៍៖', 'Developer:'),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Jitsu Dev',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 16),
+                  Row(
+                    children: [
+                      const Icon(Icons.email_outlined, size: 18, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppLanguage.tr('ទំនាក់ទំនង៖', 'Contact:'),
+                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(width: 6),
+                      const Expanded(
+                        child: Text(
+                          'jitsudev.support@gmail.com',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
