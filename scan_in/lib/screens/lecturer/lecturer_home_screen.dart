@@ -654,8 +654,14 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final navBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final navBorder = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final unselectedCol = isDark ? const Color(0xFF64748B) : const Color(0xFF94A3B8);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: scaffoldBg,
       body: SafeArea(
         child: IndexedStack(
           index: _currentIndex,
@@ -668,13 +674,13 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: navBg,
           border: Border(
-            top: BorderSide(color: Colors.grey.shade200, width: 1),
+            top: BorderSide(color: navBorder, width: 1),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.03),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -683,9 +689,9 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: Colors.white,
+          backgroundColor: navBg,
           selectedItemColor: AppColors.primary,
-          unselectedItemColor: const Color(0xFF94A3B8),
+          unselectedItemColor: unselectedCol,
           selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
           elevation: 0,
