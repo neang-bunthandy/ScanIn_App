@@ -8,6 +8,8 @@ import 'class_detail_screen.dart';
 import 'show_qr_screen.dart';
 import 'create_class_screen.dart';
 import 'attendance_list_screen.dart';
+import '../../services/auth_service.dart';
+import '../login_screen.dart';
 
 class LecturerHomeScreen extends StatefulWidget {
   final String? lecturerEmail;
@@ -1663,9 +1665,15 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                         child: const Text('បោះបង់'),
                       ),
                       ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context); // Close dialog
-                          Navigator.pop(context); // Back to Login
+                        onPressed: () async {
+                          final navigator = Navigator.of(context);
+                          navigator.pop(); // Close dialog
+                          await AuthService.logout();
+                          if (!mounted) return;
+                          navigator.pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            (route) => false,
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.error,

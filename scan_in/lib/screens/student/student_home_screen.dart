@@ -4,6 +4,8 @@ import '../../data/mock_data.dart';
 import '../../models/user_model.dart';
 import '../../models/class_model.dart';
 import '../lecturer/class_detail_screen.dart';
+import '../../services/auth_service.dart';
+import '../login_screen.dart';
 
 class StudentHomeScreen extends StatefulWidget {
   final String? studentEmail;
@@ -627,7 +629,39 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               width: 180,
               height: 44,
               child: OutlinedButton.icon(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      title: const Text('ចាកចេញពីគណនី'),
+                      content: const Text('តើអ្នកពិតជាចង់ចាកចេញពីកម្មវិធីមែនទេ?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('បោះបង់'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final navigator = Navigator.of(context);
+                            Navigator.pop(dialogContext); // Close dialog
+                            await AuthService.logout();
+                            if (!mounted) return;
+                            navigator.pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (context) => const LoginScreen()),
+                              (route) => false,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.error,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('ចាកចេញ'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.logout_rounded, color: AppColors.error),
                 label: const Text(
                   'ចាកចេញ',
