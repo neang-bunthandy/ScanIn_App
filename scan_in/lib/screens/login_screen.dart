@@ -17,7 +17,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  UserRole _selectedRole = UserRole.teacher; // តាមរូបភាព screenshot គឺ គ្រូ / បុគ្គលិក
+  UserRole _selectedRole = UserRole.student; // Default ជ្រើសរើស សិស្ស ជាមុន
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
