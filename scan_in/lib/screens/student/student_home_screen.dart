@@ -866,6 +866,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // --- ១. Header Card ព័ត៌មានសិស្ស ---
           Card(
@@ -875,10 +876,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               borderRadius: BorderRadius.circular(20),
               side: BorderSide(color: borderCol),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
+            child: SizedBox(
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  children: [
                   // Avatar with Camera Badge
                   Stack(
                     alignment: Alignment.bottomRight,
@@ -951,6 +954,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
               ),
             ),
           ),
+        ),
 
           const SizedBox(height: 16),
 
