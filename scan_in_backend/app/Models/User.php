@@ -52,4 +52,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * បញ្ជីថ្នាក់រៀនដែលគ្រូបង្រៀនបានបង្កើត
+     */
+    public function classes()
+    {
+        return $this->hasMany(ClassModel::class, 'user_id');
+    }
 }
