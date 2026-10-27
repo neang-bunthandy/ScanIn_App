@@ -57,4 +57,12 @@ class ClassModel extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    /**
+     * បញ្ជីវត្តមានក្នុងថ្នាក់រៀននេះ
+     */
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'class_id');
+    }
 }

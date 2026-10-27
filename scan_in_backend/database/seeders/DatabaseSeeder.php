@@ -64,7 +64,7 @@ class DatabaseSeeder extends Seeder
         );
 
         // 2. គណនីនិស្សិត (Student)
-        User::updateOrCreate(
+        $student = User::updateOrCreate(
             ['email' => 'student@scanin.app'],
             [
                 'name' => 'សុខា ម៉េង',
@@ -75,6 +75,32 @@ class DatabaseSeeder extends Seeder
                 'phone' => '098 765 432',
             ]
         );
+
+        // បង្កើតទិន្នន័យវត្តមានគំរូសម្រាប់សិស្ស (Sample Attendances)
+        $class1 = \App\Models\ClassModel::where('subject_code', 'CS101')->first();
+        $class2 = \App\Models\ClassModel::where('subject_code', 'CS202')->first();
+
+        if ($class1) {
+            \App\Models\Attendance::updateOrCreate(
+                ['class_id' => $class1->id, 'user_id' => $student->id, 'date' => '2026-10-20'],
+                [
+                    'status' => 'present',
+                    'scanned_at' => '2026-10-20 08:05:00',
+                    'note' => 'ស្កេនទាន់ពេល',
+                ]
+            );
+        }
+
+        if ($class2) {
+            \App\Models\Attendance::updateOrCreate(
+                ['class_id' => $class2->id, 'user_id' => $student->id, 'date' => '2026-10-22'],
+                [
+                    'status' => 'late',
+                    'scanned_at' => '2026-10-22 13:45:00',
+                    'note' => 'យឺត ១៥ នាទី',
+                ]
+            );
+        }
 
         // 3. គណនី Admin
         User::updateOrCreate(

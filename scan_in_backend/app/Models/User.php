@@ -60,4 +60,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(ClassModel::class, 'user_id');
     }
+
+    /**
+     * បញ្ជីវត្តមានរបស់សិស្ស
+     */
+    public function attendances()
+    {
+        return $this->hasMany(Attendance::class, 'user_id');
+    }
 }
