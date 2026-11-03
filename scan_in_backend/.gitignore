@@ -6,6 +6,7 @@
 /storage/*.key
 /storage/pail
 /vendor
+/vendor_corrupted
 .env
 .env.backup
 .env.production
