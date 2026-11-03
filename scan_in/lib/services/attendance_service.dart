@@ -97,4 +97,39 @@ class AttendanceService {
     } catch (_) {}
     return MockData.sampleAttendances;
   }
+
+  /// គ្រូកែប្រែស្ថានភាពវត្តមានសិស្ស (Lecturer updates student attendance status)
+  static Future<bool> updateAttendanceStatus(
+    int id,
+    String status, {
+    String? note,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final body = <String, dynamic>{
+        'status': status,
+      };
+      if (note != null) body['note'] = note;
+
+      final response = await http
+          .put(
+            Uri.parse(ApiConfig.updateAttendanceUrl(id)),
+            headers: headers,
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 5));
+
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
 }

@@ -140,4 +140,59 @@ class AttendanceController extends Controller
             'data' => $attendances,
         ], 200);
     }
+
+    /**
+     * គ្រូកែប្រែស្ថានភាពវត្តមានសិស្ស (Update Attendance Status)
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:present,late,absent',
+            'note' => 'nullable|string',
+        ]);
+
+        $attendance = Attendance::find($id);
+
+        if (!$attendance) {
+            return response()->json([
+                'status' => false,
+                'message' => 'រកមិនឃើញទិន្នន័យវត្តមាននេះឡើយ!',
+            ], 404);
+        }
+
+        $attendance->status = $request->status;
+        if ($request->has('note')) {
+            $attendance->note = $request->note;
+        } else {
+            if ($request->status === 'present') {
+                $attendance->note = 'កែប្រែដោយគ្រូ';
+            } elseif ($request->status === 'late') {
+                $attendance->note = 'មកយឺត';
+            } else {
+                $attendance->note = 'អវត្តមាន';
+            }
+        }
+
+        if ($request->status === 'absent') {
+            $attendance->scanned_at = null;
+        } elseif (!$attendance->scanned_at) {
+            $attendance->scanned_at = Carbon::now();
+        }
+
+        $attendance->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'បានកែប្រែវត្តមានដោយជោគជ័យ',
+            'data' => [
+                'id' => $attendance->id,
+                'class_id' => $attendance->class_id,
+                'student_id' => $attendance->user_id,
+                'status' => $attendance->status,
+                'date' => (string)$attendance->date,
+                'scanned_at' => $attendance->scanned_at?->toIso8601String(),
+                'note' => $attendance->note,
+            ],
+        ], 200);
+    }
 }

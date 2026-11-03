@@ -51,6 +51,7 @@ class ApiConfig {
   // Attendance Endpoints
   static String get attendancesUrl => '$baseUrl/attendances';
   static String classAttendancesUrl(int classId) => '$baseUrl/classes/$classId/attendances';
+  static String updateAttendanceUrl(int id) => '$baseUrl/attendances/$id';
   static String get scanAttendanceUrl => '$baseUrl/attendances/scan';
   static String get studentAttendancesUrl => '$baseUrl/student/attendances';
 }

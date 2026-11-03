@@ -581,6 +581,12 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   }
 
   void _updateAttendanceStatus(AttendanceModel item, String newStatus) {
+    final note = newStatus == 'present'
+        ? AppLanguage.tr('កែប្រែដោយគ្រូ', 'Updated by lecturer')
+        : (newStatus == 'late'
+            ? AppLanguage.tr('មកយឺត', 'Late')
+            : AppLanguage.tr('អវត្តមាន', 'Absent'));
+
     setState(() {
       final index = _attendanceRecords.indexWhere((a) => a.id == item.id);
       if (index != -1) {
@@ -593,13 +599,14 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
           status: newStatus,
           scannedAt: newStatus == 'absent' ? null : DateTime.now(),
           date: item.date,
-          note: newStatus == 'present'
-              ? AppLanguage.tr('កែប្រែដោយគ្រូ', 'Updated by lecturer')
-              : (newStatus == 'late' ? AppLanguage.tr('មកយឺត', 'Late') : AppLanguage.tr('អវត្តមាន', 'Absent')),
+          note: note,
           createdAt: item.createdAt,
         );
       }
     });
+
+    // Save ការកែប្រែចូល Database (MySQL)
+    AttendanceService.updateAttendanceStatus(item.id, newStatus, note: note);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

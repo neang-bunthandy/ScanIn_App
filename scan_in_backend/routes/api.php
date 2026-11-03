@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/classes', [ClassController::class, 'index']);
 Route::get('/classes/{id}/attendances', [AttendanceController::class, 'classAttendances']);
+Route::put('/attendances/{id}', [AttendanceController::class, 'update']);
 
 /*
 |--------------------------------------------------------------------------

@@ -65,9 +65,14 @@
 ---
 
 ## ៤. ស្ថានភាពបច្ចុប្បន្ន និងជំហានបន្ទាប់ (Status & Next Steps)
-* ✅ **រួចរាល់៖** Login (Auth Sanctum), Toggle QR, Student History (UI to DB), Class Attendance List (UI to DB)។
+* ✅ **រួចរាល់៖** 
+  - Login (Auth Sanctum)
+  - Toggle QR Code
+  - Student History (UI to DB)
+  - Class Attendance List (UI to DB)
+  - គ្រូកែប្រែ Status វត្តមានសិស្សដោយផ្ទាល់ដៃ (`PUT /api/attendances/{id}`) ចូល DB
 * 🎯 **ជំហានបន្ទាប់ (To-Do Next)៖**
-  1. គ្រូកែប្រែ Status វត្តមានសិស្សដោយផ្ទាល់ដៃ (`PUT /api/attendances/{id}`) ចូល DB។
-  2. គណនាស្ថិតិវត្តមានជាក់ស្តែងលើ Dashboard សិស្ស (មក, យឺត, អវត្តមាន)។
-  3. ប្តូរពាក្យសម្ងាត់ (Change Password) និងកែប្រែព័ត៌មាន Profile ចូល DB។
+  1. គណនាស្ថិតិវត្តមានជាក់ស្តែងលើ Dashboard សិស្ស (មក, យឺត, អវត្តមាន)។
+  2. ប្តូរពាក្យសម្ងាត់ (Change Password) និងកែប្រែព័ត៌មាន Profile ចូល DB។
+  3. Edit & Delete ថ្នាក់រៀនទៅកាន់ DB។
 
