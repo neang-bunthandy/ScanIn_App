@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
-import '../../data/mock_data.dart';
 import '../../models/user_model.dart';
 import '../../models/class_model.dart';
+import '../../models/attendance_model.dart';
 import '../lecturer/class_detail_screen.dart';
 
 /// អេក្រង់ទំព័រដើមសិស្ស (Tab 1: ដើម)
@@ -11,13 +11,17 @@ import '../lecturer/class_detail_screen.dart';
 class StudentDashboardScreen extends StatelessWidget {
   final UserModel student;
   final List<ClassModel> classes;
+  final List<AttendanceModel> attendances;
   final VoidCallback onScanQr;
+  final Future<void> Function()? onRefresh;
 
   const StudentDashboardScreen({
     super.key,
     required this.student,
     required this.classes,
+    this.attendances = const [],
     required this.onScanQr,
+    this.onRefresh,
   });
 
   @override
@@ -29,7 +33,13 @@ class StudentDashboardScreen extends StatelessWidget {
     final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
     final avatarBg = isDark ? const Color(0xFF334155) : AppColors.primaryLight;
 
-    return SingleChildScrollView(
+    // គណនាស្ថិតិវត្តមានជាក់ស្តែងពី Database (MySQL)
+    final presentCount = attendances.where((a) => a.isPresent).length;
+    final lateCount = attendances.where((a) => a.isLate).length;
+    final absentCount = attendances.where((a) => a.isAbsent).length;
+
+    final content = SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,7 +142,7 @@ class StudentDashboardScreen extends StatelessWidget {
               // មក (Present)
               Expanded(
                 child: _buildStatCard(
-                  count: MockData.presentCount.toString(),
+                  count: '$presentCount',
                   label: AppLanguage.tr('មក', 'Present'),
                   bgColor: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.15) : const Color(0xFFF0FDF4),
                   borderColor: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.35) : const Color(0xFFBBF7D0),
@@ -144,7 +154,7 @@ class StudentDashboardScreen extends StatelessWidget {
               // យឺត (Late)
               Expanded(
                 child: _buildStatCard(
-                  count: MockData.lateCount.toString(),
+                  count: '$lateCount',
                   label: AppLanguage.tr('យឺត', 'Late'),
                   bgColor: isDark ? const Color(0xFFD97706).withValues(alpha: 0.15) : const Color(0xFFFFFBEB),
                   borderColor: isDark ? const Color(0xFFD97706).withValues(alpha: 0.35) : const Color(0xFFFDE68A),
@@ -156,7 +166,7 @@ class StudentDashboardScreen extends StatelessWidget {
               // អវត្តមាន (Absent)
               Expanded(
                 child: _buildStatCard(
-                  count: MockData.absentCount.toString(),
+                  count: '$absentCount',
                   label: AppLanguage.tr('អវត្តមាន', 'Absent'),
                   bgColor: isDark ? const Color(0xFFDC2626).withValues(alpha: 0.15) : const Color(0xFFFEF2F2),
                   borderColor: isDark ? const Color(0xFFDC2626).withValues(alpha: 0.35) : const Color(0xFFFECACA),
@@ -200,6 +210,15 @@ class StudentDashboardScreen extends StatelessWidget {
         ],
       ),
     );
+
+    if (onRefresh != null) {
+      return RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: onRefresh!,
+        child: content,
+      );
+    }
+    return content;
   }
 
   // Card សង្ខេបវត្តមាន

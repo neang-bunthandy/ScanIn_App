@@ -95,6 +95,36 @@ class AuthController extends Controller
     }
 
     /**
+     * Change User Password API
+     */
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6',
+        ]);
+
+        $user = $request->user();
+
+        // ផ្ទៀងផ្ទាត់ Password ចាស់
+        if (!Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ពាក្យសម្ងាត់ចាស់មិនត្រឹមត្រូវឡើយ។',
+            ], 422);
+        }
+
+        // Update ពាក្យសម្ងាត់ថ្មី
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'បានប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!',
+        ], 200);
+    }
+
+    /**
      * User Logout API
      */
     public function logout(Request $request)

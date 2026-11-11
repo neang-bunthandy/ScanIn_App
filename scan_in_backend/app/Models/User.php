@@ -24,6 +24,8 @@ class User extends Authenticatable
         'password',
         'role',
         'student_code',
+        'gender',
+        'date_of_birth',
         'staff_id',
         'department',
         'phone',

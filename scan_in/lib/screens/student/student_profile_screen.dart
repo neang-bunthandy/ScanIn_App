@@ -167,16 +167,46 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-            onPressed: () {
+            onPressed: () async {
               if (formKey.currentState!.validate()) {
-                Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(AppLanguage.tr('បានប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!', 'Password changed successfully!')),
-                    backgroundColor: AppColors.success,
-                    behavior: SnackBarBehavior.floating,
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   ),
                 );
+
+                final result = await AuthService.changePassword(
+                  currentPassword: oldPasswordController.text,
+                  newPassword: newPasswordController.text,
+                );
+
+                if (!mounted) return;
+                Navigator.of(context, rootNavigator: true).pop(); // Close loading
+
+                if (result['success'] == true) {
+                  if (ctx.mounted) Navigator.pop(ctx); // Close password dialog
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(result['message'] as String),
+                        backgroundColor: AppColors.success,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                } else {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(result['message'] as String),
+                        backgroundColor: AppColors.error,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                }
               }
             },
             child: Text(AppLanguage.tr('រក្សាទុក', 'Save'), style: const TextStyle(color: Colors.white)),

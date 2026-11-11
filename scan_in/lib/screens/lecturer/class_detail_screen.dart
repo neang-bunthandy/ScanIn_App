@@ -16,8 +16,16 @@ class ClassDetailScreen extends StatelessWidget {
     final c = classModel ?? MockData.sampleClasses.first;
     final List<UserModel> students = MockData.getStudentsForClass(c.id);
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderCol = isDark ? const Color(0xFF334155) : AppColors.border;
+    final textCol = isDark ? Colors.white : AppColors.textPrimary;
+    final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
+    final appBarBg = isDark ? const Color(0xFF1E293B) : AppColors.primary;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
         title: Text(
           AppLanguage.tr('ព័ត៌មានថ្នាក់រៀន', 'Class Details'),
@@ -28,9 +36,15 @@ class ClassDetailScreen extends StatelessWidget {
           ),
         ),
         centerTitle: true,
-        backgroundColor: AppColors.primary,
+        backgroundColor: appBarBg,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        bottom: isDark
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(1),
+                child: Divider(height: 1, color: Color(0xFF334155)),
+              )
+            : null,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -42,15 +56,20 @@ class ClassDetailScreen extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(20.0),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
+                gradient: LinearGradient(
+                  colors: isDark
+                      ? [const Color(0xFF1E3A8A), const Color(0xFF0F172A)]
+                      : [AppColors.primary, AppColors.primaryDark],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
+                border: isDark ? Border.all(color: const Color(0xFF334155)) : null,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: isDark
+                        ? Colors.black.withValues(alpha: 0.3)
+                        : AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 14,
                     offset: const Offset(0, 6),
                   ),
@@ -153,15 +172,17 @@ class ClassDetailScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: _buildInfoBox(
+                    context: context,
                     title: AppLanguage.tr('សិស្សសរុប', 'Total Students'),
                     value: '${c.studentCount} ${AppLanguage.tr('នាក់', 'students')}',
                     icon: Icons.people_outline_rounded,
-                    color: AppColors.primary,
+                    color: isDark ? const Color(0xFF60A5FA) : AppColors.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildInfoBox(
+                    context: context,
                     title: AppLanguage.tr('វគ្គសិក្សា', 'Sessions'),
                     value: '${c.completedSessions}/${c.totalSessions} ${AppLanguage.tr('សប្តាហ៍', 'weeks')}',
                     icon: Icons.calendar_today_rounded,
@@ -179,23 +200,27 @@ class ClassDetailScreen extends StatelessWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cardBg,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: borderCol),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.primary),
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 18,
+                          color: isDark ? const Color(0xFF60A5FA) : AppColors.primary,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           AppLanguage.tr('អំពីមុខវិជ្ជា', 'About Subject'),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
+                            color: textCol,
                           ),
                         ),
                       ],
@@ -203,9 +228,9 @@ class ClassDetailScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       c.description!,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                        color: AppColors.textSecondary,
+                        color: subTextCol,
                         height: 1.5,
                       ),
                     ),
@@ -221,24 +246,25 @@ class ClassDetailScreen extends StatelessWidget {
               children: [
                 Text(
                   AppLanguage.tr('បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់', 'Student Class Roster'),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: textCol,
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.pillBg,
+                    color: isDark ? const Color(0xFF1E293B) : AppColors.pillBg,
                     borderRadius: BorderRadius.circular(12),
+                    border: isDark ? Border.all(color: const Color(0xFF334155)) : null,
                   ),
                   child: Text(
                     '${students.length} ${AppLanguage.tr('នាក់', 'students')}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
-                      color: AppColors.primary,
+                      color: isDark ? const Color(0xFF60A5FA) : AppColors.primary,
                     ),
                   ),
                 ),
@@ -256,19 +282,21 @@ class ClassDetailScreen extends StatelessWidget {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: cardBg,
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: AppColors.border),
+                    border: Border.all(color: borderCol),
                   ),
                   child: Row(
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundColor: AppColors.primaryLight.withValues(alpha: 0.5),
+                        backgroundColor: isDark
+                            ? const Color(0xFF334155)
+                            : AppColors.primaryLight.withValues(alpha: 0.5),
                         child: Text(
                           s.name.substring(0, 1),
-                          style: const TextStyle(
-                            color: AppColors.primary,
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF60A5FA) : AppColors.primary,
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
                           ),
@@ -281,18 +309,18 @@ class ClassDetailScreen extends StatelessWidget {
                           children: [
                             Text(
                               s.name,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
+                                color: textCol,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               '${s.studentCode ?? ""} · ${s.phone ?? ""}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: AppColors.textSecondary,
+                                color: subTextCol,
                               ),
                             ),
                           ],
@@ -301,16 +329,18 @@ class ClassDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF0FDF4),
+                          color: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.2) : const Color(0xFFF0FDF4),
                           borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: const Color(0xFFBBF7D0)),
+                          border: Border.all(
+                            color: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.4) : const Color(0xFFBBF7D0),
+                          ),
                         ),
                         child: Text(
                           AppLanguage.tr('សកម្ម', 'Active'),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF16A34A),
+                            color: isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A),
                           ),
                         ),
                       ),
@@ -326,24 +356,31 @@ class ClassDetailScreen extends StatelessWidget {
   }
 
   Widget _buildInfoBox({
+    required BuildContext context,
     required String title,
     required String value,
     required IconData icon,
     required Color color,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderCol = isDark ? const Color(0xFF334155) : AppColors.border;
+    final textCol = isDark ? Colors.white : AppColors.textPrimary;
+    final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: borderCol),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
+              color: color.withValues(alpha: isDark ? 0.2 : 0.12),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: color, size: 22),
@@ -354,19 +391,19 @@ class ClassDetailScreen extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
-                  color: AppColors.textSecondary,
+                  color: subTextCol,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: textCol,
                 ),
               ),
             ],

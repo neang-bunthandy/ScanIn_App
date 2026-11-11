@@ -29,6 +29,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
   int _currentIndex = 0;
   UserModel? _cachedStudent;
   List<ClassModel> _classes = List.from(MockData.sampleClasses);
+  List<AttendanceModel> _attendances = [];
   bool _notificationsEnabled = true;
   String _selectedLanguage = 'ខ្មែរ (Khmer)';
 
@@ -65,8 +66,12 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
       setState(() => _cachedStudent = cached);
     }
     final remoteClasses = await ClassService.getStudentClasses();
-    if (mounted && remoteClasses.isNotEmpty) {
-      setState(() => _classes = remoteClasses);
+    final remoteAttendances = await AttendanceService.getMyAttendanceHistory();
+    if (mounted) {
+      setState(() {
+        if (remoteClasses.isNotEmpty) _classes = remoteClasses;
+        _attendances = remoteAttendances;
+      });
     }
   }
 
@@ -90,6 +95,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
     if (result['success'] == true) {
       final AttendanceModel? att = result['attendance'] as AttendanceModel?;
+      _loadBackendData();
       _showScanSuccessDialog(att, qrToken.trim());
     } else {
       _showScanErrorDialog(result['message'] as String? ?? 'ការស្កេនបរាជ័យ');
@@ -600,7 +606,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 StudentDashboardScreen(
                   student: student,
                   classes: classes,
+                  attendances: _attendances,
                   onScanQr: _handleScanQr,
+                  onRefresh: _loadBackendData,
                 ),
                 // Tab 2: ប្រវត្តិ (History)
                 StudentHistoryScreen(),

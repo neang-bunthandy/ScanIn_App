@@ -1,20 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ApiConfig {
-  // កំណត់ IP កុំព្យូទ័ររបស់អ្នក សម្រាប់ពេលតេស្តលើទូរស័ព្ទពិតតាម Wi-Fi
-  // (បើប្រើ Android Emulator វានឹងប្រើ 10.0.2.2 ដោយស្វ័យប្រវត្តិ)
-  static const String physicalDeviceHost = '192.168.42.165';
-  static const String emulatorHost = '10.0.2.2';
+  // Configurable Host & Port
   static const String localhost = '127.0.0.1';
-  static const String port = '8000';
+  static const String androidEmulatorHost = '10.0.2.2';
+  static const int defaultPort = 8000;
 
-  // បើអ្នកចង់បង្ខំប្រើ IP ជាក់លាក់មួយ អាចដាក់នៅទីនេះ (null = ជ្រើសរើសដោយស្វ័យប្រវត្តិ)
-  static String? customHost;
+  // Manual IP Override (ពេលតេស្តលើទូរស័ព្ទពិតប្រាកដ ឬបណ្តាញ WiFi ជាក់ស្តែង)
+  // ឧទាហរណ៍៖ static String? customIp = '192.168.1.100';
+  static String? customIp;
 
+  static String? get customHost => customIp;
+  static set customHost(String? value) => customIp = value;
+
+  static int port = defaultPort;
+
+  /// កំណត់ IP ដោយស្វ័យប្រវត្តិតាមឧបករណ៍ដែលកំពុងដំណើរការ (គាំទ្រទាំង Web, Android, iOS, Desktop)
   static String get host {
-    if (customHost != null && customHost!.isNotEmpty) {
-      return customHost!;
+    if (customIp != null && customIp!.isNotEmpty) {
+      return customIp!;
     }
 
     if (kIsWeb) {
@@ -23,8 +28,8 @@ class ApiConfig {
 
     try {
       if (Platform.isAndroid) {
-        // Android Emulator ប្រើ 10.0.2.2 ដើម្បីទាក់ទងមក Host PC
-        return emulatorHost;
+        // Android Emulator ប្រើ 10.0.2.2 ដើម្បីទាក់ទងមក localhost របស់ PC
+        return androidEmulatorHost;
       } else if (Platform.isIOS) {
         return localhost;
       } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
@@ -41,9 +46,12 @@ class ApiConfig {
   static String get loginUrl => '$baseUrl/login';
   static String get meUrl => '$baseUrl/me';
   static String get logoutUrl => '$baseUrl/logout';
+  static String get changePasswordUrl => '$baseUrl/user/change-password';
 
-  // Classes Endpoints (Laravel REST API)
+  // Classes & Users Endpoints (Laravel REST API)
   static String get classesUrl => '$baseUrl/classes';
+  static String get lecturersUrl => '$baseUrl/lecturers';
+  static String get studentsUrl => '$baseUrl/students';
   static String classDetailUrl(int id) => '$baseUrl/classes/$id';
   static String classToggleQrUrl(int id) => '$baseUrl/classes/$id/toggle-qr';
   static String get studentClassesUrl => '$baseUrl/student/classes';

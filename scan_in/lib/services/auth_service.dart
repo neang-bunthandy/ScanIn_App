@@ -125,6 +125,59 @@ class AuthService {
     return token != null && token.isNotEmpty;
   }
 
+  /// ប្តូរពាក្យសម្ងាត់ (Change Password API)
+  static Future<Map<String, dynamic>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final token = await getToken();
+      final url = Uri.parse(ApiConfig.changePasswordUrl);
+      final response = await http
+          .post(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              if (token != null) 'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({
+              'current_password': currentPassword,
+              'new_password': newPassword,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        return {
+          'success': true,
+          'message': data['message'] as String? ?? 'បានប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': data['message'] as String? ?? 'ការប្តូរពាក្យសម្ងាត់មិនជោគជ័យ',
+        };
+      }
+    } on SocketException catch (_) {
+      return {
+        'success': false,
+        'message': 'មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ។',
+      };
+    } on TimeoutException catch (_) {
+      return {
+        'success': false,
+        'message': 'ការតភ្ជាប់លើសម៉ោងកំណត់ (Timeout)។',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'មានបញ្ហាមិនរំពឹងទុក៖ $e',
+      };
+    }
+  }
+
   /// ចាកចេញពីគណនី (Logout)
   static Future<void> logout() async {
     try {

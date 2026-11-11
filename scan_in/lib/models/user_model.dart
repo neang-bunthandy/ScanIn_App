@@ -25,6 +25,7 @@ class UserModel {
 
   bool get isStudent => role == 'student';
   bool get isLecturer => role == 'lecturer' || role == 'teacher' || role == 'staff';
+  bool get isAdmin => role == 'admin';
 
   // បំលែងពី JSON ដែល Laravel API បាញ់មក (Snake_case)
   factory UserModel.fromJson(Map<String, dynamic> json) {

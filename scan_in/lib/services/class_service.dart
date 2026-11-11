@@ -115,4 +115,67 @@ class ClassService {
     } catch (_) {}
     return false;
   }
+
+  /// ទាញយកបញ្ជីគ្រូបង្រៀនទាំងអស់សម្រាប់ Admin ជ្រើសរើសចាត់តាំងថ្នាក់រៀន
+  static Future<List<Map<String, dynamic>>> getLecturers() async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.get(
+        Uri.parse(ApiConfig.lecturersUrl),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == true && data['data'] != null) {
+          return List<Map<String, dynamic>>.from(data['data']);
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  /// Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន (កំណត់ ឆ្នាំ, ឆមាស, កូដ, ឈ្មោះ, បន្ទប់, ថ្ងៃ, ម៉ោង)
+  static Future<bool> createClassAdmin({
+    required String subjectName,
+    required String subjectCode,
+    required int lecturerId,
+    required String academicYear,
+    required String semester,
+    String? room,
+    String? dayOfWeek,
+    String? time,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      final body = {
+        'subject_name': subjectName,
+        'subject_code': subjectCode,
+        'lecturer_id': lecturerId,
+        'academic_year': academicYear,
+        'semester': semester,
+        'room': room ?? '',
+        'day_of_week': dayOfWeek ?? '',
+        'time': time ?? '',
+      };
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.classesUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
 }

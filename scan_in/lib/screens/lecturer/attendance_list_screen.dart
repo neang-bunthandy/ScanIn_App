@@ -102,8 +102,14 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
   }
 
   void _showEditStatusModal(AttendanceModel item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final sheetBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textCol = isDark ? Colors.white : AppColors.textPrimary;
+    final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
+
     showModalBottomSheet(
       context: context,
+      backgroundColor: sheetBg,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -120,7 +126,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
+                      color: isDark ? const Color(0xFF475569) : Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -128,22 +134,25 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                 const SizedBox(height: 16),
                 Text(
                   '${AppLanguage.tr('កែប្រែវត្តមាន: ', 'Edit Attendance: ')}${item.studentName}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: textCol,
                   ),
                 ),
                 Text(
                   '${AppLanguage.tr('អត្តលេខ៖ ', 'Student ID: ')}${item.studentCode}',
-                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  style: TextStyle(fontSize: 13, color: subTextCol),
                 ),
                 const SizedBox(height: 20),
                 Material(
                   color: Colors.transparent,
                   child: ListTile(
                     leading: const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A)),
-                    title: Text(AppLanguage.tr('វត្តមាន (Present)', 'Present'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(
+                      AppLanguage.tr('វត្តមាន (Present)', 'Present'),
+                      style: TextStyle(fontWeight: FontWeight.w600, color: textCol),
+                    ),
                     trailing: item.isPresent ? const Icon(Icons.done, color: Color(0xFF16A34A)) : null,
                     onTap: () {
                       Navigator.pop(context);
@@ -155,7 +164,10 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   color: Colors.transparent,
                   child: ListTile(
                     leading: const Icon(Icons.access_time_filled_rounded, color: Color(0xFFD97706)),
-                    title: Text(AppLanguage.tr('មកយឺត (Late)', 'Late'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(
+                      AppLanguage.tr('មកយឺត (Late)', 'Late'),
+                      style: TextStyle(fontWeight: FontWeight.w600, color: textCol),
+                    ),
                     trailing: item.isLate ? const Icon(Icons.done, color: Color(0xFFD97706)) : null,
                     onTap: () {
                       Navigator.pop(context);
@@ -167,7 +179,10 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   color: Colors.transparent,
                   child: ListTile(
                     leading: const Icon(Icons.cancel_rounded, color: Color(0xFFDC2626)),
-                    title: Text(AppLanguage.tr('អវត្តមាន (Absent)', 'Absent'), style: const TextStyle(fontWeight: FontWeight.w600)),
+                    title: Text(
+                      AppLanguage.tr('អវត្តមាន (Absent)', 'Absent'),
+                      style: TextStyle(fontWeight: FontWeight.w600, color: textCol),
+                    ),
                     trailing: item.isAbsent ? const Icon(Icons.done, color: Color(0xFFDC2626)) : null,
                     onTap: () {
                       Navigator.pop(context);
@@ -216,8 +231,16 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
     final lateCount = _attendances.where((a) => a.isLate).length;
     final absentCount = _attendances.where((a) => a.isAbsent).length;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scaffoldBg = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderCol = isDark ? const Color(0xFF334155) : AppColors.border;
+    final textCol = isDark ? Colors.white : AppColors.textPrimary;
+    final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
+    final appBarBg = isDark ? const Color(0xFF1E293B) : AppColors.primary;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
         title: Text(
           widget.classModel != null
@@ -230,9 +253,15 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: AppColors.primary,
+        backgroundColor: appBarBg,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+        bottom: isDark
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(1),
+                child: Divider(height: 1, color: Color(0xFF334155)),
+              )
+            : null,
         actions: [
           IconButton(
             tooltip: AppLanguage.tr('ទាញយកទិន្នន័យឡើងវិញ', 'Refresh'),
@@ -259,7 +288,12 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
           // Header Stats Strip
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-            color: Colors.white,
+            decoration: BoxDecoration(
+              color: cardBg,
+              border: Border(
+                bottom: BorderSide(color: borderCol),
+              ),
+            ),
             child: Row(
               children: [
                 Expanded(
@@ -267,7 +301,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                     label: AppLanguage.tr('វត្តមាន', 'Present'),
                     count: '$presentCount',
                     color: const Color(0xFF16A34A),
-                    bg: const Color(0xFFF0FDF4),
+                    bg: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.15) : const Color(0xFFF0FDF4),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -276,7 +310,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                     label: AppLanguage.tr('យឺត', 'Late'),
                     count: '$lateCount',
                     color: const Color(0xFFD97706),
-                    bg: const Color(0xFFFFFBEB),
+                    bg: isDark ? const Color(0xFFD97706).withValues(alpha: 0.15) : const Color(0xFFFFFBEB),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -285,7 +319,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                     label: AppLanguage.tr('អវត្តមាន', 'Absent'),
                     count: '$absentCount',
                     color: const Color(0xFFDC2626),
-                    bg: const Color(0xFFFEF2F2),
+                    bg: isDark ? const Color(0xFFDC2626).withValues(alpha: 0.15) : const Color(0xFFFEF2F2),
                   ),
                 ),
               ],
@@ -299,20 +333,21 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
               children: [
                 TextField(
                   onChanged: (val) => setState(() => _searchQuery = val),
+                  style: TextStyle(color: textCol, fontSize: 14),
                   decoration: InputDecoration(
                     hintText: AppLanguage.tr('ស្វែងរកឈ្មោះសិស្ស ឬអត្តលេខ...', 'Search student name or ID...'),
-                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                    prefixIcon: const Icon(Icons.search_rounded, color: AppColors.textSecondary),
+                    hintStyle: TextStyle(fontSize: 13, color: subTextCol),
+                    prefixIcon: Icon(Icons.search_rounded, color: subTextCol),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: cardBg,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: borderCol),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.border),
+                      borderSide: BorderSide(color: borderCol),
                     ),
                   ),
                 ),
@@ -321,13 +356,13 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _buildFilterChip(AppLanguage.tr('ទាំងអស់', 'All'), 'all'),
+                      _buildFilterChip(AppLanguage.tr('ទាំងអស់', 'All'), 'all', isDark, cardBg, borderCol),
                       const SizedBox(width: 8),
-                      _buildFilterChip('${AppLanguage.tr('វត្តមាន', 'Present')} ($presentCount)', 'present'),
+                      _buildFilterChip('${AppLanguage.tr('វត្តមាន', 'Present')} ($presentCount)', 'present', isDark, cardBg, borderCol),
                       const SizedBox(width: 8),
-                      _buildFilterChip('${AppLanguage.tr('យឺត', 'Late')} ($lateCount)', 'late'),
+                      _buildFilterChip('${AppLanguage.tr('យឺត', 'Late')} ($lateCount)', 'late', isDark, cardBg, borderCol),
                       const SizedBox(width: 8),
-                      _buildFilterChip('${AppLanguage.tr('អវត្តមាន', 'Absent')} ($absentCount)', 'absent'),
+                      _buildFilterChip('${AppLanguage.tr('អវត្តមាន', 'Absent')} ($absentCount)', 'absent', isDark, cardBg, borderCol),
                     ],
                   ),
                 ),
@@ -345,7 +380,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                     ? Center(
                         child: Text(
                           AppLanguage.tr('មិនមានទិន្នន័យត្រូវបង្ហាញទេ', 'No data to display'),
-                          style: const TextStyle(color: AppColors.textSecondary),
+                          style: TextStyle(color: subTextCol),
                         ),
                       )
                     : RefreshIndicator(
@@ -363,17 +398,17 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                             Color badgeBg;
                             if (item.isPresent) {
                               badgeColor = const Color(0xFF16A34A);
-                              badgeBg = const Color(0xFFF0FDF4);
+                              badgeBg = isDark ? const Color(0xFF16A34A).withValues(alpha: 0.2) : const Color(0xFFF0FDF4);
                             } else if (item.isLate) {
                               badgeColor = const Color(0xFFD97706);
-                              badgeBg = const Color(0xFFFFFBEB);
+                              badgeBg = isDark ? const Color(0xFFD97706).withValues(alpha: 0.2) : const Color(0xFFFFFBEB);
                             } else {
                               badgeColor = const Color(0xFFDC2626);
-                              badgeBg = const Color(0xFFFEF2F2);
+                              badgeBg = isDark ? const Color(0xFFDC2626).withValues(alpha: 0.2) : const Color(0xFFFEF2F2);
                             }
 
                             return Material(
-                              color: Colors.white,
+                              color: cardBg,
                               borderRadius: BorderRadius.circular(12),
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
@@ -382,17 +417,19 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                                   padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(color: AppColors.border),
+                                    border: Border.all(color: borderCol),
                                   ),
                                   child: Row(
                                     children: [
                                       CircleAvatar(
                                         radius: 18,
-                                        backgroundColor: AppColors.primaryLight.withValues(alpha: 0.35),
+                                        backgroundColor: isDark
+                                            ? const Color(0xFF334155)
+                                            : AppColors.primaryLight.withValues(alpha: 0.35),
                                         child: Text(
                                           item.studentName.isNotEmpty ? item.studentName[0] : 'S',
-                                          style: const TextStyle(
-                                            color: AppColors.primary,
+                                          style: TextStyle(
+                                            color: isDark ? const Color(0xFF60A5FA) : AppColors.primary,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
@@ -404,17 +441,17 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                                           children: [
                                             Text(
                                               item.studentName,
-                                              style: const TextStyle(
+                                              style: TextStyle(
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 14,
-                                                color: AppColors.textPrimary,
+                                                color: textCol,
                                               ),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
                                               '${item.studentCode} · ${item.note ?? AppLanguage.tr("វត្តមាន", "Present")}',
-                                              style: const TextStyle(
-                                                color: AppColors.textSecondary,
+                                              style: TextStyle(
+                                                color: subTextCol,
                                                 fontSize: 12,
                                               ),
                                             ),
@@ -426,7 +463,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                                         decoration: BoxDecoration(
                                           color: badgeBg,
                                           borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
+                                          border: Border.all(color: badgeColor.withValues(alpha: isDark ? 0.4 : 0.3)),
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
@@ -494,21 +531,23 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
     );
   }
 
-  Widget _buildFilterChip(String label, String value) {
+  Widget _buildFilterChip(String label, String value, bool isDark, Color cardBg, Color borderCol) {
     final isSelected = _selectedStatusFilter == value;
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
       onSelected: (_) => setState(() => _selectedStatusFilter = value),
       selectedColor: AppColors.primary,
-      backgroundColor: Colors.white,
+      backgroundColor: cardBg,
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : AppColors.textPrimary,
+        color: isSelected
+            ? Colors.white
+            : (isDark ? const Color(0xFF94A3B8) : AppColors.textPrimary),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
         fontSize: 12,
       ),
       side: BorderSide(
-        color: isSelected ? AppColors.primary : AppColors.border,
+        color: isSelected ? AppColors.primary : borderCol,
       ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     );
