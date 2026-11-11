@@ -125,13 +125,52 @@
 
 ## ៥. សេចក្តីសង្ខេប និងកិច្ចការបន្ត (Summary & Next Steps)
 
-### 📊 សរុបស្ថិតិ UI to DB៖
-* ✅ **មុខងារដែលបានភ្ជាប់ Database រួចរាល់៖** **២៨ មុខងារ** (ស្មើនឹង **៨៨%** នៃប្រព័ន្ធទាំងមូល រួមមានស្នូលសំខាន់ៗ៖ Login, Admin បង្កើត/កែប្រែ/លុបគ្រូ, បង្កើត/កែប្រែ/លុបសិស្ស, Import សិស្សពី Excel/CSV, បង្កើត/កែប្រែ/លុបថ្នាក់រៀន, Projector Fullscreen QR, ស្កេនកត់វត្តមាន, និងកែប្រែវត្តមាន)។
+### 📅 កំណត់ត្រាកិច្ចការដែលបានសម្រេចថ្ងៃនេះ (Completed Today — 11/11/2026)៖
+1. **ដោះស្រាយបញ្ហា Responsive & Overflow លើ Web Admin (`scan_in_admin`)៖**
+   * ដោះស្រាយ Error `RIGHT OVERFLOWED BY 338 PIXELS` លើ `admin_students_screen.dart` ដោយប្តូរមកប្រើ `LayoutBuilder` & `Wrap(spacing: 8, runSpacing: 8)` ធ្វើឱ្យប៊ូតុង និងចំណងជើងតម្រៀបស្វ័យប្រវត្តលើ Tablet/Split-screen។
+   * ដោះស្រាយបញ្ហាតារាង `DataTable` ឈរតែកន្លះ Card លើអេក្រង់ធំ ដោយប្រើ `ConstrainedBox(minWidth: tableConstraints.maxWidth)` ធ្វើឱ្យតារាងពង្រីកពេញ 100% នៃ Card លែងសល់ចន្លោះខ្មៅទទេស្អាត។
+   * Sidebar Responsive៖ ពេលអេក្រង់តូចជាង 900px Sidebar នឹងបង្រួមមកត្រឹម `72px` (Icon + Tooltip) ទុកលំហទូលាយសម្រាប់តារាង និង Content។
+   * បានអនុវត្តទម្រង់ Responsive នេះដូចគ្នាលើគ្រប់ទំព័រ (Students, Lecturers, Classes, Attendances, Dashboard)។
+2. **ដោះស្រាយបញ្ហាប្តូរ State ពីមួយទៅមួយទាក់ៗ ("ពេលដូរ state ១ ទៅ state ១ វាដូចទាក់ៗ")៖**
+   * កំណត់ `NoTransitionsOnWebBuilder` លើ `pageTransitionsTheme` ក្នុង `app_theme.dart` ធ្វើឱ្យការចុចប្តូរ Menu រហ័សភ្លាមៗ 0ms គ្មានការញាក់ Animation ឬទាក់ DOM repainting ឡើយ។
+   * បង្កើត In-Memory Caching លើ `AuthService` (`_cachedUser`) និង `ClassService` (`_cachedStudents`, `_cachedLecturers`, `_cachedClasses`) ជាមួយ Stale-while-revalidate ធ្វើឱ្យការបើកទំព័រនានាលែងមានការភ្លឹបភ្លែត Avatar ឬចេញរង្វង់វិល CircularProgressIndicator កាត់មុខទៀតហើយ។
+3. **តម្រឹម Logo និង Header Bar ឱ្យស្មើគ្នាចំកណ្តាល (Aligned Bar & Centered Logo Box)៖**
+   * ប្រអប់ Logo ខាងឆ្វេង និង Top Bar ខាងស្តាំ ឥឡូវនេះមានកម្ពស់ថេរស្មើគ្នាគឺ `height: 70.0;` រួមជាមួយបន្ទាត់ខណ្ឌបាត (Bottom Border `0xFF334155`) រត់ត្រង់ជួរតែមួយគ្មានកាំជណ្តើរ។
+   * តម្រឹម Icon ពណ៌ខៀវ និងអក្សរ `ScanIn Admin` / `System Administration` ឱ្យរត់ចំកណ្តាលបញ្ឈរស្មើគ្នា (Vertical Centering ជាមួយ `crossAxisAlignment: CrossAxisAlignment.center` និង `mainAxisSize: MainAxisSize.min`)។
+4. **Dark Mode & UI Fixes លើ Mobile App (`scan_in`)៖**
+   * Dark Mode ពេញលេញលើ `class_detail_screen.dart` និង `attendance_list_screen.dart`។
+   * ដោះស្រាយ Overflow ពេលបង្វិលទូរស័ព្ទផ្តេក (Landscape) លើ Server IP Dialog និង Center Login Card លើអេក្រង់ Tablet។
+5. **សវនកម្មសុវត្ថិភាព និងការសង្គ្រោះប្រព័ន្ធ (System Recovery after Power Cuts)៖**
+   * ជួសជុល `.git` បន្ទាប់ពីដាច់ភ្លើង និងទាញយក Backup ស្អាតពី `C:\Users\Jitsu Window\Scan_In_App_Backup\`។
+   * `flutter analyze scan_in_admin` 👉 **No issues found! (0 errors, 0 warnings)**
+   * `flutter analyze scan_in` 👉 **No issues found! (0 errors, 0 warnings)**
+   * `php artisan route:list` 👉 **23 API routes សកម្ម និង Laravel Server កំពុងដំណើរការធម្មតាលើ `127.0.0.1:8000`**។
+
+---
+
+### 📊 សរុបស្ថិតិ UI to DB បច្ចុប្បន្ន៖
+* ✅ **មុខងារដែលបានភ្ជាប់ Database រួចរាល់៖** **២៨ មុខងារ** (ស្មើនឹង **៨៨%** នៃប្រព័ន្ធទាំងមូល)។
 * ⏳ **មុខងារដែលនៅសល់ត្រូវបន្តភ្ជាប់ DB៖** **៤ មុខងារ** (ស្មើនឹង **១២%**)។
 
-### 🎯 ជំហានបន្តបន្ទាប់ (Action Plan)៖
-1. [x] **កែប្រែ និងលុបថ្នាក់រៀន (Edit & Delete Classes - Admin Only) [រួចរាល់ ✅]**
-2. [x] **កែប្រែ និងលុបគណនីគ្រូបង្រៀន (Edit & Delete Lecturers - Admin Only) [រួចរាល់ ✅]**
-3. [x] **កែប្រែ និងលុបគណនីសិស្ស (Edit & Delete Students - Admin Only) [រួចរាល់ ✅]**
-4. [x] **Import បញ្ជីសិស្សពី Excel / CSV (Bulk Student Import with Gender & DOB) [រួចរាល់ ✅]**
-5. [ ] **ការភ្ជាប់បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់ (Enrolled Students Roster)** (Live Scanned Students & `ClassDetailScreen`)
+---
+
+### 🚀 ផែនការងារដែលត្រូវធ្វើបន្តនៅថ្ងៃស្អែក (Tomorrow's Roadmap — UI TO DB FOCUS)៖
+
+1. **[អាទិភាពទី ១] ភ្ជាប់បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់ទៅកាន់ Database (Enrolled Students Roster — UI to DB)៖**
+   * **ស្ថានភាពបច្ចុប្បន្ន៖** ក្នុង `scan_in/lib/screens/lecturer/class_detail_screen.dart` និងផ្ទាំង Web បញ្ជីឈ្មោះសិស្សដែលរៀនក្នុងថ្នាក់នីមួយៗនៅប្រើ MockData។
+   * **កិច្ចការស្អែក៖**
+     - បង្កើត Database Pivot Table `class_student` (`class_id`, `student_id`, `enrolled_at`) តាម Laravel Migration។
+     - បង្កើត API Endpoints៖
+       - `GET /api/classes/{id}/students` (ទាញយកបញ្ជីឈ្មោះសិស្សដែលរៀនក្នុងថ្នាក់នេះពី DB)
+       - `POST /api/classes/{id}/students` (Admin ឬគ្រូចុះឈ្មោះសិស្សចូលរៀនក្នុងថ្នាក់)
+       - `DELETE /api/classes/{id}/students/{student_id}` (ដកសិស្សចេញពីថ្នាក់)
+     - ភ្ជាប់ `ClassDetailScreen` (Mobile) និង `AdminClassesScreen` (Web) ទៅកាន់ API ពិត ជំនួស MockData ទាំងស្រុង។
+
+2. **[អាទិភាពទី ២] បញ្ជីសិស្សស្កេនផ្ទាល់ពេលគ្រូបញ្ចាំង QR (Live Scanned Students in ShowQR — UI to DB)៖**
+   * ក្នុង `show_qr_screen.dart` លើទូរស័ព្ទដៃគ្រូ ភ្ជាប់បញ្ជីសិស្សដែលស្កេនជោគជ័យជាក់ស្តែងពី `GET /api/classes/{id}/attendances` ជំនួស MockData។
+
+3. **[អាទិភាពទី ៣] Profile Avatar Upload & Personal Info Editing (UI to DB)៖**
+   * បង្កើត API `POST /api/user/profile` ដើម្បីឱ្យគ្រូ និងសិស្សអាច Upload រូបថត Profile ពិតប្រាកដ រក្សាទុកក្នុង `storage/app/public/avatars` និង Update ចូល Database។
+
+4. **[អាទិភាពទី ៤] Export របាយការណ៍វត្តមានជា Excel / PDF (Admin Reports)៖**
+   * បន្ថែមប៊ូតុង "Export Excel / PDF" ក្នុង `AdminAttendancesScreen` ដើម្បីទាញយកទិន្នន័យវត្តមានសិស្សតាមថ្នាក់ ឬតាមខែចេញពី Database សម្រាប់រដ្ឋបាលសាលា។
