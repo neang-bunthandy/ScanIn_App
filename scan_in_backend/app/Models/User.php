@@ -32,6 +32,7 @@ class User extends Authenticatable
         'generation',
         'intake_year',
         'year_level',
+        'status',
         'phone',
         'avatar_url',
     ];

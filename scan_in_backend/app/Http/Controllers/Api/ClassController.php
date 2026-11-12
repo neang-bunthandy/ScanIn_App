@@ -20,9 +20,10 @@ class ClassController extends Controller
         if ($user && $user->role === 'lecturer') {
             $query->where('user_id', $user->id);
         } elseif ($user && $user->role === 'student') {
-            // សិស្សម្នាក់ៗឃើញតែថ្នាក់រៀនតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី (1-4) + ជំនាន់ របស់ខ្លួនប៉ុណ្ណោះ
+            $studentStatus = strtolower(trim((string)($user->status ?? 'active')));
+            // សិស្សម្នាក់ៗឃើញតែថ្នាក់រៀនតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី (1-4) + ជំនាន់ និងត្រូវតែមានស្ថានភាព active
             $dept = trim((string)($user->department ?? ''));
-            if ($dept !== '') {
+            if ($dept !== '' && $studentStatus === 'active') {
                 $query->where('department', $dept);
 
                 $studentYearLevel = (int)($user->year_level ?? 0);
@@ -53,9 +54,13 @@ class ClassController extends Controller
             }
         }
 
-        // ទាញសិស្សដើម្បីគណនាចំនួនសិស្សពិតប្រាកដតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី + ជំនាន់
+        // ទាញសិស្សកំពុងសិក្សា (active) ដើម្បីគណនាចំនួនសិស្សពិតប្រាកដតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី + ជំនាន់
         $allStudents = \App\Models\User::where('role', 'student')
             ->whereNotNull('department')
+            ->where(function ($q) {
+                $q->whereNull('status')
+                  ->orWhere('status', 'active');
+            })
             ->select('department', 'year_level', 'generation')
             ->get();
 
@@ -391,7 +396,11 @@ class ClassController extends Controller
             ->keyBy('user_id');
 
         $studentsQuery = \App\Models\User::where('role', 'student')
-            ->where('department', $class->department);
+            ->where('department', $class->department)
+            ->where(function ($q) {
+                $q->whereNull('status')
+                  ->orWhere('status', 'active');
+            });
 
         if ($class->year_level !== null) {
             $studentsQuery->where('year_level', (int)$class->year_level);
@@ -416,6 +425,7 @@ class ClassController extends Controller
                     'generation' => $s->generation,
                     'intake_year' => $s->intake_year,
                     'year_level' => $s->year_level !== null ? (int)$s->year_level : null,
+                    'status' => $s->status ?? 'active',
                     'phone' => $s->phone,
                     'gender' => $s->gender,
                     'date_of_birth' => $s->date_of_birth,

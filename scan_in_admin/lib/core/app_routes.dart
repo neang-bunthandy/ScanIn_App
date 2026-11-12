@@ -5,6 +5,7 @@ import '../screens/admin_lecturers_screen.dart';
 import '../screens/admin_students_screen.dart';
 import '../screens/admin_classes_screen.dart';
 import '../screens/admin_attendances_screen.dart';
+import '../screens/admin_student_stats_screen.dart';
 
 /// កំណត់ឈ្មោះ Route ទាំងអស់ក្នុង Admin Panel (Web)
 class AppRoutes {
@@ -14,6 +15,7 @@ class AppRoutes {
   static const String students = '/students';
   static const String classes = '/classes';
   static const String attendances = '/attendances';
+  static const String studentStats = '/reports/student-stats';
 
   static Map<String, WidgetBuilder> get routes => {
         login: (context) => const AdminLoginScreen(),
@@ -25,5 +27,6 @@ class AppRoutes {
           final args = ModalRoute.of(context)?.settings.arguments as int?;
           return AdminAttendancesScreen(initialClassId: args);
         },
+        studentStats: (context) => const AdminStudentStatsScreen(),
       };
 }

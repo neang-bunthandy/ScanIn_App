@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClassController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\ReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -157,7 +158,7 @@ Route::get('/students', function (Request $request) {
         ], 403);
     }
     $studentsQuery = \App\Models\User::where('role', 'student')
-        ->select('id', 'name', 'latin_name', 'email', 'student_code', 'gender', 'date_of_birth', 'department', 'generation', 'intake_year', 'year_level', 'phone', 'created_at');
+        ->select('id', 'name', 'latin_name', 'email', 'student_code', 'gender', 'date_of_birth', 'department', 'generation', 'intake_year', 'year_level', 'status', 'phone', 'created_at');
 
     if ($request->filled('department')) {
         $studentsQuery->where('department', trim($request->department));
@@ -170,6 +171,16 @@ Route::get('/students', function (Request $request) {
     }
     if ($request->filled('year_level')) {
         $studentsQuery->where('year_level', (int)$request->year_level);
+    }
+    if ($request->filled('status')) {
+        $st = strtolower(trim($request->status));
+        if ($st === 'active') {
+            $studentsQuery->where(function ($q) {
+                $q->whereNull('status')->orWhere('status', 'active');
+            });
+        } else {
+            $studentsQuery->where('status', $st);
+        }
     }
 
     $students = $studentsQuery->orderBy('id', 'desc')->get();
@@ -197,6 +208,7 @@ Route::post('/students', function (Request $request) {
         'generation' => 'nullable|string|max:255',
         'intake_year' => 'nullable|string|max:20',
         'year_level' => 'nullable|integer|min:1|max:6',
+        'status' => 'nullable|in:active,graduated,inactive',
         'phone' => 'nullable|string|max:50',
     ]);
 
@@ -213,6 +225,7 @@ Route::post('/students', function (Request $request) {
         'generation' => $request->filled('generation') ? trim($request->generation) : null,
         'intake_year' => $request->filled('intake_year') ? trim($request->intake_year) : null,
         'year_level' => $request->filled('year_level') ? (int)$request->year_level : null,
+        'status' => $request->filled('status') ? strtolower(trim($request->status)) : 'active',
         'phone' => $request->phone,
     ]);
 
@@ -279,6 +292,8 @@ Route::post('/students/import', function (Request $request) {
         $intakeYear = trim($row['intake_year'] ?? $row['start_year'] ?? '');
         $yearLevelRaw = $row['year_level'] ?? $row['year'] ?? null;
         $yearLevel = is_numeric($yearLevelRaw) ? (int)$yearLevelRaw : null;
+        $statusRaw = strtolower(trim($row['status'] ?? 'active'));
+        $statusVal = in_array($statusRaw, ['active', 'graduated', 'inactive'], true) ? $statusRaw : 'active';
         $phone = trim($row['phone'] ?? $row['tel'] ?? '');
         $password = !empty($row['password']) ? $row['password'] : 'password123';
 
@@ -314,6 +329,7 @@ Route::post('/students/import', function (Request $request) {
                 'generation' => $generation ?: null,
                 'intake_year' => $intakeYear ?: null,
                 'year_level' => $yearLevel,
+                'status' => $statusVal,
                 'phone' => $phone ?: null,
             ]);
             $imported++;
@@ -360,6 +376,7 @@ Route::put('/students/{id}', function (Request $request, $id) {
         'generation' => 'nullable|string|max:255',
         'intake_year' => 'nullable|string|max:20',
         'year_level' => 'nullable|integer|min:1|max:6',
+        'status' => 'nullable|in:active,graduated,inactive',
         'phone' => 'nullable|string|max:50',
     ]);
 
@@ -374,6 +391,7 @@ Route::put('/students/{id}', function (Request $request, $id) {
     if ($request->has('generation')) $student->generation = $request->filled('generation') ? trim($request->generation) : null;
     if ($request->has('intake_year')) $student->intake_year = $request->filled('intake_year') ? trim($request->intake_year) : null;
     if ($request->has('year_level')) $student->year_level = $request->filled('year_level') ? (int)$request->year_level : null;
+    if ($request->filled('status')) $student->status = strtolower(trim($request->status));
     if ($request->has('phone')) $student->phone = $request->phone;
 
     $student->save();
@@ -395,6 +413,9 @@ Route::post('/students/promote', function (Request $request) {
     }
 
     $query = \App\Models\User::where('role', 'student')
+        ->where(function ($q) {
+            $q->whereNull('status')->orWhere('status', 'active');
+        })
         ->whereNotNull('year_level')
         ->where('year_level', '<', 4);
 
@@ -419,6 +440,50 @@ Route::post('/students/promote', function (Request $request) {
         'promoted_count' => $promoted,
     ], 200);
 });
+
+// ប្តូរស្ថានភាពសិស្សជាក្រុម (Active / Graduated / Inactive - Admin Only)
+Route::post('/students/bulk-status', function (Request $request) {
+    if ($request->user() && $request->user()->role !== 'admin') {
+        return response()->json([
+            'status' => false,
+            'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចប្តូរស្ថានភាពសិស្សបាន។',
+        ], 403);
+    }
+
+    $request->validate([
+        'status' => 'required|in:active,graduated,inactive',
+        'generation' => 'nullable|string|max:255',
+        'intake_year' => 'nullable|string|max:20',
+        'department' => 'nullable|string|max:255',
+        'year_level' => 'nullable|integer|min:1|max:6',
+    ]);
+
+    $query = \App\Models\User::where('role', 'student');
+
+    if ($request->filled('generation')) {
+        $query->where('generation', trim($request->generation));
+    }
+    if ($request->filled('intake_year')) {
+        $query->where('intake_year', trim($request->intake_year));
+    }
+    if ($request->filled('department')) {
+        $query->where('department', trim($request->department));
+    }
+    if ($request->filled('year_level')) {
+        $query->where('year_level', (int)$request->year_level);
+    }
+
+    $updated = $query->update(['status' => strtolower(trim($request->status))]);
+
+    return response()->json([
+        'status' => true,
+        'message' => "បានប្តូរស្ថានភាពនិស្សិតចំនួន $updated នាក់ដោយជោគជ័យ!",
+        'updated_count' => $updated,
+    ], 200);
+});
+
+// Admin Only Reports API
+Route::get('/admin/reports/student-stats', [ReportController::class, 'studentStats']);
 
 Route::delete('/students/{id}', function (Request $request, $id) {
     if ($request->user() && $request->user()->role !== 'admin') {

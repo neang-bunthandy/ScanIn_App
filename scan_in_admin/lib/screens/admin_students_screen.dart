@@ -22,6 +22,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   String? _filterIntakeYear;
   int? _filterYearLevel;
   String? _filterDepartment;
+  String? _filterStatus;
 
   List<Map<String, dynamic>> get _filteredStudents {
     return _students.where((stu) {
@@ -39,6 +40,10 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
       }
       if (_filterDepartment != null && (stu['department'] ?? '').toString() != _filterDepartment) {
         return false;
+      }
+      if (_filterStatus != null) {
+        final st = (stu['status'] ?? 'active').toString().toLowerCase();
+        if (st != _filterStatus) return false;
       }
       return true;
     }).toList();
@@ -94,6 +99,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
       selectedIntakeYear = ClassService.presetIntakeYears.last;
     }
     int selectedYearLevel = ClassService.suggestYearLevelFromIntake(selectedIntakeYear);
+    String selectedStatus = 'active';
     final phoneCtrl = TextEditingController(text: '098 765 432');
     String selectedGender = 'ប្រុស (Male)';
     final dobCtrl = TextEditingController(text: '2004-01-01');
@@ -348,25 +354,52 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  DropdownButtonFormField<int>(
-                    key: ValueKey('create-yl-$selectedYearLevel'),
-                    isExpanded: true,
-                    initialValue: selectedYearLevel,
-                    decoration: InputDecoration(
-                      labelText: AppLanguage.tr('ឆ្នាំសិក្សាបច្ចុប្បន្ន (Year Level)', 'Current Year Level'),
-                      prefixIcon: const Icon(Icons.stairs_rounded, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                    items: const [1, 2, 3, 4]
-                        .map((y) => DropdownMenuItem<int>(
-                              value: y,
-                              child: Text(ClassService.yearLevelLabel(y)),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) setDlgState(() => selectedYearLevel = val);
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<int>(
+                          key: ValueKey('create-yl-$selectedYearLevel'),
+                          isExpanded: true,
+                          initialValue: selectedYearLevel,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឆ្នាំសិក្សាបច្ចុប្បន្ន (Year Level)', 'Current Year Level'),
+                            prefixIcon: const Icon(Icons.stairs_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          items: const [1, 2, 3, 4]
+                              .map((y) => DropdownMenuItem<int>(
+                                    value: y,
+                                    child: Text(ClassService.yearLevelLabel(y), overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setDlgState(() => selectedYearLevel = val);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          initialValue: selectedStatus,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ស្ថានភាព (Status)', 'Status'),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          items: ClassService.presetStatuses
+                              .map((s) => DropdownMenuItem<String>(
+                                    value: s,
+                                    child: Text(ClassService.studentStatusLabel(s), overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setDlgState(() => selectedStatus = val);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -409,6 +442,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   generation: selectedGeneration,
                   intakeYear: selectedIntakeYear,
                   yearLevel: selectedYearLevel,
+                  status: selectedStatus,
                   phone: phoneCtrl.text.trim(),
                 );
 
@@ -482,6 +516,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     int selectedYearLevel = (existingYear != null && existingYear >= 1 && existingYear <= 4)
         ? existingYear
         : ClassService.suggestYearLevelFromIntake(selectedIntakeYear);
+    final rawStatus = (stu['status'] ?? 'active').toString().toLowerCase();
+    String selectedStatus = ClassService.presetStatuses.contains(rawStatus) ? rawStatus : 'active';
     final phoneCtrl = TextEditingController(text: stu['phone'] ?? '');
     String selectedGender = (stu['gender'] != null && stu['gender'].toString().contains('ស្រី')) ? 'ស្រី (Female)' : 'ប្រុស (Male)';
     final dobCtrl = TextEditingController(text: stu['date_of_birth'] ?? '');
@@ -725,25 +761,52 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  DropdownButtonFormField<int>(
-                    key: ValueKey('edit-yl-$selectedYearLevel'),
-                    isExpanded: true,
-                    initialValue: selectedYearLevel,
-                    decoration: InputDecoration(
-                      labelText: AppLanguage.tr('ឆ្នាំសិក្សាបច្ចុប្បន្ន (Year Level)', 'Current Year Level'),
-                      prefixIcon: const Icon(Icons.stairs_rounded, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                    items: const [1, 2, 3, 4]
-                        .map((y) => DropdownMenuItem<int>(
-                              value: y,
-                              child: Text(ClassService.yearLevelLabel(y)),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) setDlgState(() => selectedYearLevel = val);
-                    },
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<int>(
+                          key: ValueKey('edit-yl-$selectedYearLevel'),
+                          isExpanded: true,
+                          initialValue: selectedYearLevel,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឆ្នាំសិក្សាបច្ចុប្បន្ន (Year Level)', 'Current Year Level'),
+                            prefixIcon: const Icon(Icons.stairs_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          items: const [1, 2, 3, 4]
+                              .map((y) => DropdownMenuItem<int>(
+                                    value: y,
+                                    child: Text(ClassService.yearLevelLabel(y), overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setDlgState(() => selectedYearLevel = val);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          initialValue: selectedStatus,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ស្ថានភាព (Status)', 'Status'),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          items: ClassService.presetStatuses
+                              .map((s) => DropdownMenuItem<String>(
+                                    value: s,
+                                    child: Text(ClassService.studentStatusLabel(s), overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setDlgState(() => selectedStatus = val);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -787,6 +850,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   generation: selectedGeneration,
                   intakeYear: selectedIntakeYear,
                   yearLevel: selectedYearLevel,
+                  status: selectedStatus,
                   phone: phoneCtrl.text.trim(),
                 );
 
@@ -1122,6 +1186,118 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
+  /// ប្តូរស្ថានភាពសិស្សជាក្រុម (Active / Graduated / Inactive) ដោយមិនលុបទិន្នន័យចោល
+  Future<void> _openBulkStatusDialog() async {
+    String targetStatus = 'graduated';
+    final filterDesc = [
+      ?_filterGeneration,
+      if (_filterIntakeYear != null) 'ចាប់ពី $_filterIntakeYear',
+      if (_filterYearLevel != null) 'ឆ្នាំទី $_filterYearLevel',
+      ?_filterDepartment,
+    ].join(' · ');
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDlgState) {
+            final isDark = Theme.of(ctx).brightness == Brightness.dark;
+            return AlertDialog(
+              backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  const Icon(Icons.workspace_premium_rounded, color: Color(0xFF0284C7), size: 26),
+                  const SizedBox(width: 10),
+                  Text(
+                    AppLanguage.tr('ប្តូរស្ថានភាពសិស្សជាក្រុម', 'Batch Update Student Status'),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 440,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      filterDesc.isEmpty
+                          ? AppLanguage.tr(
+                              'កំណត់ស្ថានភាពសម្រាប់សិស្សទាំងអស់ (ទិន្នន័យត្រូវបានរក្សាទុកក្នុងរបាយការណ៍ប្រវត្តិសាស្ត្ររហូត)៖',
+                              'Update status for all students (all records remain preserved in historical stats):',
+                            )
+                          : AppLanguage.tr(
+                              'កំណត់ស្ថានភាពសម្រាប់សិស្សតាមលក្ខខណ្ឌ ($filterDesc)៖',
+                              'Update status for students matching ($filterDesc):',
+                            ),
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    const SizedBox(height: 14),
+                    DropdownButtonFormField<String>(
+                      isExpanded: true,
+                      initialValue: targetStatus,
+                      decoration: InputDecoration(
+                        labelText: AppLanguage.tr('ជ្រើសរើសស្ថានភាពថ្មី', 'New Status'),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                      ),
+                      items: ClassService.presetStatuses
+                          .map((s) => DropdownMenuItem<String>(
+                                value: s,
+                                child: Text(ClassService.studentStatusLabel(s)),
+                              ))
+                          .toList(),
+                      onChanged: (val) {
+                        if (val != null) setDlgState(() => targetStatus = val);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0284C7),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: Text(AppLanguage.tr('រក្សាទុកស្ថានភាព', 'Apply Status')),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      final result = await ClassService.bulkUpdateStudentStatus(
+        status: targetStatus,
+        generation: _filterGeneration,
+        intakeYear: _filterIntakeYear,
+        department: _filterDepartment,
+        yearLevel: _filterYearLevel,
+      );
+      if (result['success'] == true) {
+        await _loadStudents();
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']?.toString() ?? ''),
+            backgroundColor: result['success'] == true ? AppColors.success : AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   /// បញ្ជាក់ការលុបគណនីសិស្ស
   Future<void> _confirmDeleteStudent(Map<String, dynamic> stu) async {
     final id = stu['id'] as int;
@@ -1246,6 +1422,17 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                             builder: (context, constraints) {
                               final isNarrow = constraints.maxWidth < 750;
                               final actionButtons = [
+                                OutlinedButton.icon(
+                                  icon: const Icon(Icons.workspace_premium_outlined, size: 18),
+                                  label: Text(AppLanguage.tr('ប្តូរស្ថានភាព', 'Batch Status')),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFF0284C7),
+                                    side: const BorderSide(color: Color(0xFF0284C7)),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                  onPressed: _openBulkStatusDialog,
+                                ),
                                 OutlinedButton.icon(
                                   icon: const Icon(Icons.trending_up_rounded, size: 18),
                                   label: Text(AppLanguage.tr('ដំឡើងឆ្នាំសិក្សា', 'Promote Year')),
@@ -1445,10 +1632,36 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                   onChanged: (val) => setState(() => _filterDepartment = val),
                                 ),
                               ),
+                              SizedBox(
+                                width: 195,
+                                child: DropdownButtonFormField<String?>(
+                                  isExpanded: true,
+                                  initialValue: _filterStatus,
+                                  decoration: InputDecoration(
+                                    labelText: AppLanguage.tr('ស្ថានភាព', 'Status'),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem<String?>(
+                                      value: null,
+                                      child: Text(AppLanguage.tr('គ្រប់ស្ថានភាព', 'All Statuses')),
+                                    ),
+                                    ...ClassService.presetStatuses.map(
+                                      (s) => DropdownMenuItem<String?>(
+                                        value: s,
+                                        child: Text(ClassService.studentStatusLabel(s), overflow: TextOverflow.ellipsis),
+                                      ),
+                                    ),
+                                  ],
+                                  onChanged: (val) => setState(() => _filterStatus = val),
+                                ),
+                              ),
                               if (_filterGeneration != null ||
                                   _filterIntakeYear != null ||
                                   _filterYearLevel != null ||
-                                  _filterDepartment != null)
+                                  _filterDepartment != null ||
+                                  _filterStatus != null)
                                 TextButton.icon(
                                   icon: const Icon(Icons.clear_rounded, size: 16),
                                   label: Text(AppLanguage.tr('សម្អាត', 'Clear')),
@@ -1458,6 +1671,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                       _filterIntakeYear = null;
                                       _filterYearLevel = null;
                                       _filterDepartment = null;
+                                      _filterStatus = null;
                                     });
                                   },
                                 ),
@@ -1502,6 +1716,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                       DataColumn(label: Text(AppLanguage.tr('អ៊ីមែល', 'Email'))),
                                       DataColumn(label: Text(AppLanguage.tr('ដេប៉ាតឺម៉ង់', 'Department'))),
                                       DataColumn(label: Text(AppLanguage.tr('ជំនាន់ / ឆ្នាំទី', 'Generation / Year'))),
+                                      DataColumn(label: Text(AppLanguage.tr('ស្ថានភាព', 'Status'))),
                                       DataColumn(label: Text(AppLanguage.tr('លេខទូរស័ព្ទ', 'Phone'))),
                                       DataColumn(label: Text(AppLanguage.tr('សកម្មភាព (Actions)', 'Actions'))),
                                     ],
@@ -1520,6 +1735,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                       final yearLevel = stu['year_level'] is int
                                           ? stu['year_level'] as int
                                           : int.tryParse(stu['year_level']?.toString() ?? '');
+                                      final status = (stu['status'] ?? 'active').toString().toLowerCase();
                                       final phone = stu['phone'] ?? '-';
 
                                       return DataRow(
@@ -1607,6 +1823,36 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                                     style: TextStyle(fontSize: 11, color: subTextCol),
                                                   ),
                                               ],
+                                            ),
+                                          ),
+                                          DataCell(
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: (status == 'graduated'
+                                                        ? const Color(0xFF0284C7)
+                                                        : status == 'inactive'
+                                                            ? const Color(0xFFDC2626)
+                                                            : const Color(0xFF16A34A))
+                                                    .withValues(alpha: 0.14),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                status == 'graduated'
+                                                    ? AppLanguage.tr('រៀនចប់', 'Graduated')
+                                                    : status == 'inactive'
+                                                        ? AppLanguage.tr('ឈប់រៀន', 'Inactive')
+                                                        : AppLanguage.tr('កំពុងរៀន', 'Active'),
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: status == 'graduated'
+                                                      ? const Color(0xFF0284C7)
+                                                      : status == 'inactive'
+                                                          ? const Color(0xFFDC2626)
+                                                          : const Color(0xFF16A34A),
+                                                ),
+                                              ),
                                             ),
                                           ),
                                           DataCell(Text(phone)),

@@ -24,10 +24,13 @@ class AdminScaffold extends StatefulWidget {
 
 class _AdminScaffoldState extends State<AdminScaffold> {
   UserModel? _currentUser;
+  bool _reportsExpanded = false;
 
   @override
   void initState() {
     super.initState();
+    _reportsExpanded = widget.currentRoute == AppRoutes.attendances ||
+        widget.currentRoute == AppRoutes.studentStats;
     _currentUser = AuthService.cachedUser;
     if (_currentUser == null) {
       _loadUser();
@@ -245,14 +248,15 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                       ),
                       const SizedBox(height: 6),
 
-                      _buildNavItem(
-                        icon: Icons.fact_check_outlined,
-                        title: isLecturer
-                            ? AppLanguage.tr('វត្តមានសិស្សក្នុងថ្នាក់', 'Class Attendance')
-                            : AppLanguage.tr('របាយការណ៍វត្តមាន', 'Attendance Reports'),
-                        route: AppRoutes.attendances,
-                        isCompact: isCompact,
-                      ),
+                      if (isLecturer)
+                        _buildNavItem(
+                          icon: Icons.fact_check_outlined,
+                          title: AppLanguage.tr('វត្តមានសិស្សក្នុងថ្នាក់', 'Class Attendance'),
+                          route: AppRoutes.attendances,
+                          isCompact: isCompact,
+                        )
+                      else
+                        _buildReportsMenuGroup(isCompact: isCompact),
                     ],
                   ),
                 ),
@@ -489,6 +493,98 @@ class _AdminScaffoldState extends State<AdminScaffold> {
       );
     }
     return navContent;
+  }
+
+  Widget _buildReportsMenuGroup({required bool isCompact}) {
+    final isReportRoute = widget.currentRoute == AppRoutes.attendances ||
+        widget.currentRoute == AppRoutes.studentStats;
+
+    if (isCompact) {
+      return Column(
+        children: [
+          _buildNavItem(
+            icon: Icons.analytics_outlined,
+            title: AppLanguage.tr('ស្ថិតិនិស្សិត & ប្រវត្តិតាមឆ្នាំ', 'Student Yearly Stats'),
+            route: AppRoutes.studentStats,
+            isCompact: true,
+          ),
+          const SizedBox(height: 6),
+          _buildNavItem(
+            icon: Icons.fact_check_outlined,
+            title: AppLanguage.tr('របាយការណ៍វត្តមាន', 'Attendance Reports'),
+            route: AppRoutes.attendances,
+            isCompact: true,
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InkWell(
+          onTap: () => setState(() => _reportsExpanded = !_reportsExpanded),
+          borderRadius: BorderRadius.circular(10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isReportRoute ? AppColors.primary.withValues(alpha: 0.18) : Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.bar_chart_rounded,
+                  color: isReportRoute ? Colors.white : const Color(0xFFCBD5E1),
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    AppLanguage.tr('របាយការណ៍', 'Reports'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isReportRoute ? Colors.white : const Color(0xFFCBD5E1),
+                      fontSize: 14,
+                      fontWeight: isReportRoute ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                Icon(
+                  _reportsExpanded ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                  color: const Color(0xFF94A3B8),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_reportsExpanded) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Column(
+              children: [
+                _buildNavItem(
+                  icon: Icons.analytics_outlined,
+                  title: AppLanguage.tr('ស្ថិតិតាមឆ្នាំ & ជំនាញ', 'Yearly & Dept Stats'),
+                  route: AppRoutes.studentStats,
+                  isCompact: false,
+                ),
+                const SizedBox(height: 4),
+                _buildNavItem(
+                  icon: Icons.fact_check_outlined,
+                  title: AppLanguage.tr('របាយការណ៍វត្តមាន', 'Attendance Reports'),
+                  route: AppRoutes.attendances,
+                  isCompact: false,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
+    );
   }
 }
 

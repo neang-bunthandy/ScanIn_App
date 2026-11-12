@@ -10,6 +10,7 @@ class UserModel {
   final String? generation; // ជំនាន់ (ឧ. Gen 15)
   final String? intakeYear; // ចាប់ពីឆ្នាំ (ឧ. 2024)
   final int? yearLevel; // ឆ្នាំទី (1-4)
+  final String status; // 'active', 'graduated', 'inactive'
   final String? phone;
   final String? avatarUrl;
   final DateTime? createdAt;
@@ -26,6 +27,7 @@ class UserModel {
     this.generation,
     this.intakeYear,
     this.yearLevel,
+    this.status = 'active',
     this.phone,
     this.avatarUrl,
     this.createdAt,
@@ -50,6 +52,7 @@ class UserModel {
       yearLevel: json['year_level'] is int
           ? json['year_level'] as int
           : int.tryParse(json['year_level']?.toString() ?? ''),
+      status: json['status'] as String? ?? 'active',
       phone: json['phone'] as String?,
       avatarUrl: json['avatar_url'] as String?,
       createdAt: json['created_at'] != null
@@ -72,6 +75,7 @@ class UserModel {
       'generation': generation,
       'intake_year': intakeYear,
       'year_level': yearLevel,
+      'status': status,
       'phone': phone,
       'avatar_url': avatarUrl,
       'created_at': createdAt?.toIso8601String(),

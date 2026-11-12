@@ -49,6 +49,24 @@ class ClassService {
     }
   }
 
+  static const List<String> presetStatuses = [
+    'active',
+    'graduated',
+    'inactive',
+  ];
+
+  static String studentStatusLabel(String? status) {
+    switch ((status ?? 'active').toLowerCase()) {
+      case 'graduated':
+        return 'រៀនចប់ (Graduated)';
+      case 'inactive':
+        return 'ឈប់រៀន / ផ្អាក (Inactive)';
+      case 'active':
+      default:
+        return 'កំពុងរៀន (Active)';
+    }
+  }
+
   static int suggestYearLevelFromIntake(String intakeYear) {
     final start = int.tryParse(intakeYear.trim());
     if (start == null) return 1;
@@ -359,6 +377,7 @@ class ClassService {
     String? generation,
     String? intakeYear,
     int? yearLevel,
+    String? status,
     String? phone,
   }) async {
     try {
@@ -375,6 +394,7 @@ class ClassService {
         'generation': generation ?? '',
         'intake_year': intakeYear ?? '',
         'year_level': ?yearLevel,
+        'status': status ?? 'active',
         'phone': phone ?? '',
       };
 
@@ -414,6 +434,7 @@ class ClassService {
     String? generation,
     String? intakeYear,
     int? yearLevel,
+    String? status,
     String? phone,
   }) async {
     try {
@@ -429,6 +450,7 @@ class ClassService {
         'generation': generation ?? '',
         'intake_year': intakeYear ?? '',
         'year_level': ?yearLevel,
+        'status': ?status,
         'phone': phone ?? '',
       };
       if (password != null && password.isNotEmpty) {
@@ -553,6 +575,88 @@ class ClassService {
     } catch (e) {
       return {'success': false, 'message': 'បញ្ហាតភ្ជាប់៖ $e'};
     }
+  }
+
+  /// Admin ប្តូរស្ថានភាពសិស្សជាក្រុម (Active / Graduated / Inactive)
+  static Future<Map<String, dynamic>> bulkUpdateStudentStatus({
+    required String status,
+    String? generation,
+    String? intakeYear,
+    String? department,
+    int? yearLevel,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      final body = <String, dynamic>{
+        'status': status,
+        if (generation != null && generation.isNotEmpty) 'generation': generation,
+        if (intakeYear != null && intakeYear.isNotEmpty) 'intake_year': intakeYear,
+        if (department != null && department.isNotEmpty) 'department': department,
+        'year_level': ?yearLevel,
+      };
+      final response = await http.post(
+        Uri.parse(ApiConfig.bulkStudentStatusUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 8));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        _cachedStudents = null;
+        return {
+          'success': true,
+          'message': data['message'] ?? 'បានប្តូរស្ថានភាពជោគជ័យ',
+          'updated_count': data['updated_count'] ?? 0,
+        };
+      }
+      return {'success': false, 'message': data['message'] ?? 'មិនអាចប្តូរស្ថានភាពបានទេ'};
+    } catch (e) {
+      return {'success': false, 'message': 'បញ្ហាតភ្ជាប់៖ $e'};
+    }
+  }
+
+  /// Admin ទាញរបាយការណ៍ស្ថិតិនិស្សិត និងប្រវត្តិតាមឆ្នាំចូលរៀន ជំនាន់ និងដេប៉ាតឺម៉ង់
+  static Future<Map<String, dynamic>?> getAdminStudentStats({
+    String? intakeYear,
+    String? department,
+    String? generation,
+    String? status,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) return null;
+
+      final params = <String, String>{
+        if (intakeYear != null && intakeYear.isNotEmpty) 'intake_year': intakeYear,
+        if (department != null && department.isNotEmpty) 'department': department,
+        if (generation != null && generation.isNotEmpty) 'generation': generation,
+        if (status != null && status.isNotEmpty) 'status': status,
+      };
+
+      final uri = Uri.parse(ApiConfig.adminStudentStatsUrl).replace(
+        queryParameters: params.isEmpty ? null : params,
+      );
+
+      final response = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == true && data['data'] != null) {
+          return Map<String, dynamic>.from(data['data'] as Map);
+        }
+      }
+    } catch (_) {}
+    return null;
   }
 
   /// Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន

@@ -39,6 +39,18 @@ class AttendanceController extends Controller
             ], 400);
         }
 
+        // ពិនិត្យស្ថានភាពសិស្ស (អនុញ្ញាតតែសិស្សកំពុងសិក្សា 'active' ប៉ុណ្ណោះ)
+        $studentStatus = strtolower(trim((string)($user->status ?? 'active')));
+        if ($user->role === 'student' && $studentStatus !== 'active') {
+            $statusMsg = $studentStatus === 'graduated'
+                ? 'គណនីរបស់អ្នកមានស្ថានភាព "រៀនចប់ (Graduated)" មិនអាចស្កេនកត់វត្តមានបានទេ!'
+                : 'គណនីរបស់អ្នកត្រូវបានផ្អាក / ឈប់រៀន ("Inactive") មិនអាចស្កេនកត់វត្តមានបានទេ!';
+            return response()->json([
+                'status' => false,
+                'message' => $statusMsg,
+            ], 403);
+        }
+
         // ពិនិត្យថាតើនិស្សិតស្ថិតក្នុងដេប៉ាតឺម៉ង់របស់ថ្នាក់នេះឬទេ
         if (!empty($class->department) && trim((string)($user->department ?? '')) !== trim((string)$class->department)) {
             return response()->json([

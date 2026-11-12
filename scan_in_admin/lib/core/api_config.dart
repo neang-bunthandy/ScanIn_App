@@ -54,6 +54,8 @@ class ApiConfig {
   static String get studentsUrl => '$baseUrl/students';
   static String get studentsImportUrl => '$baseUrl/students/import';
   static String get promoteStudentsUrl => '$baseUrl/students/promote';
+  static String get bulkStudentStatusUrl => '$baseUrl/students/bulk-status';
+  static String get adminStudentStatsUrl => '$baseUrl/admin/reports/student-stats';
   static String lecturerDetailUrl(int id) => '$baseUrl/lecturers/$id';
   static String studentDetailUrl(int id) => '$baseUrl/students/$id';
   static String classDetailUrl(int id) => '$baseUrl/classes/$id';
