@@ -18,6 +18,7 @@ class LecturerProfileScreen extends StatefulWidget {
   final String selectedLanguage;
   final ValueChanged<bool> onToggleNotifications;
   final ValueChanged<String> onLanguageChanged;
+  final Future<void> Function()? onRefresh;
 
   const LecturerProfileScreen({
     super.key,
@@ -28,6 +29,7 @@ class LecturerProfileScreen extends StatefulWidget {
     required this.selectedLanguage,
     required this.onToggleNotifications,
     required this.onLanguageChanged,
+    this.onRefresh,
   });
 
   @override
@@ -411,7 +413,8 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
       totalStudents += c.studentCount;
     }
 
-    return SingleChildScrollView(
+    final content = SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -902,6 +905,15 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
         ],
       ),
     );
+
+    if (widget.onRefresh != null) {
+      return RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: widget.onRefresh!,
+        child: content,
+      );
+    }
+    return content;
   }
 
   Widget _buildMiniStatBox({

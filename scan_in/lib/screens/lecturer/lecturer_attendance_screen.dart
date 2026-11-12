@@ -11,12 +11,14 @@ class LecturerAttendanceScreen extends StatefulWidget {
   final List<ClassModel> classes;
   final List<AttendanceModel> attendanceRecords;
   final Function(AttendanceModel, String) onUpdateAttendanceStatus;
+  final Future<void> Function()? onRefresh;
 
   const LecturerAttendanceScreen({
     super.key,
     required this.classes,
     required this.attendanceRecords,
     required this.onUpdateAttendanceStatus,
+    this.onRefresh,
   });
 
   @override
@@ -259,26 +261,35 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
 
           const SizedBox(height: 16),
 
-          // Attendance Records List
+          // Attendance Records List (Always scrollable for Pull-to-Refresh)
           Expanded(
-            child: filteredList.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.assignment_late_outlined, size: 48, color: isDark ? const Color(0xFF475569) : Colors.grey.shade400),
-                        const SizedBox(height: 12),
-                        Text(
-                          AppLanguage.tr('មិនមានទិន្នន័យវត្តមានទេ', 'No attendance records found'),
-                          style: TextStyle(color: subTextCol, fontSize: 14),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.separated(
-                    itemCount: filteredList.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 10),
-                    itemBuilder: (context, index) {
+            child: Builder(
+              builder: (context) {
+                final listWidget = filteredList.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: [
+                          SizedBox(height: MediaQuery.of(context).size.height * 0.18),
+                          Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.assignment_late_outlined, size: 48, color: isDark ? const Color(0xFF475569) : Colors.grey.shade400),
+                                const SizedBox(height: 12),
+                                Text(
+                                  AppLanguage.tr('មិនមានទិន្នន័យវត្តមានទេ', 'No attendance records found'),
+                                  style: TextStyle(color: subTextCol, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      )
+                    : ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: filteredList.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
                       final item = filteredList[index];
 
                       Color badgeColor;
@@ -379,7 +390,17 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
                         ),
                       );
                     },
-                  ),
+                  );
+                if (widget.onRefresh != null) {
+                  return RefreshIndicator(
+                    color: AppColors.primary,
+                    onRefresh: widget.onRefresh!,
+                    child: listWidget,
+                  );
+                }
+                return listWidget;
+              },
+            ),
           ),
         ],
       ),

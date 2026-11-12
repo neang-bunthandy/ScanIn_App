@@ -75,40 +75,46 @@ class _StudentHistoryScreenState extends State<StudentHistoryScreen> {
                 ? const Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
                   )
-                : _attendances.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.history_rounded,
-                              size: 56,
-                              color: subTextCol.withValues(alpha: 0.5),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              AppLanguage.tr(
-                                'មិនទាន់មានប្រវត្តិវត្តមាននៅឡើយទេ',
-                                'No attendance history yet',
+                : RefreshIndicator(
+                    onRefresh: _loadAttendances,
+                    color: AppColors.primary,
+                    child: _attendances.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                              Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.history_rounded,
+                                      size: 56,
+                                      color: subTextCol.withValues(alpha: 0.5),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      AppLanguage.tr(
+                                        'មិនទាន់មានប្រវត្តិវត្តមាននៅឡើយទេ',
+                                        'No attendance history yet',
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: subTextCol,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: subTextCol,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadAttendances,
-                        color: AppColors.primary,
-                        child: ListView.separated(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          itemCount: _attendances.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
+                            ],
+                          )
+                        : ListView.separated(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: _attendances.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
                             final item = _attendances[index];
 
                             // ពណ៌ Badge តាមស្ថានភាពវត្តមាន

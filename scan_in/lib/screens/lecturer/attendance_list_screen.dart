@@ -376,22 +376,28 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
                 ? const Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
                   )
-                : filtered.isEmpty
-                    ? Center(
-                        child: Text(
-                          AppLanguage.tr('មិនមានទិន្នន័យត្រូវបង្ហាញទេ', 'No data to display'),
-                          style: TextStyle(color: subTextCol),
-                        ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _loadAttendances,
-                        color: AppColors.primary,
-                        child: ListView.separated(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          itemCount: filtered.length,
-                          separatorBuilder: (context, index) => const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
+                : RefreshIndicator(
+                    onRefresh: _loadAttendances,
+                    color: AppColors.primary,
+                    child: filtered.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              SizedBox(height: MediaQuery.of(context).size.height * 0.2),
+                              Center(
+                                child: Text(
+                                  AppLanguage.tr('មិនមានទិន្នន័យត្រូវបង្ហាញទេ', 'No data to display'),
+                                  style: TextStyle(color: subTextCol),
+                                ),
+                              ),
+                            ],
+                          )
+                        : ListView.separated(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            itemCount: filtered.length,
+                            separatorBuilder: (context, index) => const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
                             final item = filtered[index];
 
                             Color badgeColor;

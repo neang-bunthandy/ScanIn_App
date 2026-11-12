@@ -16,6 +16,7 @@ class LecturerDashboardScreen extends StatelessWidget {
   final Function(ClassModel) onShowQr;
   final Function(ClassModel) onToggleQr;
   final VoidCallback onGoToAttendanceTab;
+  final Future<void> Function()? onRefresh;
 
   const LecturerDashboardScreen({
     super.key,
@@ -25,6 +26,7 @@ class LecturerDashboardScreen extends StatelessWidget {
     required this.onShowQr,
     required this.onToggleQr,
     required this.onGoToAttendanceTab,
+    this.onRefresh,
   });
 
   @override
@@ -55,7 +57,8 @@ class LecturerDashboardScreen extends StatelessWidget {
       if (active) activeQrCount++;
     }
 
-    return SingleChildScrollView(
+    final content = SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,6 +328,15 @@ class LecturerDashboardScreen extends StatelessWidget {
         ],
       ),
     );
+
+    if (onRefresh != null) {
+      return RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: onRefresh!,
+        child: content,
+      );
+    }
+    return content;
   }
 
   // Stat Card Widget

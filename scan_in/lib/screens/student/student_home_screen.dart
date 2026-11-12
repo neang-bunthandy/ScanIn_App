@@ -623,6 +623,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   onLanguageChanged: (lang) {
                     setState(() => _selectedLanguage = lang);
                   },
+                  onRefresh: _loadBackendData,
                 ),
               ],
             ),

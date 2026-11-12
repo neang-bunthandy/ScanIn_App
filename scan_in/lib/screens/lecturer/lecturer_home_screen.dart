@@ -578,12 +578,14 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                   onShowQr: _showQrBottomSheet,
                   onToggleQr: _toggleQrForClass,
                   onGoToAttendanceTab: () => setState(() => _currentIndex = 1),
+                  onRefresh: _loadBackendData,
                 ),
                 // Tab 2: វត្តមាន (Attendance)
                 LecturerAttendanceScreen(
                   classes: _classes,
                   attendanceRecords: _attendanceRecords,
                   onUpdateAttendanceStatus: _updateAttendanceStatus,
+                  onRefresh: _loadBackendData,
                 ),
                 // Tab 3: ខ្ញុំ (Profile)
                 LecturerProfileScreen(
@@ -598,6 +600,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                   onLanguageChanged: (lang) {
                     setState(() => _selectedLanguage = lang);
                   },
+                  onRefresh: _loadBackendData,
                 ),
               ],
             ),

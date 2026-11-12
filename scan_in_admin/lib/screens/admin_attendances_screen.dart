@@ -340,8 +340,14 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
           ? AppLanguage.tr('វត្តមានសិស្សក្នុងថ្នាក់ (Class Attendance)', 'Class Attendance')
           : AppLanguage.tr('របាយការណ៍ និងគ្រប់គ្រងវត្តមាន', 'Attendance Management'),
       currentRoute: AppRoutes.attendances,
-      body: ListView(
-        padding: EdgeInsets.all(MediaQuery.of(context).size.width < 768 ? 16 : 32),
+      body: RefreshIndicator(
+        color: AppColors.primary,
+        onRefresh: () => _selectedClassId != null
+            ? _loadAttendancesForClass(_selectedClassId!)
+            : _initData(),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.all(MediaQuery.of(context).size.width < 768 ? 16 : 32),
         children: [
           // Filter & Class Dropdown Card
           Container(
@@ -578,6 +584,7 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
