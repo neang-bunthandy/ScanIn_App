@@ -77,6 +77,37 @@ class ClassService {
     return diff;
   }
 
+  /// បង្កើតជម្រើសឆ្នាំចូលរៀនដោយស្វ័យប្រវត្តិ (ប្រែប្រួលតាមឆ្នាំបច្ចុប្បន្ន + តម្លៃមានស្រាប់ក្នុង DB)
+  static List<String> buildIntakeYearOptions([Iterable<String> extra = const []]) {
+    final nowYear = DateTime.now().year;
+    final set = <String>{
+      for (int y = nowYear - 6; y <= nowYear + 2; y++) '$y',
+      ...extra.map((e) => e.trim()).where((e) => e.isNotEmpty),
+    };
+    final list = set.toList()..sort((a, b) => b.compareTo(a));
+    return list;
+  }
+
+  /// បង្កើតជម្រើសឆ្នាំសិក្សាដោយស្វ័យប្រវត្តិ (ឧ. 2025-2026 .. 2029-2030 + តម្លៃមានស្រាប់ក្នុង DB)
+  static List<String> buildAcademicYearOptions([Iterable<String> extra = const []]) {
+    final nowYear = DateTime.now().year;
+    final set = <String>{
+      for (int y = nowYear - 2; y <= nowYear + 3; y++) '$y-${y + 1}',
+      ...extra.map((e) => e.trim()).where((e) => e.isNotEmpty),
+    };
+    final list = set.toList()..sort((a, b) => b.compareTo(a));
+    return list;
+  }
+
+  /// បង្កើតជម្រើសជំនាន់ (តម្លៃណែនាំ + ជំនាន់ដែលធ្លាប់បង្កើតក្នុង DB)
+  static List<String> buildGenerationOptions([Iterable<String> extra = const []]) {
+    final set = <String>{
+      ...presetGenerations,
+      ...extra.map((e) => e.trim()).where((e) => e.isNotEmpty),
+    };
+    return set.toList();
+  }
+
   static List<ClassModel>? _cachedClasses;
   static List<Map<String, dynamic>>? _cachedLecturers;
   static List<Map<String, dynamic>>? _cachedStudents;

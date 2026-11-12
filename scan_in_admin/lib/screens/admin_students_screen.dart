@@ -5,6 +5,7 @@ import '../core/app_routes.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/class_service.dart';
+import '../widgets/editable_combo_field.dart';
 import 'admin_scaffold.dart';
 
 class AdminStudentsScreen extends StatefulWidget {
@@ -93,12 +94,15 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final passwordCtrl = TextEditingController(text: 'password123');
     final codeCtrl = TextEditingController(text: 'STU00${_students.length + 1}');
     String selectedDepartment = ClassService.presetDepartments.first;
-    String selectedGeneration = ClassService.presetGenerations[2]; // Gen 16 default
-    String selectedIntakeYear = '${DateTime.now().year}';
-    if (!ClassService.presetIntakeYears.contains(selectedIntakeYear)) {
-      selectedIntakeYear = ClassService.presetIntakeYears.last;
-    }
-    int selectedYearLevel = ClassService.suggestYearLevelFromIntake(selectedIntakeYear);
+    final genOptions = ClassService.buildGenerationOptions(
+      _students.map((s) => (s['generation'] ?? '').toString()),
+    );
+    final intakeOptions = ClassService.buildIntakeYearOptions(
+      _students.map((s) => (s['intake_year'] ?? '').toString()),
+    );
+    final generationCtrl = TextEditingController(text: genOptions.length > 2 ? genOptions[2] : genOptions.first);
+    final intakeYearCtrl = TextEditingController(text: '${DateTime.now().year}');
+    int selectedYearLevel = ClassService.suggestYearLevelFromIntake(intakeYearCtrl.text);
     String selectedStatus = 'active';
     final phoneCtrl = TextEditingController(text: '098 765 432');
     String selectedGender = 'ប្រុស (Male)';
@@ -303,48 +307,30 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ជំនាន់ & ចាប់ពីឆ្នាំ & ឆ្នាំទីបច្ចុប្បន្ន
+                  // ជំនាន់ & ចាប់ពីឆ្នាំ & ឆ្នាំទីបច្ចុប្បន្ន (អាចវាយបញ្ចូលដោយដៃ ឬជ្រើសរើសរហ័ស)
                   Row(
                     children: [
                       Expanded(
                         flex: 3,
-                        child: DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: selectedGeneration,
-                          decoration: InputDecoration(
-                            labelText: AppLanguage.tr('ជំនាន់ (Generation)', 'Generation'),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          ),
-                          items: ClassService.presetGenerations
-                              .map((g) => DropdownMenuItem<String>(
-                                    value: g,
-                                    child: Text(g, overflow: TextOverflow.ellipsis),
-                                  ))
-                              .toList(),
-                          onChanged: (val) {
-                            if (val != null) setDlgState(() => selectedGeneration = val);
-                          },
+                        child: EditableComboField(
+                          controller: generationCtrl,
+                          labelText: AppLanguage.tr('ជំនាន់ (Generation)', 'Generation'),
+                          hintText: 'ឧ. ជំនាន់ទី ១៦ (Gen 16)',
+                          suggestions: genOptions,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         flex: 2,
-                        child: DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: selectedIntakeYear,
-                          decoration: InputDecoration(
-                            labelText: AppLanguage.tr('ចាប់ពីឆ្នាំ', 'Start Year'),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          ),
-                          items: ClassService.presetIntakeYears
-                              .map((y) => DropdownMenuItem<String>(value: y, child: Text(y)))
-                              .toList(),
+                        child: EditableComboField(
+                          controller: intakeYearCtrl,
+                          labelText: AppLanguage.tr('ចាប់ពីឆ្នាំ', 'Start Year'),
+                          hintText: 'ឧ. 2026',
+                          keyboardType: TextInputType.number,
+                          suggestions: intakeOptions,
                           onChanged: (val) {
-                            if (val != null) {
+                            if (val.trim().length == 4 && int.tryParse(val.trim()) != null) {
                               setDlgState(() {
-                                selectedIntakeYear = val;
                                 selectedYearLevel = ClassService.suggestYearLevelFromIntake(val);
                               });
                             }
@@ -439,8 +425,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   gender: selectedGender.contains('ស្រី') ? 'ស្រី' : 'ប្រុស',
                   dateOfBirth: dobCtrl.text.trim(),
                   department: selectedDepartment,
-                  generation: selectedGeneration,
-                  intakeYear: selectedIntakeYear,
+                  generation: generationCtrl.text.trim(),
+                  intakeYear: intakeYearCtrl.text.trim(),
                   yearLevel: selectedYearLevel,
                   status: selectedStatus,
                   phone: phoneCtrl.text.trim(),
@@ -498,24 +484,26 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
       if (existingDept.isNotEmpty && !ClassService.presetDepartments.contains(existingDept)) existingDept,
     ];
     String selectedDepartment = existingDept.isNotEmpty ? existingDept : deptOptions.first;
+    final genOptions = ClassService.buildGenerationOptions(
+      _students.map((s) => (s['generation'] ?? '').toString()),
+    );
+    final intakeOptions = ClassService.buildIntakeYearOptions(
+      _students.map((s) => (s['intake_year'] ?? '').toString()),
+    );
     final existingGen = (stu['generation'] ?? '').toString().trim();
-    final genOptions = [
-      ...ClassService.presetGenerations,
-      if (existingGen.isNotEmpty && !ClassService.presetGenerations.contains(existingGen)) existingGen,
-    ];
-    String selectedGeneration = existingGen.isNotEmpty ? existingGen : genOptions[2];
     final existingIntake = (stu['intake_year'] ?? '').toString().trim();
-    final intakeOptions = [
-      ...ClassService.presetIntakeYears,
-      if (existingIntake.isNotEmpty && !ClassService.presetIntakeYears.contains(existingIntake)) existingIntake,
-    ];
-    String selectedIntakeYear = existingIntake.isNotEmpty ? existingIntake : '2026';
+    final generationCtrl = TextEditingController(
+      text: existingGen.isNotEmpty ? existingGen : (genOptions.length > 2 ? genOptions[2] : genOptions.first),
+    );
+    final intakeYearCtrl = TextEditingController(
+      text: existingIntake.isNotEmpty ? existingIntake : '${DateTime.now().year}',
+    );
     final existingYear = stu['year_level'] is int
         ? stu['year_level'] as int
         : int.tryParse(stu['year_level']?.toString() ?? '');
     int selectedYearLevel = (existingYear != null && existingYear >= 1 && existingYear <= 4)
         ? existingYear
-        : ClassService.suggestYearLevelFromIntake(selectedIntakeYear);
+        : ClassService.suggestYearLevelFromIntake(intakeYearCtrl.text);
     final rawStatus = (stu['status'] ?? 'active').toString().toLowerCase();
     String selectedStatus = ClassService.presetStatuses.contains(rawStatus) ? rawStatus : 'active';
     final phoneCtrl = TextEditingController(text: stu['phone'] ?? '');
@@ -715,43 +703,25 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     children: [
                       Expanded(
                         flex: 3,
-                        child: DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: selectedGeneration,
-                          decoration: InputDecoration(
-                            labelText: AppLanguage.tr('ជំនាន់ (Generation)', 'Generation'),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          ),
-                          items: genOptions
-                              .map((g) => DropdownMenuItem<String>(
-                                    value: g,
-                                    child: Text(g, overflow: TextOverflow.ellipsis),
-                                  ))
-                              .toList(),
-                          onChanged: (val) {
-                            if (val != null) setDlgState(() => selectedGeneration = val);
-                          },
+                        child: EditableComboField(
+                          controller: generationCtrl,
+                          labelText: AppLanguage.tr('ជំនាន់ (Generation)', 'Generation'),
+                          hintText: 'ឧ. ជំនាន់ទី ១៦ (Gen 16)',
+                          suggestions: genOptions,
                         ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         flex: 2,
-                        child: DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: selectedIntakeYear,
-                          decoration: InputDecoration(
-                            labelText: AppLanguage.tr('ចាប់ពីឆ្នាំ', 'Start Year'),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                          ),
-                          items: intakeOptions
-                              .map((y) => DropdownMenuItem<String>(value: y, child: Text(y)))
-                              .toList(),
+                        child: EditableComboField(
+                          controller: intakeYearCtrl,
+                          labelText: AppLanguage.tr('ចាប់ពីឆ្នាំ', 'Start Year'),
+                          hintText: 'ឧ. 2026',
+                          keyboardType: TextInputType.number,
+                          suggestions: intakeOptions,
                           onChanged: (val) {
-                            if (val != null) {
+                            if (val.trim().length == 4 && int.tryParse(val.trim()) != null) {
                               setDlgState(() {
-                                selectedIntakeYear = val;
                                 selectedYearLevel = ClassService.suggestYearLevelFromIntake(val);
                               });
                             }
@@ -847,8 +817,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   dateOfBirth: dobCtrl.text.trim(),
                   password: passwordCtrl.text.isNotEmpty ? passwordCtrl.text : null,
                   department: selectedDepartment,
-                  generation: selectedGeneration,
-                  intakeYear: selectedIntakeYear,
+                  generation: generationCtrl.text.trim(),
+                  intakeYear: intakeYearCtrl.text.trim(),
                   yearLevel: selectedYearLevel,
                   status: selectedStatus,
                   phone: phoneCtrl.text.trim(),
@@ -1559,7 +1529,9 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                       value: null,
                                       child: Text(AppLanguage.tr('គ្រប់ជំនាន់ (All)', 'All Generations')),
                                     ),
-                                    ...ClassService.presetGenerations.map(
+                                    ...ClassService.buildGenerationOptions(
+                                      _students.map((s) => (s['generation'] ?? '').toString()),
+                                    ).map(
                                       (g) => DropdownMenuItem<String?>(value: g, child: Text(g, overflow: TextOverflow.ellipsis)),
                                     ),
                                   ],
@@ -1581,7 +1553,9 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                       value: null,
                                       child: Text(AppLanguage.tr('គ្រប់ឆ្នាំ', 'All Years')),
                                     ),
-                                    ...ClassService.presetIntakeYears.map(
+                                    ...ClassService.buildIntakeYearOptions(
+                                      _students.map((s) => (s['intake_year'] ?? '').toString()),
+                                    ).map(
                                       (y) => DropdownMenuItem<String?>(value: y, child: Text(y)),
                                     ),
                                   ],
