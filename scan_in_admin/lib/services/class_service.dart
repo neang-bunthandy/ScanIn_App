@@ -1,11 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
-import '../data/mock_data.dart';
 import '../models/class_model.dart';
 import 'auth_service.dart';
 
 class ClassService {
+  static const List<String> presetDepartments = [
+    'ព័ត៌មានវិទ្យា (IT)',
+    'វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS)',
+    'វិស្វកម្មសូហ្វវែរ (SE)',
+    'គ្រប់គ្រងពាណិជ្ជកម្ម (BBA)',
+    'គណនេយ្យ និងហិរញ្ញវត្ថុ (Accounting)',
+    'ភាសាអង់គ្លេស (English)',
+    'វិស្វកម្មសំណង់ស៊ីវិល (Civil Engineering)',
+    'ទូទៅ (General)',
+  ];
+
   static List<ClassModel>? _cachedClasses;
   static List<Map<String, dynamic>>? _cachedLecturers;
   static List<Map<String, dynamic>>? _cachedStudents;
@@ -24,7 +34,7 @@ class ClassService {
   static Future<List<ClassModel>> getLecturerClasses() async {
     try {
       final token = await AuthService.getToken();
-      if (token == null) return MockData.sampleClasses;
+      if (token == null) return [];
 
       final response = await http.get(
         Uri.parse(ApiConfig.classesUrl),
@@ -44,18 +54,15 @@ class ClassService {
         _cachedClasses = classes;
         return classes;
       }
-      return [];
-    } catch (_) {
-      // បើ Server មិនទាន់ដំណើរការ យក MockData ជំនួសដើម្បីកុំឱ្យ Error
-    }
-    return MockData.sampleClasses;
+    } catch (_) {}
+    return [];
   }
 
-  /// ទាញយកបញ្ជីថ្នាក់រៀនរបស់សិស្ស (Student Classes)
+  /// ទាញយកបញ្ជីថ្នាក់រៀនរបស់សិស្ស / Admin (Classes List)
   static Future<List<ClassModel>> getStudentClasses() async {
     try {
       final token = await AuthService.getToken();
-      if (token == null) return MockData.sampleClasses;
+      if (token == null) return [];
 
       final response = await http.get(
         Uri.parse(ApiConfig.studentClassesUrl),
@@ -75,9 +82,8 @@ class ClassService {
         _cachedClasses = classes;
         return classes;
       }
-      return [];
     } catch (_) {}
-    return MockData.sampleClasses;
+    return [];
   }
 
   /// បង្កើតថ្នាក់រៀនថ្មី (Create Class)
@@ -453,6 +459,7 @@ class ClassService {
     required int lecturerId,
     required String academicYear,
     required String semester,
+    String? department,
     String? room,
     String? dayOfWeek,
     String? time,
@@ -462,6 +469,7 @@ class ClassService {
       final body = {
         'subject_name': subjectName,
         'subject_code': subjectCode,
+        'department': department ?? '',
         'lecturer_id': lecturerId,
         'academic_year': academicYear,
         'semester': semester,
@@ -496,6 +504,7 @@ class ClassService {
     required int lecturerId,
     required String academicYear,
     required String semester,
+    String? department,
     String? room,
     String? dayOfWeek,
     String? time,
@@ -505,6 +514,7 @@ class ClassService {
       final body = {
         'subject_name': subjectName,
         'subject_code': subjectCode,
+        'department': department ?? '',
         'lecturer_id': lecturerId,
         'academic_year': academicYear,
         'semester': semester,

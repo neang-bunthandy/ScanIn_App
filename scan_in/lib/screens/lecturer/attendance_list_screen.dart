@@ -3,7 +3,6 @@ import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
 import '../../models/attendance_model.dart';
 import '../../models/class_model.dart';
-import '../../data/mock_data.dart';
 import '../../services/attendance_service.dart';
 
 /// អេក្រង់ពិនិត្យ និងកែសម្រួលបញ្ជីវត្តមានសិស្សពេញលេញតាមថ្នាក់
@@ -43,7 +42,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
       } else {
         if (mounted) {
           setState(() {
-            _attendances = List<AttendanceModel>.from(MockData.sampleAttendances);
+            _attendances = [];
             _isLoading = false;
           });
         }
@@ -51,9 +50,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
     } catch (_) {
       if (mounted) {
         setState(() {
-          _attendances = widget.classModel != null
-              ? MockData.sampleAttendances.where((a) => a.classId == widget.classModel!.id).toList()
-              : List<AttendanceModel>.from(MockData.sampleAttendances);
+          _attendances = [];
           _isLoading = false;
         });
       }

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
 import '../../models/class_model.dart';
-import '../../data/mock_data.dart';
 import '../../services/class_service.dart';
 
 /// អេក្រង់បង្ហាញ QR Code កម្រិតពេញអេក្រង់ (Projector / TV Mode)
@@ -22,8 +21,10 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
   late ClassModel _class;
   late int _remainingSeconds;
   Timer? _countdownTimer;
+  Timer? _liveRefreshTimer;
   late bool _isQrActive;
-  late int _scannedCount;
+  int _scannedCount = 0;
+  List<Map<String, dynamic>> _students = [];
   static const int _qrDurationSeconds = 240; // ៤ នាទី (04:00)
   late String _currentToken;
 
@@ -33,9 +34,25 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
     _class = widget.classModel;
     _isQrActive = widget.classModel.isQrActive;
     _remainingSeconds = _qrDurationSeconds;
-    _scannedCount = (_class.studentCount * 0.75).round();
     _currentToken = _class.qrToken ?? 'SCANIN-${_class.subjectCode}-2026';
     _startCountdown();
+    _loadLiveStudents();
+    _liveRefreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      _loadLiveStudents();
+    });
+  }
+
+  Future<void> _loadLiveStudents() async {
+    final students = await ClassService.getClassStudents(_class.id);
+    if (!mounted) return;
+    final scanned = students.where((s) {
+      final status = (s['today_status'] ?? '').toString();
+      return status == 'present' || status == 'late';
+    }).length;
+    setState(() {
+      _students = students;
+      _scannedCount = scanned;
+    });
   }
 
   void _startCountdown() {
@@ -103,6 +120,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _liveRefreshTimer?.cancel();
     super.dispose();
   }
 
@@ -114,10 +132,14 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final students = MockData.getStudentsForClass(_class.id);
-    final maxStudents = math.max(1, _class.studentCount);
-    final progress = (_scannedCount / maxStudents).clamp(0.0, 1.0);
-    final absentCount = math.max(0, _class.studentCount - _scannedCount);
+    final scannedStudents = _students.where((s) {
+      final status = (s['today_status'] ?? '').toString();
+      return status == 'present' || status == 'late';
+    }).toList();
+    final totalStudents = _students.isNotEmpty ? _students.length : _class.studentCount;
+    final maxStudents = math.max(1, totalStudents);
+    final progress = totalStudents == 0 ? 0.0 : (_scannedCount / maxStudents).clamp(0.0, 1.0);
+    final absentCount = math.max(0, totalStudents - _scannedCount);
 
     return PopScope(
       canPop: false,
@@ -175,8 +197,11 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
           ],
         ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+        child: RefreshIndicator(
+          onRefresh: _loadLiveStudents,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -413,7 +438,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                           ],
                         ),
                         Text(
-                          '$_scannedCount / ${_class.studentCount} ${AppLanguage.tr('នាក់', 'students')}',
+                          '$_scannedCount / $totalStudents ${AppLanguage.tr('នាក់', 'students')}',
                           style: const TextStyle(
                             color: Colors.greenAccent,
                             fontWeight: FontWeight.w800,
@@ -459,12 +484,12 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
 
               const SizedBox(height: 20),
 
-              // Recent Scanned Students Preview
-              if (students.isNotEmpty) ...[
+              // Recent Scanned Students Preview (Live from Database)
+              if (scannedStudents.isNotEmpty) ...[
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    '${AppLanguage.tr('និស្សិតទើបបានស្កេនថ្មីៗ', 'Recently Scanned Students')} (${students.take(5).length})',
+                    '${AppLanguage.tr('និស្សិតទើបបានស្កេនថ្មីៗ', 'Recently Scanned Students')} (${scannedStudents.length})',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 15,
@@ -476,10 +501,15 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                 ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount: students.take(4).length,
+                  itemCount: scannedStudents.take(5).length,
                   separatorBuilder: (context, index) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
-                    final s = students[index];
+                    final s = scannedStudents[index];
+                    final name = (s['name'] ?? '').toString();
+                    final code = (s['student_code'] ?? '').toString();
+                    final isLate = (s['today_status'] ?? '') == 'late';
+                    final initial = name.isNotEmpty ? name.substring(0, 1) : '?';
+
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
@@ -492,7 +522,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                             radius: 16,
                             backgroundColor: AppColors.primary,
                             child: Text(
-                              s.name.substring(0, 1),
+                              initial,
                               style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -502,38 +532,45 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  s.name,
+                                  name,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
                                 ),
-                                Text(
-                                  s.studentCode ?? 'STU000',
-                                  style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.6),
-                                    fontSize: 11,
+                                if (code.isNotEmpty)
+                                  Text(
+                                    code,
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.6),
+                                      fontSize: 11,
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF16A34A).withValues(alpha: 0.2),
+                              color: (isLate ? const Color(0xFFF59E0B) : const Color(0xFF16A34A)).withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.check_rounded, color: Color(0xFF4ADE80), size: 14),
+                                Icon(
+                                  isLate ? Icons.schedule_rounded : Icons.check_rounded,
+                                  color: isLate ? const Color(0xFFFBBF24) : const Color(0xFF4ADE80),
+                                  size: 14,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  AppLanguage.tr('បានស្កេន', 'Checked-in'),
-                                  style: const TextStyle(
-                                    color: Color(0xFF4ADE80),
+                                  isLate
+                                      ? AppLanguage.tr('មកយឺត', 'Late')
+                                      : AppLanguage.tr('បានស្កេន', 'Checked-in'),
+                                  style: TextStyle(
+                                    color: isLate ? const Color(0xFFFBBF24) : const Color(0xFF4ADE80),
                                     fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -546,9 +583,31 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                     );
                   },
                 ),
+              ] else ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFF334155)),
+                  ),
+                  child: Text(
+                    AppLanguage.tr(
+                      'មិនទាន់មាននិស្សិតស្កេនកត់វត្តមានថ្ងៃនេះនៅឡើយទេ',
+                      'No students have scanned in today yet',
+                    ),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.65),
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
               ],
             ],
           ),
+        ),
         ),
       ),
     ),

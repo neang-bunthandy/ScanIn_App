@@ -56,6 +56,7 @@ class ApiConfig {
   static String lecturerDetailUrl(int id) => '$baseUrl/lecturers/$id';
   static String studentDetailUrl(int id) => '$baseUrl/students/$id';
   static String classDetailUrl(int id) => '$baseUrl/classes/$id';
+  static String classStudentsUrl(int id) => '$baseUrl/classes/$id/students';
   static String classToggleQrUrl(int id) => '$baseUrl/classes/$id/toggle-qr';
   static String get studentClassesUrl => '$baseUrl/student/classes';
 

@@ -12,6 +12,7 @@ class StudentDashboardScreen extends StatelessWidget {
   final UserModel student;
   final List<ClassModel> classes;
   final List<AttendanceModel> attendances;
+  final bool isLoading;
   final VoidCallback onScanQr;
   final Future<void> Function()? onRefresh;
 
@@ -20,6 +21,7 @@ class StudentDashboardScreen extends StatelessWidget {
     required this.student,
     required this.classes,
     this.attendances = const [],
+    this.isLoading = false,
     required this.onScanQr,
     this.onRefresh,
   });
@@ -64,7 +66,9 @@ class StudentDashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      AppLanguage.tr('ថ្ងៃព្រហស្បតិ៍ 15 តុលា 2026', 'Thursday, Oct 15, 2026'),
+                      (student.department != null && student.department!.isNotEmpty)
+                          ? student.department!
+                          : AppLanguage.tr('ថ្ងៃព្រហស្បតិ៍ 15 តុលា 2026', 'Thursday, Oct 15, 2026'),
                       style: TextStyle(
                         fontSize: 14,
                         color: subTextCol,
@@ -179,34 +183,85 @@ class StudentDashboardScreen extends StatelessWidget {
           const SizedBox(height: 28),
 
           // --- 4. My Classes (ថ្នាក់របស់ខ្ញុំ) ---
-          Text(
-            AppLanguage.tr('ថ្នាក់របស់ខ្ញុំ', 'My Classes'),
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: textCol,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLanguage.tr('ថ្នាក់របស់ខ្ញុំ', 'My Classes'),
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: textCol,
+                ),
+              ),
+              if (student.department != null && student.department!.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    student.department!,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 12),
 
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: classes.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final c = classes[index];
-              return _buildClassCard(
-                context,
-                c,
-                cardBg: cardBg,
-                borderCol: borderCol,
-                textCol: textCol,
-                subTextCol: subTextCol,
-                isDark: isDark,
-              );
-            },
-          ),
+          if (isLoading && classes.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Center(child: CircularProgressIndicator()),
+            )
+          else if (classes.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderCol),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.class_outlined, size: 38, color: subTextCol),
+                  const SizedBox(height: 10),
+                  Text(
+                    AppLanguage.tr(
+                      'មិនទាន់មានថ្នាក់រៀនក្នុងដេប៉ាតឺម៉ង់របស់អ្នកនៅឡើយទេ',
+                      'No classes found for your department yet',
+                    ),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, color: subTextCol, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: classes.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final c = classes[index];
+                return _buildClassCard(
+                  context,
+                  c,
+                  cardBg: cardBg,
+                  borderCol: borderCol,
+                  textCol: textCol,
+                  subTextCol: subTextCol,
+                  isDark: isDark,
+                );
+              },
+            ),
         ],
       ),
     );
@@ -278,7 +333,7 @@ class StudentDashboardScreen extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ClassDetailScreen(classModel: c),
+            builder: (context) => ClassDetailScreen(classModel: c, isStudentView: true),
           ),
         );
       },
@@ -344,7 +399,7 @@ class StudentDashboardScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                c.room.contains('Lab') ? 'Lab 3' : 'A204',
+                c.room.isNotEmpty ? c.room : '-',
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,

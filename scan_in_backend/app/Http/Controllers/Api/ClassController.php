@@ -14,13 +14,33 @@ class ClassController extends Controller
     public function index(Request $request)
     {
         $query = ClassModel::with('lecturer');
+        $user = $request->user();
 
-        // បើមាន User Login និងជាគ្រូ អាច filter យកតែថ្នាក់របស់គាត់
-        if ($request->user() && $request->user()->role === 'lecturer') {
-            $query->where('user_id', $request->user()->id);
+        // បើមាន User Login និងជាគ្រូ Filter យកតែថ្នាក់របស់គាត់
+        if ($user && $user->role === 'lecturer') {
+            $query->where('user_id', $user->id);
+        } elseif ($user && $user->role === 'student') {
+            // សិស្សម្នាក់ៗឃើញតែថ្នាក់រៀនតាមដេប៉ាតឺម៉ង់ (Department) របស់ខ្លួនប៉ុណ្ណោះ
+            $dept = trim((string)($user->department ?? ''));
+            if ($dept !== '') {
+                $query->where('department', $dept);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
         }
 
-        $classes = $query->orderBy('id', 'desc')->get()->map(function ($c) {
+        // គណនាចំនួនសិស្សពិតប្រាកដពី Database តាមដេប៉ាតឺម៉ង់នីមួយៗ
+        $deptCounts = \App\Models\User::where('role', 'student')
+            ->whereNotNull('department')
+            ->selectRaw('department, COUNT(*) as total')
+            ->groupBy('department')
+            ->pluck('total', 'department');
+
+        $classes = $query->orderBy('id', 'desc')->get()->map(function ($c) use ($deptCounts) {
+            $realStudentCount = !empty($c->department)
+                ? (int)($deptCounts[$c->department] ?? 0)
+                : 0;
+
             return [
                 'id' => $c->id,
                 'lecturer_id' => $c->user_id,
@@ -29,12 +49,13 @@ class ClassController extends Controller
                 'teacher_phone' => $c->lecturer?->phone,
                 'subject_name' => $c->subject_name,
                 'subject_code' => $c->subject_code,
+                'department' => $c->department,
                 'room' => $c->room,
                 'day_of_week' => $c->day_of_week,
                 'time' => $c->time,
                 'semester' => $c->semester,
                 'academic_year' => $c->academic_year,
-                'student_count' => $c->student_count,
+                'student_count' => $realStudentCount,
                 'completed_sessions' => $c->completed_sessions,
                 'total_sessions' => $c->total_sessions,
                 'description' => $c->description,
@@ -67,6 +88,7 @@ class ClassController extends Controller
         $request->validate([
             'subject_name' => 'required|string|max:255',
             'subject_code' => 'required|string|max:50',
+            'department' => 'nullable|string|max:255',
             'lecturer_id' => 'nullable|exists:users,id',
             'room' => 'nullable|string|max:100',
             'day_of_week' => 'nullable|string|max:50',
@@ -82,6 +104,9 @@ class ClassController extends Controller
 
         // ប្រសិនបើ Admin ជាអ្នកបង្កើត និងបានជ្រើសរើសគ្រូ យក lecturer_id
         $userId = $request->input('lecturer_id') ?? $request->user()?->id ?? 1;
+        $department = $request->filled('department')
+            ? trim($request->department)
+            : \App\Models\User::find($userId)?->department;
 
         $code = strtoupper(trim($request->subject_code));
         $qrToken = $request->qr_token ?? ('SCANIN-' . $code . '-' . date('Y'));
@@ -90,6 +115,7 @@ class ClassController extends Controller
             'user_id' => $userId,
             'subject_name' => $request->subject_name,
             'subject_code' => $code,
+            'department' => $department,
             'room' => $request->room,
             'day_of_week' => $request->day_of_week,
             'time' => $request->time,
@@ -201,6 +227,7 @@ class ClassController extends Controller
         $request->validate([
             'subject_name' => 'sometimes|required|string|max:255',
             'subject_code' => 'sometimes|required|string|max:50',
+            'department' => 'nullable|string|max:255',
             'lecturer_id' => 'nullable|exists:users,id',
             'room' => 'nullable|string|max:100',
             'day_of_week' => 'nullable|string|max:50',
@@ -214,6 +241,7 @@ class ClassController extends Controller
 
         if ($request->filled('subject_name')) $class->subject_name = $request->subject_name;
         if ($request->filled('subject_code')) $class->subject_code = strtoupper(trim($request->subject_code));
+        if ($request->has('department')) $class->department = $request->filled('department') ? trim($request->department) : null;
         if ($request->has('lecturer_id') && $request->lecturer_id) $class->user_id = $request->lecturer_id;
         if ($request->has('room')) $class->room = $request->room;
         if ($request->has('day_of_week')) $class->day_of_week = $request->day_of_week;
@@ -260,6 +288,76 @@ class ClassController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'បានលុបថ្នាក់រៀនដោយជោគជ័យ',
+        ], 200);
+    }
+
+    /**
+     * ទាញយកបញ្ជីឈ្មោះនិស្សិតក្នុងថ្នាក់រៀនតាមដេប៉ាតឺម៉ង់ (Class Roster - DB)
+     */
+    public function students(Request $request, $id)
+    {
+        $class = ClassModel::find($id);
+        if (!$class) {
+            return response()->json([
+                'status' => false,
+                'message' => 'រកមិនឃើញថ្នាក់រៀននេះទេ',
+            ], 404);
+        }
+
+        $user = $request->user();
+        if ($user && $user->role === 'student') {
+            return response()->json([
+                'status' => false,
+                'message' => 'សិស្សមិនមានសិទ្ធិមើលបញ្ជីឈ្មោះសិស្សទាំងអស់ក្នុងថ្នាក់ឡើយ។',
+            ], 403);
+        }
+        if ($user && $user->role === 'lecturer' && (int)$class->user_id !== (int)$user->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'អ្នកគ្មានសិទ្ធិមើលបញ្ជីសិស្សក្នុងថ្នាក់របស់គ្រូផ្សេងឡើយ។',
+            ], 403);
+        }
+
+        if (empty($class->department)) {
+            return response()->json([
+                'status' => true,
+                'message' => 'ថ្នាក់នេះមិនទាន់បានកំណត់ដេប៉ាតឺម៉ង់នៅឡើយទេ',
+                'data' => [],
+            ], 200);
+        }
+
+        $today = \Carbon\Carbon::today()->toDateString();
+        $todayAtts = \App\Models\Attendance::where('class_id', $class->id)
+            ->where('date', $today)
+            ->get()
+            ->keyBy('user_id');
+
+        $students = \App\Models\User::where('role', 'student')
+            ->where('department', $class->department)
+            ->orderBy('student_code')
+            ->get()
+            ->map(function ($s) use ($todayAtts) {
+                $att = $todayAtts->get($s->id);
+                return [
+                    'id' => $s->id,
+                    'name' => $s->name,
+                    'email' => $s->email,
+                    'role' => $s->role,
+                    'student_code' => $s->student_code,
+                    'department' => $s->department,
+                    'phone' => $s->phone,
+                    'gender' => $s->gender,
+                    'date_of_birth' => $s->date_of_birth,
+                    'avatar_url' => $s->avatar_url,
+                    'today_status' => $att?->status,
+                    'today_scanned_at' => $att?->scanned_at?->toIso8601String(),
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'ទាញយកបញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់បានជោគជ័យ',
+            'data' => $students,
         ], 200);
     }
 }

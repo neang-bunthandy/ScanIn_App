@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
-import '../../data/mock_data.dart';
 import '../../models/class_model.dart';
 import '../../models/user_model.dart';
 import '../../models/attendance_model.dart';
@@ -33,20 +32,12 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   UserModel get lecturer {
     if (widget.user != null) return widget.user!;
     if (_cachedLecturer != null) return _cachedLecturer!;
-    if (widget.lecturerEmail != null && widget.lecturerEmail!.isNotEmpty) {
-      return UserModel(
-        id: MockData.currentLecturer.id,
-        name: MockData.currentLecturer.name,
-        email: widget.lecturerEmail!,
-        role: MockData.currentLecturer.role,
-        staffId: MockData.currentLecturer.staffId,
-        department: MockData.currentLecturer.department,
-        phone: MockData.currentLecturer.phone,
-        avatarUrl: MockData.currentLecturer.avatarUrl,
-        createdAt: MockData.currentLecturer.createdAt,
-      );
-    }
-    return MockData.currentLecturer;
+    return UserModel(
+      id: 0,
+      name: AppLanguage.tr('លោកគ្រូ / អ្នកគ្រូ', 'Lecturer'),
+      email: widget.lecturerEmail ?? '',
+      role: 'lecturer',
+    );
   }
 
   late List<ClassModel> _classes;

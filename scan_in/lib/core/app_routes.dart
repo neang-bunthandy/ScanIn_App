@@ -3,9 +3,7 @@ import '../screens/login_screen.dart';
 import '../screens/student/student_home_screen.dart';
 import '../screens/lecturer/lecturer_home_screen.dart';
 import '../screens/lecturer/class_detail_screen.dart';
-import '../screens/lecturer/show_qr_screen.dart';
 import '../screens/lecturer/attendance_list_screen.dart';
-import '../data/mock_data.dart';
 
 /// កំណត់ឈ្មោះ Route ទាំងអស់ក្នុងកម្មវិធី ScanIn
 class AppRoutes {
@@ -21,7 +19,6 @@ class AppRoutes {
         studentHome: (context) => const StudentHomeScreen(),
         lecturerHome: (context) => const LecturerHomeScreen(),
         classDetail: (context) => const ClassDetailScreen(),
-        showQr: (context) => ShowQrScreen(classModel: MockData.sampleClasses.first),
         attendanceList: (context) => const AttendanceListScreen(),
       };
 }

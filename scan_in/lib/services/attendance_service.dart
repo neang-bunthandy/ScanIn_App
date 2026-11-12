@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
-import '../data/mock_data.dart';
 import '../models/attendance_model.dart';
 import 'auth_service.dart';
 
@@ -10,7 +9,7 @@ class AttendanceService {
   static Future<List<AttendanceModel>> getClassAttendances(int classId) async {
     try {
       final token = await AuthService.getToken();
-      if (token == null) return MockData.getAttendanceForClass(classId);
+      if (token == null) return [];
 
       final response = await http.get(
         Uri.parse(ApiConfig.classAttendancesUrl(classId)),
@@ -30,7 +29,7 @@ class AttendanceService {
         return attendances;
       }
     } catch (_) {}
-    return MockData.getAttendanceForClass(classId);
+    return [];
   }
 
   /// សិស្សស្កេន QR Code កត់វត្តមាន (Student Scans QR)
@@ -75,7 +74,7 @@ class AttendanceService {
   static Future<List<AttendanceModel>> getMyAttendanceHistory() async {
     try {
       final token = await AuthService.getToken();
-      if (token == null) return MockData.sampleAttendances;
+      if (token == null) return [];
 
       final response = await http.get(
         Uri.parse(ApiConfig.studentAttendancesUrl),
@@ -95,7 +94,7 @@ class AttendanceService {
         return attendances;
       }
     } catch (_) {}
-    return MockData.sampleAttendances;
+    return [];
   }
 
   /// គ្រូកែប្រែស្ថានភាពវត្តមានសិស្ស (Lecturer updates student attendance status)

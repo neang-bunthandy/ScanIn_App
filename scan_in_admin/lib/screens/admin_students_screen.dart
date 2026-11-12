@@ -61,7 +61,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final emailCtrl = TextEditingController();
     final passwordCtrl = TextEditingController(text: 'password123');
     final codeCtrl = TextEditingController(text: 'STU00${_students.length + 1}');
-    final deptCtrl = TextEditingController(text: 'វិទ្យាសាស្ត្រកុំព្យូទ័រ (Computer Science)');
+    String selectedDepartment = ClassService.presetDepartments.first;
     final phoneCtrl = TextEditingController(text: '098 765 432');
     String selectedGender = 'ប្រុស (Male)';
     final dobCtrl = TextEditingController(text: '2004-01-01');
@@ -138,13 +138,23 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: TextField(
-                          controller: deptCtrl,
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          initialValue: selectedDepartment,
                           decoration: InputDecoration(
                             labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department'),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           ),
+                          items: ClassService.presetDepartments
+                              .map((d) => DropdownMenuItem<String>(
+                                    value: d,
+                                    child: Text(d, overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) selectedDepartment = val;
+                          },
                         ),
                       ),
                     ],
@@ -267,7 +277,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   studentCode: codeCtrl.text.trim(),
                   gender: selectedGender.contains('ស្រី') ? 'ស្រី' : 'ប្រុស',
                   dateOfBirth: dobCtrl.text.trim(),
-                  department: deptCtrl.text.trim(),
+                  department: selectedDepartment,
                   phone: phoneCtrl.text.trim(),
                 );
 
@@ -314,7 +324,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final emailCtrl = TextEditingController(text: stu['email'] ?? '');
     final passwordCtrl = TextEditingController();
     final codeCtrl = TextEditingController(text: stu['student_code'] ?? '');
-    final deptCtrl = TextEditingController(text: stu['department'] ?? '');
+    final existingDept = (stu['department'] ?? '').toString().trim();
+    final deptOptions = [
+      ...ClassService.presetDepartments,
+      if (existingDept.isNotEmpty && !ClassService.presetDepartments.contains(existingDept)) existingDept,
+    ];
+    String selectedDepartment = existingDept.isNotEmpty ? existingDept : deptOptions.first;
     final phoneCtrl = TextEditingController(text: stu['phone'] ?? '');
     String selectedGender = (stu['gender'] != null && stu['gender'].toString().contains('ស្រី')) ? 'ស្រី (Female)' : 'ប្រុស (Male)';
     final dobCtrl = TextEditingController(text: stu['date_of_birth'] ?? '');
@@ -466,14 +481,24 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  TextField(
-                    controller: deptCtrl,
+                  DropdownButtonFormField<String>(
+                    isExpanded: true,
+                    initialValue: selectedDepartment,
                     decoration: InputDecoration(
                       labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department / Faculty'),
                       prefixIcon: const Icon(Icons.account_balance_outlined, size: 20),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
+                    items: deptOptions
+                        .map((d) => DropdownMenuItem<String>(
+                              value: d,
+                              child: Text(d, overflow: TextOverflow.ellipsis),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) selectedDepartment = val;
+                    },
                   ),
                 ],
               ),
@@ -512,7 +537,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   gender: selectedGender.contains('ស្រី') ? 'ស្រី' : 'ប្រុស',
                   dateOfBirth: dobCtrl.text.trim(),
                   password: passwordCtrl.text.isNotEmpty ? passwordCtrl.text : null,
-                  department: deptCtrl.text.trim(),
+                  department: selectedDepartment,
                   phone: phoneCtrl.text.trim(),
                 );
 

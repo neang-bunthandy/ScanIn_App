@@ -39,6 +39,14 @@ class AttendanceController extends Controller
             ], 400);
         }
 
+        // ពិនិត្យថាតើនិស្សិតស្ថិតក្នុងដេប៉ាតឺម៉ង់របស់ថ្នាក់នេះឬទេ
+        if (!empty($class->department) && trim((string)($user->department ?? '')) !== trim((string)$class->department)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ថ្នាក់រៀននេះសម្រាប់តែនិស្សិតដេប៉ាតឺម៉ង់ "' . $class->department . '" ប៉ុណ្ណោះ!',
+            ], 403);
+        }
+
         $today = Carbon::today()->toDateString();
         $now = Carbon::now();
 

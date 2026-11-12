@@ -66,6 +66,8 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     }
   }
 
+  static const List<String> _presetDepartments = ClassService.presetDepartments;
+
   /// បើកផ្ទាំង Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន
   Future<void> _openCreateClassDialog() async {
     final nameCtrl = TextEditingController();
@@ -75,6 +77,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     String selectedYear = '2025-2026';
     String selectedSemester = '1';
     String selectedDay = 'ច័ន្ទ (Mon)';
+    String selectedDepartment = _presetDepartments.first;
     int? selectedLecturerId;
 
     // ទាញយកបញ្ជីគ្រូបង្រៀនពី Backend
@@ -274,6 +277,25 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                           if (val != null) setDlgState(() => selectedLecturerId = val);
                         },
                       ),
+                      const SizedBox(height: 14),
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedDepartment,
+                        decoration: InputDecoration(
+                          labelText: AppLanguage.tr('សម្រាប់ដេប៉ាតឺម៉ង់ / ជំនាញ (Department)', 'Target Department'),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          prefixIcon: const Icon(Icons.account_balance_outlined, color: AppColors.primary),
+                        ),
+                        items: _presetDepartments.map((dept) {
+                          return DropdownMenuItem<String>(
+                            value: dept,
+                            child: Text(dept, overflow: TextOverflow.ellipsis),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setDlgState(() => selectedDepartment = val);
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -306,6 +328,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                     final success = await ClassService.createClassAdmin(
                       subjectName: nameCtrl.text.trim(),
                       subjectCode: codeCtrl.text.trim().toUpperCase(),
+                      department: selectedDepartment,
                       lecturerId: selectedLecturerId ?? 1,
                       academicYear: selectedYear,
                       semester: selectedSemester,
@@ -352,6 +375,13 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     String selectedYear = c.academicYear.isNotEmpty ? c.academicYear : '2025-2026';
     String selectedSemester = c.semester.isNotEmpty ? c.semester : '1';
     String selectedDay = c.dayOfWeek.isNotEmpty ? c.dayOfWeek : 'ច័ន្ទ (Mon)';
+    final deptOptions = List<String>.from(_presetDepartments);
+    if (c.department != null && c.department!.isNotEmpty && !deptOptions.contains(c.department)) {
+      deptOptions.insert(0, c.department!);
+    }
+    String selectedDepartment = (c.department != null && c.department!.isNotEmpty)
+        ? c.department!
+        : deptOptions.first;
     int selectedLecturerId = c.lecturerId;
 
     final lecturers = await ClassService.getLecturers();
@@ -536,6 +566,25 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                           if (val != null) setDlgState(() => selectedLecturerId = val);
                         },
                       ),
+                      const SizedBox(height: 14),
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedDepartment,
+                        decoration: InputDecoration(
+                          labelText: AppLanguage.tr('សម្រាប់ដេប៉ាតឺម៉ង់ / ជំនាញ (Department)', 'Target Department'),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          prefixIcon: const Icon(Icons.account_balance_outlined, color: AppColors.primary),
+                        ),
+                        items: deptOptions.map((dept) {
+                          return DropdownMenuItem<String>(
+                            value: dept,
+                            child: Text(dept, overflow: TextOverflow.ellipsis),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setDlgState(() => selectedDepartment = val);
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -569,6 +618,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       id: c.id,
                       subjectName: nameCtrl.text.trim(),
                       subjectCode: codeCtrl.text.trim().toUpperCase(),
+                      department: selectedDepartment,
                       lecturerId: selectedLecturerId,
                       academicYear: selectedYear,
                       semester: selectedSemester,
@@ -837,6 +887,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                     columns: [
                                       DataColumn(label: Text(AppLanguage.tr('កូដ', 'Code'))),
                                       DataColumn(label: Text(AppLanguage.tr('ឈ្មោះមុខវិជ្ជា', 'Subject Name'))),
+                                      DataColumn(label: Text(AppLanguage.tr('ដេប៉ាតឺម៉ង់', 'Department'))),
                                       DataColumn(label: Text(AppLanguage.tr('បន្ទប់', 'Room'))),
                                       DataColumn(label: Text(AppLanguage.tr('កាលវិភាគ', 'Schedule'))),
                                       DataColumn(label: Text(AppLanguage.tr('ឆមាស/ឆ្នាំ', 'Semester/Year'))),
@@ -863,6 +914,29 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                       Text(
                                         c.subjectName,
                                         style: TextStyle(fontWeight: FontWeight.w600, color: textCol),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: (c.department != null && c.department!.isNotEmpty)
+                                              ? const Color(0xFF0284C7).withValues(alpha: 0.1)
+                                              : const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          (c.department != null && c.department!.isNotEmpty)
+                                              ? c.department!
+                                              : AppLanguage.tr('មិនទាន់កំណត់', 'Unassigned'),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: (c.department != null && c.department!.isNotEmpty)
+                                                ? const Color(0xFF0284C7)
+                                                : const Color(0xFFD97706),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                     DataCell(Text(c.room.isNotEmpty ? c.room : '-')),

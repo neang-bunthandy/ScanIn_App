@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
-import '../../data/mock_data.dart';
 import '../../models/user_model.dart';
 import '../../models/class_model.dart';
 import '../../models/attendance_model.dart';
@@ -28,28 +27,21 @@ class StudentHomeScreen extends StatefulWidget {
 class _StudentHomeScreenState extends State<StudentHomeScreen> {
   int _currentIndex = 0;
   UserModel? _cachedStudent;
-  List<ClassModel> _classes = List.from(MockData.sampleClasses);
+  List<ClassModel> _classes = [];
   List<AttendanceModel> _attendances = [];
+  bool _isLoading = true;
   bool _notificationsEnabled = true;
   String _selectedLanguage = 'ខ្មែរ (Khmer)';
 
   UserModel get student {
     if (widget.user != null) return widget.user!;
     if (_cachedStudent != null) return _cachedStudent!;
-    if (widget.studentEmail != null && widget.studentEmail!.isNotEmpty) {
-      return UserModel(
-        id: MockData.currentStudent.id,
-        name: MockData.currentStudent.name,
-        email: widget.studentEmail!,
-        role: MockData.currentStudent.role,
-        studentCode: MockData.currentStudent.studentCode,
-        department: MockData.currentStudent.department,
-        phone: MockData.currentStudent.phone,
-        avatarUrl: MockData.currentStudent.avatarUrl,
-        createdAt: MockData.currentStudent.createdAt,
-      );
-    }
-    return MockData.currentStudent;
+    return UserModel(
+      id: 0,
+      name: AppLanguage.tr('សិស្ស / និស្សិត', 'Student'),
+      email: widget.studentEmail ?? '',
+      role: 'student',
+    );
   }
 
   List<ClassModel> get classes => _classes;
@@ -69,8 +61,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     final remoteAttendances = await AttendanceService.getMyAttendanceHistory();
     if (mounted) {
       setState(() {
-        if (remoteClasses.isNotEmpty) _classes = remoteClasses;
+        _classes = remoteClasses;
         _attendances = remoteAttendances;
+        _isLoading = false;
       });
     }
   }
@@ -607,6 +600,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   student: student,
                   classes: classes,
                   attendances: _attendances,
+                  isLoading: _isLoading,
                   onScanQr: _handleScanQr,
                   onRefresh: _loadBackendData,
                 ),

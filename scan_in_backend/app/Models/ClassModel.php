@@ -25,6 +25,7 @@ class ClassModel extends Model
         'user_id',
         'subject_name',
         'subject_code',
+        'department',
         'room',
         'day_of_week',
         'time',

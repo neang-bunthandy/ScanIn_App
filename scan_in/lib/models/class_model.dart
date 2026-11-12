@@ -7,6 +7,7 @@ class ClassModel {
   final String? description; // ការពិពណ៌នាមុខវិជ្ជា
   final String subjectName; // ឈ្មោះមុខវិជ្ជា
   final String subjectCode; // កូដមុខវិជ្ជា (ឧ. CS101)
+  final String? department; // ដេប៉ាតឺម៉ង់ / ជំនាញ
   final String room; // បន្ទប់រៀន (ឧ. A201)
   final String dayOfWeek; // ថ្ងៃរៀន (ឧ. ចន្ទ, អង្គារ)
   final String time; // ម៉ោងរៀន (ឧ. 08:00 - 10:00)
@@ -28,6 +29,7 @@ class ClassModel {
     this.description,
     required this.subjectName,
     required this.subjectCode,
+    this.department,
     required this.room,
     required this.dayOfWeek,
     required this.time,
@@ -53,6 +55,7 @@ class ClassModel {
       description: json['description'] as String?,
       subjectName: json['subject_name'] as String,
       subjectCode: json['subject_code'] as String,
+      department: json['department'] as String?,
       room: json['room'] as String? ?? '',
       dayOfWeek: json['day_of_week'] as String? ?? '',
       time: json['time'] as String? ?? '',
@@ -80,6 +83,7 @@ class ClassModel {
       'description': description,
       'subject_name': subjectName,
       'subject_code': subjectCode,
+      'department': department,
       'room': room,
       'day_of_week': dayOfWeek,
       'time': time,
@@ -103,6 +107,7 @@ class ClassModel {
     String? description,
     String? subjectName,
     String? subjectCode,
+    String? department,
     String? room,
     String? dayOfWeek,
     String? time,
@@ -124,6 +129,7 @@ class ClassModel {
       description: description ?? this.description,
       subjectName: subjectName ?? this.subjectName,
       subjectCode: subjectCode ?? this.subjectCode,
+      department: department ?? this.department,
       room: room ?? this.room,
       dayOfWeek: dayOfWeek ?? this.dayOfWeek,
       time: time ?? this.time,
