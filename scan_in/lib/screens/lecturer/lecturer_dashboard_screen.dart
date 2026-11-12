@@ -16,8 +16,6 @@ class LecturerDashboardScreen extends StatelessWidget {
   final Map<int, bool> classQrActive;
   final Function(ClassModel) onShowQr;
   final Function(ClassModel) onToggleQr;
-  final Function({ClassModel? initialClass}) onNavigateToCreateClass;
-  final Function(ClassModel) onConfirmDeleteClass;
   final VoidCallback onGoToAttendanceTab;
 
   const LecturerDashboardScreen({
@@ -27,8 +25,6 @@ class LecturerDashboardScreen extends StatelessWidget {
     required this.classQrActive,
     required this.onShowQr,
     required this.onToggleQr,
-    required this.onNavigateToCreateClass,
-    required this.onConfirmDeleteClass,
     required this.onGoToAttendanceTab,
   });
 
@@ -73,7 +69,15 @@ class LecturerDashboardScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${AppLanguage.tr('សួស្តី, លោកគ្រូ ', 'Hello, Lecturer ')}${lecturer.name} 👋',
+                      () {
+                        final hasTitle = lecturer.name.startsWith('លោកគ្រូ') ||
+                            lecturer.name.startsWith('អ្នកគ្រូ') ||
+                            lecturer.name.startsWith('សាស') ||
+                            lecturer.name.toLowerCase().startsWith('lecturer');
+                        return hasTitle
+                            ? '${AppLanguage.tr('សួស្តី, ', 'Hello, ')}${lecturer.name} 👋'
+                            : '${AppLanguage.tr('សួស្តី, លោកគ្រូ ', 'Hello, Lecturer ')}${lecturer.name} 👋';
+                      }(),
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
@@ -251,29 +255,15 @@ class LecturerDashboardScreen extends StatelessWidget {
           const SizedBox(height: 28),
 
           // --- 4. Teaching Classes Section Header ---
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${AppLanguage.tr('ថ្នាក់បង្រៀនរបស់ខ្ញុំ', 'My Teaching Classes')} (${classes.length})',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: textCol,
-                ),
-              ),
-              TextButton.icon(
-                onPressed: () => onNavigateToCreateClass(),
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: Text(AppLanguage.tr('បង្កើតថ្នាក់', 'Add Class')),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-              ),
-            ],
+          Text(
+            '${AppLanguage.tr('ថ្នាក់បង្រៀនរបស់ខ្ញុំ', 'My Teaching Classes')} (${classes.length})',
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+              color: textCol,
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           // --- 5. Class Cards List ---
           if (classes.isEmpty)
@@ -285,18 +275,12 @@ class LecturerDashboardScreen extends StatelessWidget {
                     Icon(Icons.school_outlined, size: 54, color: isDark ? const Color(0xFF475569) : Colors.grey.shade400),
                     const SizedBox(height: 12),
                     Text(
-                      AppLanguage.tr('លោកគ្រូមិនទាន់មានថ្នាក់បង្រៀននៅឡើយទេ', 'No teaching classes available yet'),
-                      style: TextStyle(color: subTextCol, fontSize: 14),
-                    ),
-                    const SizedBox(height: 14),
-                    ElevatedButton.icon(
-                      onPressed: () => onNavigateToCreateClass(),
-                      icon: const Icon(Icons.add_rounded),
-                      label: Text(AppLanguage.tr('បង្កើតថ្នាក់ដំបូង', 'Create First Class')),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                      AppLanguage.tr(
+                        'សាលាមិនទាន់បានចាត់តាំងថ្នាក់បង្រៀនជូនលោកគ្រូនៅឡើយទេ',
+                        'No teaching classes have been assigned by Admin yet',
                       ),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: subTextCol, fontSize: 14),
                     ),
                   ],
                 ),
@@ -495,10 +479,6 @@ class LecturerDashboardScreen extends StatelessWidget {
                           builder: (context) => AttendanceListScreen(classModel: c),
                         ),
                       );
-                    } else if (val == 'edit') {
-                      onNavigateToCreateClass(initialClass: c);
-                    } else if (val == 'delete') {
-                      onConfirmDeleteClass(c);
                     }
                   },
                   itemBuilder: (context) => [
@@ -519,26 +499,6 @@ class LecturerDashboardScreen extends StatelessWidget {
                           const Icon(Icons.fact_check_rounded, size: 18, color: Color(0xFF0D9488)),
                           const SizedBox(width: 8),
                           Text(AppLanguage.tr('បញ្ជីវត្តមានថ្នាក់នេះ', 'Attendance for this class')),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined, size: 18, color: textCol),
-                          const SizedBox(width: 8),
-                          Text(AppLanguage.tr('កែប្រែព័ត៌មានថ្នាក់', 'Edit Class Info')),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                          const SizedBox(width: 8),
-                          Text(AppLanguage.tr('លុបថ្នាក់នេះ', 'Delete this class'), style: const TextStyle(color: AppColors.error)),
                         ],
                       ),
                     ),

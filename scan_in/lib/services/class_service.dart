@@ -62,32 +62,6 @@ class ClassService {
     return MockData.sampleClasses;
   }
 
-  /// បង្កើតថ្នាក់រៀនថ្មី (Create Class)
-  static Future<ClassModel> createClass(ClassModel newClass) async {
-    try {
-      final token = await AuthService.getToken();
-      if (token != null) {
-        final response = await http.post(
-          Uri.parse(ApiConfig.classesUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-          body: jsonEncode(newClass.toJson()),
-        ).timeout(const Duration(seconds: 5));
-
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          final data = jsonDecode(response.body);
-          if (data['data'] != null) {
-            return ClassModel.fromJson(data['data'] as Map<String, dynamic>);
-          }
-        }
-      }
-    } catch (_) {}
-    return newClass;
-  }
-
   /// បើក / បិទ QR Code សម្រាប់ថ្នាក់រៀន (Toggle QR Code & sync Token)
   static Future<bool> toggleQr(int classId, bool activate, {String? qrToken}) async {
     try {

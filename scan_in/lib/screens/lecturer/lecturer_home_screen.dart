@@ -8,7 +8,6 @@ import '../../models/attendance_model.dart';
 import '../../services/auth_service.dart';
 import '../../services/class_service.dart';
 import '../../services/attendance_service.dart';
-import 'create_class_screen.dart';
 import 'show_qr_screen.dart';
 import 'lecturer_dashboard_screen.dart';
 import 'lecturer_attendance_screen.dart';
@@ -507,79 +506,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
     );
   }
 
-  Future<void> _navigateToCreateClass({ClassModel? initialClass}) async {
-    final result = await Navigator.push<ClassModel>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreateClassScreen(initialClass: initialClass),
-      ),
-    );
-
-    if (result != null) {
-      final savedClass = await ClassService.createClass(result);
-      if (mounted) {
-        setState(() {
-          final existingIndex = _classes.indexWhere((c) => c.id == result.id || c.subjectCode == result.subjectCode);
-          if (existingIndex != -1) {
-            _classes[existingIndex] = savedClass;
-          } else {
-            _classes.insert(0, savedClass);
-            _classQrActive[savedClass.id] = savedClass.isQrActive;
-          }
-        });
-      }
-    }
-  }
-
-  void _confirmDeleteClass(ClassModel c) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            const Icon(Icons.warning_amber_rounded, color: AppColors.error),
-            const SizedBox(width: 8),
-            Text(AppLanguage.tr('លុបថ្នាក់រៀន', 'Delete Class')),
-          ],
-        ),
-        content: Text(
-          AppLanguage.tr(
-            'តើលោកគ្រូពិតជាចង់លុបថ្នាក់ "${c.subjectName}" (${c.subjectCode}) មែនទេ?',
-            'Are you sure you want to delete "${c.subjectName}" (${c.subjectCode})?',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLanguage.tr('បោះបង់', 'Cancel'), style: const TextStyle(color: AppColors.textSecondary)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _classes.removeWhere((item) => item.id == c.id);
-                _classQrActive.remove(c.id);
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(AppLanguage.tr('បានលុបថ្នាក់ ${c.subjectName} រួចរាល់', 'Deleted class ${c.subjectName}')),
-                  backgroundColor: AppColors.error,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(AppLanguage.tr('លុបចេញ', 'Delete')),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _updateAttendanceStatus(AttendanceModel item, String newStatus) {
     final note = newStatus == 'present'
         ? AppLanguage.tr('កែប្រែដោយគ្រូ', 'Updated by lecturer')
@@ -642,8 +568,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                   classQrActive: _classQrActive,
                   onShowQr: _showQrBottomSheet,
                   onToggleQr: _toggleQrForClass,
-                  onNavigateToCreateClass: _navigateToCreateClass,
-                  onConfirmDeleteClass: _confirmDeleteClass,
                   onGoToAttendanceTab: () => setState(() => _currentIndex = 1),
                 ),
                 // Tab 2: វត្តមាន (Attendance)
