@@ -395,6 +395,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                 itemBuilder: (context, index) {
                   final s = _students[index];
                   final name = (s['name'] ?? '').toString();
+                  final latinName = (s['latin_name'] ?? '').toString();
                   final code = (s['student_code'] ?? '').toString();
                   final phone = (s['phone'] ?? '').toString();
                   final todayStatus = (s['today_status'] ?? '').toString();
@@ -447,7 +448,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                name,
+                                latinName.isNotEmpty ? '$name ($latinName)' : name,
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,

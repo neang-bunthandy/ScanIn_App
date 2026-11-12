@@ -469,6 +469,17 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                         color: textCol,
                       ),
                     ),
+                    if (lecturer.latinName != null && lecturer.latinName!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        lecturer.latinName!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       '${AppLanguage.tr('អត្តលេខបុគ្គលិក៖ ', 'Staff ID: ')}${lecturer.staffId ?? 'STF001'}',
@@ -597,6 +608,22 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
                   const SizedBox(height: 14),
+                  _buildProfileDetailRow(
+                    icon: Icons.person_outline_rounded,
+                    title: AppLanguage.tr('ឈ្មោះជាអក្សរខ្មែរ', 'Khmer Name'),
+                    value: lecturer.name,
+                    isDark: isDark,
+                  ),
+                  if (lecturer.latinName != null && lecturer.latinName!.isNotEmpty) ...[
+                    Divider(height: 18, color: dividerCol),
+                    _buildProfileDetailRow(
+                      icon: Icons.translate_rounded,
+                      title: AppLanguage.tr('ឈ្មោះជាអក្សរឡាតាំង', 'Latin Name'),
+                      value: lecturer.latinName!,
+                      isDark: isDark,
+                    ),
+                  ],
+                  Divider(height: 18, color: dividerCol),
                   _buildProfileDetailRow(
                     icon: Icons.email_outlined,
                     title: AppLanguage.tr('អ៊ីមែលផ្លូវការ', 'Official Email'),

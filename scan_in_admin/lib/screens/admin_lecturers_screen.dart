@@ -55,9 +55,10 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
     }
   }
 
-  /// បើកផ្ទាំង Admin បង្កើតគណនីគ្រូបង្រៀនថ្មី (Name, Email, Password, Department, Phone)
+  /// បើកផ្ទាំង Admin បង្កើតគណនីគ្រូបង្រៀនថ្មី (Khmer Name, Latin Name, Email, Password, Department, Phone)
   Future<void> _openCreateLecturerDialog() async {
     final nameCtrl = TextEditingController();
+    final latinNameCtrl = TextEditingController();
     final emailCtrl = TextEditingController();
     final passwordCtrl = TextEditingController(text: 'password123');
     String selectedDepartment = ClassService.presetDepartments.first;
@@ -106,15 +107,35 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // ឈ្មោះគ្រូ
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: InputDecoration(
-                      labelText: AppLanguage.tr('ឈ្មោះគ្រូបង្រៀន (Full Name)', 'Lecturer Name'),
-                      prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
+                  // ឈ្មោះជាអក្សរខ្មែរ & ឈ្មោះជាអក្សរឡាតាំង
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: nameCtrl,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឈ្មោះជាអក្សរខ្មែរ *', 'Khmer Name *'),
+                            hintText: 'ឧ. លោកគ្រូ ចាន់ ដារ៉ា',
+                            prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: latinNameCtrl,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឈ្មោះជាអក្សរឡាតាំង', 'Latin Name'),
+                            hintText: 'e.g. Chan Dara',
+                            prefixIcon: const Icon(Icons.translate_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 14),
 
@@ -229,6 +250,7 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
 
                 final result = await ClassService.createLecturer(
                   name: nameCtrl.text.trim(),
+                  latinName: latinNameCtrl.text.trim(),
                   email: emailCtrl.text.trim(),
                   password: passwordCtrl.text,
                   department: selectedDepartment,
@@ -276,6 +298,7 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
   Future<void> _openEditLecturerDialog(Map<String, dynamic> lec) async {
     final id = lec['id'] as int;
     final nameCtrl = TextEditingController(text: lec['name'] ?? '');
+    final latinNameCtrl = TextEditingController(text: lec['latin_name'] ?? '');
     final emailCtrl = TextEditingController(text: lec['email'] ?? '');
     final passwordCtrl = TextEditingController();
     final existingDept = (lec['department'] ?? '').toString().trim();
@@ -328,14 +351,34 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                     style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: InputDecoration(
-                      labelText: AppLanguage.tr('ឈ្មោះគ្រូបង្រៀន (Full Name)', 'Lecturer Name'),
-                      prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: nameCtrl,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឈ្មោះជាអក្សរខ្មែរ *', 'Khmer Name *'),
+                            hintText: 'ឧ. លោកគ្រូ ចាន់ ដារ៉ា',
+                            prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: latinNameCtrl,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឈ្មោះជាអក្សរឡាតាំង', 'Latin Name'),
+                            hintText: 'e.g. Chan Dara',
+                            prefixIcon: const Icon(Icons.translate_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -445,6 +488,7 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                 final result = await ClassService.updateLecturer(
                   id: id,
                   name: nameCtrl.text.trim(),
+                  latinName: latinNameCtrl.text.trim(),
                   email: emailCtrl.text.trim(),
                   password: passwordCtrl.text.isNotEmpty ? passwordCtrl.text : null,
                   department: selectedDepartment,
@@ -732,7 +776,8 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                                     rows: _lecturers.map((lec) {
                                       final id = lec['id'];
                                       final staffId = lec['staff_id'] ?? '-';
-                                      final name = lec['name'] ?? 'Lecturer #$id';
+                                      final name = (lec['name'] ?? 'Lecturer #$id').toString();
+                                      final latinName = (lec['latin_name'] ?? '').toString();
                                       final email = lec['email'] ?? '-';
                                       final dept = lec['department'] ?? 'ទូទៅ (General)';
                                       final phone = lec['phone'] ?? '-';
@@ -767,7 +812,15 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                                                   ),
                                                 ),
                                                 const SizedBox(width: 8),
-                                                Text(name, style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
+                                                Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(name, style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
+                                                    if (latinName.isNotEmpty)
+                                                      Text(latinName, style: TextStyle(fontSize: 11, color: subTextCol)),
+                                                  ],
+                                                ),
                                               ],
                                             ),
                                           ),

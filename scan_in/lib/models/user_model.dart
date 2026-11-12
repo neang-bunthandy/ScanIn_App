@@ -1,6 +1,7 @@
 class UserModel {
   final int id;
   final String name;
+  final String? latinName; // ឈ្មោះជាអក្សរឡាតាំង
   final String email;
   final String role; // 'student' ឬ 'lecturer'
   final String? studentCode; // លេខសម្គាល់សិស្ស (ឧ. STU001)
@@ -13,6 +14,7 @@ class UserModel {
   const UserModel({
     required this.id,
     required this.name,
+    this.latinName,
     required this.email,
     required this.role,
     this.studentCode,
@@ -32,6 +34,7 @@ class UserModel {
     return UserModel(
       id: json['id'] as int,
       name: json['name'] as String,
+      latinName: json['latin_name'] as String?,
       email: json['email'] as String,
       role: json['role'] as String? ?? 'student',
       studentCode: json['student_code'] as String?,
@@ -50,6 +53,7 @@ class UserModel {
     return {
       'id': id,
       'name': name,
+      'latin_name': latinName,
       'email': email,
       'role': role,
       'student_code': studentCode,

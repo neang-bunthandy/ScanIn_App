@@ -164,9 +164,10 @@ class ClassService {
     return [];
   }
 
-  /// Admin បង្កើតគណនីគ្រូបង្រៀនថ្មី (Name, Email, Password, Department, StaffId, Phone)
+  /// Admin បង្កើតគណនីគ្រូបង្រៀនថ្មី (Khmer Name, Latin Name, Email, Password, Department, StaffId, Phone)
   static Future<Map<String, dynamic>> createLecturer({
     required String name,
+    String? latinName,
     required String email,
     required String password,
     String? department,
@@ -177,6 +178,7 @@ class ClassService {
       final token = await AuthService.getToken();
       final body = {
         'name': name.trim(),
+        'latin_name': latinName?.trim() ?? '',
         'email': email.trim().toLowerCase(),
         'password': password,
         'department': department ?? '',
@@ -210,6 +212,7 @@ class ClassService {
   static Future<Map<String, dynamic>> updateLecturer({
     required int id,
     required String name,
+    String? latinName,
     required String email,
     String? password,
     String? department,
@@ -220,6 +223,7 @@ class ClassService {
       final token = await AuthService.getToken();
       final body = <String, dynamic>{
         'name': name.trim(),
+        'latin_name': latinName?.trim() ?? '',
         'email': email.trim().toLowerCase(),
         'department': department ?? '',
         'staff_id': staffId ?? '',
@@ -299,9 +303,10 @@ class ClassService {
     return [];
   }
 
-  /// Admin បង្កើតគណនីសិស្សថ្មី (Name, Email, Password, StudentCode, Gender, DOB, Department, Phone)
+  /// Admin បង្កើតគណនីសិស្សថ្មី (Khmer Name, Latin Name, Email, Password, StudentCode, Gender, DOB, Department, Phone)
   static Future<Map<String, dynamic>> createStudent({
     required String name,
+    String? latinName,
     required String email,
     required String password,
     required String studentCode,
@@ -314,6 +319,7 @@ class ClassService {
       final token = await AuthService.getToken();
       final body = {
         'name': name.trim(),
+        'latin_name': latinName?.trim() ?? '',
         'email': email.trim().toLowerCase(),
         'password': password,
         'student_code': studentCode.trim().toUpperCase(),
@@ -349,6 +355,7 @@ class ClassService {
   static Future<Map<String, dynamic>> updateStudent({
     required int id,
     required String name,
+    String? latinName,
     required String email,
     required String studentCode,
     String? gender,
@@ -361,6 +368,7 @@ class ClassService {
       final token = await AuthService.getToken();
       final body = <String, dynamic>{
         'name': name.trim(),
+        'latin_name': latinName?.trim() ?? '',
         'email': email.trim().toLowerCase(),
         'student_code': studentCode.trim().toUpperCase(),
         'gender': gender ?? '',

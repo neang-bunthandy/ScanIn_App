@@ -54,6 +54,7 @@ class ClassController extends Controller
                 'id' => $c->id,
                 'lecturer_id' => $c->user_id,
                 'lecturer_name' => $c->lecturer?->name,
+                'lecturer_latin_name' => $c->lecturer?->latin_name,
                 'teacher_email' => $c->lecturer?->email,
                 'teacher_phone' => $c->lecturer?->phone,
                 'subject_name' => $c->subject_name,
@@ -354,6 +355,7 @@ class ClassController extends Controller
                 return [
                     'id' => $s->id,
                     'name' => $s->name,
+                    'latin_name' => $s->latin_name,
                     'email' => $s->email,
                     'role' => $s->role,
                     'student_code' => $s->student_code,

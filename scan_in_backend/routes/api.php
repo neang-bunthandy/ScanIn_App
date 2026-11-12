@@ -36,7 +36,7 @@ Route::get('/lecturers', function (Request $request) {
     }
     $lecturers = \App\Models\User::where('role', 'lecturer')
         ->withCount('classes')
-        ->select('id', 'name', 'email', 'department', 'phone', 'staff_id')
+        ->select('id', 'name', 'latin_name', 'email', 'department', 'phone', 'staff_id')
         ->orderBy('id', 'desc')
         ->get();
     return response()->json(['status' => true, 'data' => $lecturers]);
@@ -53,6 +53,7 @@ Route::post('/lecturers', function (Request $request) {
 
     $request->validate([
         'name' => 'required|string|max:255',
+        'latin_name' => 'nullable|string|max:255',
         'email' => 'required|email|unique:users,email',
         'password' => 'required|string|min:6',
         'department' => 'nullable|string|max:255',
@@ -61,7 +62,8 @@ Route::post('/lecturers', function (Request $request) {
     ]);
 
     $lecturer = \App\Models\User::create([
-        'name' => $request->name,
+        'name' => trim($request->name),
+        'latin_name' => $request->filled('latin_name') ? trim($request->latin_name) : null,
         'email' => strtolower(trim($request->email)),
         'password' => \Illuminate\Support\Facades\Hash::make($request->password),
         'role' => 'lecturer',
@@ -95,6 +97,7 @@ Route::put('/lecturers/{id}', function (Request $request, $id) {
 
     $request->validate([
         'name' => 'sometimes|required|string|max:255',
+        'latin_name' => 'nullable|string|max:255',
         'email' => 'sometimes|required|email|unique:users,email,' . $id,
         'password' => 'nullable|string|min:6',
         'department' => 'nullable|string|max:255',
@@ -102,7 +105,8 @@ Route::put('/lecturers/{id}', function (Request $request, $id) {
         'phone' => 'nullable|string|max:50',
     ]);
 
-    if ($request->filled('name')) $lecturer->name = $request->name;
+    if ($request->filled('name')) $lecturer->name = trim($request->name);
+    if ($request->has('latin_name')) $lecturer->latin_name = $request->filled('latin_name') ? trim($request->latin_name) : null;
     if ($request->filled('email')) $lecturer->email = strtolower(trim($request->email));
     if ($request->filled('password')) $lecturer->password = \Illuminate\Support\Facades\Hash::make($request->password);
     if ($request->has('department')) $lecturer->department = $request->department;
@@ -153,7 +157,7 @@ Route::get('/students', function (Request $request) {
         ], 403);
     }
     $students = \App\Models\User::where('role', 'student')
-        ->select('id', 'name', 'email', 'student_code', 'gender', 'date_of_birth', 'department', 'phone', 'created_at')
+        ->select('id', 'name', 'latin_name', 'email', 'student_code', 'gender', 'date_of_birth', 'department', 'phone', 'created_at')
         ->orderBy('id', 'desc')
         ->get();
     return response()->json(['status' => true, 'data' => $students]);
@@ -170,6 +174,7 @@ Route::post('/students', function (Request $request) {
 
     $request->validate([
         'name' => 'required|string|max:255',
+        'latin_name' => 'nullable|string|max:255',
         'email' => 'required|email|unique:users,email',
         'password' => 'required|string|min:6',
         'student_code' => 'required|string|max:50|unique:users,student_code',
@@ -180,7 +185,8 @@ Route::post('/students', function (Request $request) {
     ]);
 
     $student = \App\Models\User::create([
-        'name' => $request->name,
+        'name' => trim($request->name),
+        'latin_name' => $request->filled('latin_name') ? trim($request->latin_name) : null,
         'email' => strtolower(trim($request->email)),
         'password' => \Illuminate\Support\Facades\Hash::make($request->password),
         'role' => 'student',
@@ -244,7 +250,8 @@ Route::post('/students/import', function (Request $request) {
 
     foreach ($rows as $index => $row) {
         $studentCode = strtoupper(trim($row['student_code'] ?? $row['code'] ?? $row['id'] ?? ''));
-        $name = trim($row['name'] ?? $row['full_name'] ?? '');
+        $name = trim($row['name'] ?? $row['khmer_name'] ?? $row['full_name'] ?? '');
+        $latinName = trim($row['latin_name'] ?? $row['english_name'] ?? $row['romanized_name'] ?? '');
         $email = strtolower(trim($row['email'] ?? ''));
         $gender = trim($row['gender'] ?? $row['sex'] ?? '');
         $dob = trim($row['date_of_birth'] ?? $row['dob'] ?? '');
@@ -273,6 +280,7 @@ Route::post('/students/import', function (Request $request) {
         try {
             \App\Models\User::create([
                 'name' => $name,
+                'latin_name' => $latinName ?: null,
                 'email' => $email,
                 'student_code' => $studentCode,
                 'password' => \Illuminate\Support\Facades\Hash::make($password),
@@ -316,6 +324,7 @@ Route::put('/students/{id}', function (Request $request, $id) {
 
     $request->validate([
         'name' => 'sometimes|required|string|max:255',
+        'latin_name' => 'nullable|string|max:255',
         'email' => 'sometimes|required|email|unique:users,email,' . $id,
         'student_code' => 'sometimes|required|string|max:50|unique:users,student_code,' . $id,
         'password' => 'nullable|string|min:6',
@@ -325,7 +334,8 @@ Route::put('/students/{id}', function (Request $request, $id) {
         'phone' => 'nullable|string|max:50',
     ]);
 
-    if ($request->filled('name')) $student->name = $request->name;
+    if ($request->filled('name')) $student->name = trim($request->name);
+    if ($request->has('latin_name')) $student->latin_name = $request->filled('latin_name') ? trim($request->latin_name) : null;
     if ($request->filled('email')) $student->email = strtolower(trim($request->email));
     if ($request->filled('student_code')) $student->student_code = strtoupper(trim($request->student_code));
     if ($request->filled('password')) $student->password = \Illuminate\Support\Facades\Hash::make($request->password);

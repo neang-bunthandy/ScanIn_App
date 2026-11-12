@@ -457,6 +457,17 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                         color: textCol,
                       ),
                     ),
+                    if (student.latinName != null && student.latinName!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        student.latinName!,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 4),
                     Text(
                       '${AppLanguage.tr('អត្តលេខ៖ ', 'ID: ')}${student.studentCode ?? 'STU001'}',
@@ -584,6 +595,22 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                   ),
                   const SizedBox(height: 14),
+                  _buildProfileDetailRow(
+                    icon: Icons.person_outline_rounded,
+                    title: AppLanguage.tr('ឈ្មោះជាអក្សរខ្មែរ', 'Khmer Name'),
+                    value: student.name,
+                    isDark: isDark,
+                  ),
+                  if (student.latinName != null && student.latinName!.isNotEmpty) ...[
+                    Divider(height: 18, color: dividerCol),
+                    _buildProfileDetailRow(
+                      icon: Icons.translate_rounded,
+                      title: AppLanguage.tr('ឈ្មោះជាអក្សរឡាតាំង', 'Latin Name'),
+                      value: student.latinName!,
+                      isDark: isDark,
+                    ),
+                  ],
+                  Divider(height: 18, color: dividerCol),
                   _buildProfileDetailRow(
                     icon: Icons.email_outlined,
                     title: AppLanguage.tr('អ៊ីមែល', 'Email'),

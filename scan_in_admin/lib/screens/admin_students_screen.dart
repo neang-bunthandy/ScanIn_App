@@ -55,9 +55,10 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
-  /// បើកផ្ទាំង Admin បង្កើតគណនីសិស្សថ្មី (Name, Email, Password, StudentCode, Department, Phone)
+  /// បើកផ្ទាំង Admin បង្កើតគណនីសិស្សថ្មី (Khmer Name, Latin Name, Email, Password, StudentCode, Department, Phone)
   Future<void> _openCreateStudentDialog() async {
     final nameCtrl = TextEditingController();
+    final latinNameCtrl = TextEditingController();
     final emailCtrl = TextEditingController();
     final passwordCtrl = TextEditingController(text: 'password123');
     final codeCtrl = TextEditingController(text: 'STU00${_students.length + 1}');
@@ -108,15 +109,35 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // ឈ្មោះសិស្ស
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: InputDecoration(
-                      labelText: AppLanguage.tr('ឈ្មោះសិស្ស/និស្សិត (Full Name)', 'Student Name'),
-                      prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
+                  // ឈ្មោះជាអក្សរខ្មែរ & ឈ្មោះជាអក្សរឡាតាំង
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: nameCtrl,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឈ្មោះជាអក្សរខ្មែរ *', 'Khmer Name *'),
+                            hintText: 'ឧ. សុខា ម៉េង',
+                            prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: latinNameCtrl,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឈ្មោះជាអក្សរឡាតាំង', 'Latin Name'),
+                            hintText: 'e.g. Sokha Meng',
+                            prefixIcon: const Icon(Icons.translate_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 14),
 
@@ -272,6 +293,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
 
                 final result = await ClassService.createStudent(
                   name: nameCtrl.text.trim(),
+                  latinName: latinNameCtrl.text.trim(),
                   email: emailCtrl.text.trim(),
                   password: passwordCtrl.text,
                   studentCode: codeCtrl.text.trim(),
@@ -321,6 +343,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   Future<void> _openEditStudentDialog(Map<String, dynamic> stu) async {
     final id = stu['id'] as int;
     final nameCtrl = TextEditingController(text: stu['name'] ?? '');
+    final latinNameCtrl = TextEditingController(text: stu['latin_name'] ?? '');
     final emailCtrl = TextEditingController(text: stu['email'] ?? '');
     final passwordCtrl = TextEditingController();
     final codeCtrl = TextEditingController(text: stu['student_code'] ?? '');
@@ -375,14 +398,34 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: InputDecoration(
-                      labelText: AppLanguage.tr('ឈ្មោះសិស្ស (Full Name)', 'Student Name'),
-                      prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: nameCtrl,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឈ្មោះជាអក្សរខ្មែរ *', 'Khmer Name *'),
+                            hintText: 'ឧ. សុខា ម៉េង',
+                            prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: latinNameCtrl,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ឈ្មោះជាអក្សរឡាតាំង', 'Latin Name'),
+                            hintText: 'e.g. Sokha Meng',
+                            prefixIcon: const Icon(Icons.translate_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -532,6 +575,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                 final result = await ClassService.updateStudent(
                   id: id,
                   name: nameCtrl.text.trim(),
+                  latinName: latinNameCtrl.text.trim(),
                   email: emailCtrl.text.trim(),
                   studentCode: codeCtrl.text.trim(),
                   gender: selectedGender.contains('ស្រី') ? 'ស្រី' : 'ប្រុស',
@@ -606,11 +650,13 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           final email = parts.length > 4 && parts[4].isNotEmpty ? parts[4] : '${code.toLowerCase()}@student.scanin.app';
           final dept = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : 'វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS)';
           final phone = parts.length > 6 ? parts[6] : '';
+          final latinName = parts.length > 7 ? parts[7] : '';
 
           if (code.isNotEmpty && name.isNotEmpty) {
             list.add({
               'student_code': code,
               'name': name,
+              if (latinName.isNotEmpty) 'latin_name': latinName,
               'gender': gender,
               'date_of_birth': dob,
               'email': email,
@@ -1049,7 +1095,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                     rows: _students.map((stu) {
                                       final id = stu['id'];
                                       final code = stu['student_code'] ?? '-';
-                                      final name = stu['name'] ?? 'Student #$id';
+                                      final name = (stu['name'] ?? 'Student #$id').toString();
+                                      final latinName = (stu['latin_name'] ?? '').toString();
                                       final gender = stu['gender'] ?? '-';
                                       final dob = stu['date_of_birth'] ?? '-';
                                       final isFemale = gender.toString().contains('ស្រី') || gender.toString().toLowerCase().contains('female');
@@ -1086,7 +1133,15 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                                   ),
                                                 ),
                                                 const SizedBox(width: 8),
-                                                Text(name, style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
+                                                Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(name, style: TextStyle(fontWeight: FontWeight.w600, color: textCol)),
+                                                    if (latinName.isNotEmpty)
+                                                      Text(latinName, style: TextStyle(fontSize: 11, color: subTextCol)),
+                                                  ],
+                                                ),
                                               ],
                                             ),
                                           ),
