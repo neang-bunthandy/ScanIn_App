@@ -26,6 +26,8 @@ class ClassModel extends Model
         'subject_name',
         'subject_code',
         'department',
+        'generation',
+        'year_level',
         'room',
         'day_of_week',
         'time',

@@ -47,6 +47,22 @@ class AttendanceController extends Controller
             ], 403);
         }
 
+        // ពិនិត្យឆ្នាំសិក្សា (Year Level 1-4)
+        if (!empty($class->year_level) && (int)($user->year_level ?? 0) !== (int)$class->year_level) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ថ្នាក់រៀននេះសម្រាប់តែនិស្សិតឆ្នាំទី ' . $class->year_level . ' ប៉ុណ្ណោះ!',
+            ], 403);
+        }
+
+        // ពិនិត្យជំនាន់ (Generation) ប្រសិនបើថ្នាក់បានកំណត់
+        if (!empty($class->generation) && trim((string)($user->generation ?? '')) !== trim((string)$class->generation)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ថ្នាក់រៀននេះសម្រាប់តែនិស្សិតជំនាន់ "' . $class->generation . '" ប៉ុណ្ណោះ!',
+            ], 403);
+        }
+
         $today = Carbon::today()->toDateString();
         $now = Carbon::now();
 

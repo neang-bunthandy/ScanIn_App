@@ -20,31 +20,65 @@ class ClassController extends Controller
         if ($user && $user->role === 'lecturer') {
             $query->where('user_id', $user->id);
         } elseif ($user && $user->role === 'student') {
-            // សិស្សម្នាក់ៗឃើញតែថ្នាក់រៀនតាមដេប៉ាតឺម៉ង់ (Department) របស់ខ្លួនប៉ុណ្ណោះ
+            // សិស្សម្នាក់ៗឃើញតែថ្នាក់រៀនតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី (1-4) + ជំនាន់ របស់ខ្លួនប៉ុណ្ណោះ
             $dept = trim((string)($user->department ?? ''));
             if ($dept !== '') {
                 $query->where('department', $dept);
+
+                $studentYearLevel = (int)($user->year_level ?? 0);
+                if ($studentYearLevel > 0) {
+                    $query->where(function ($q) use ($studentYearLevel) {
+                        $q->whereNull('year_level')
+                          ->orWhere('year_level', $studentYearLevel);
+                    });
+                } else {
+                    $query->whereNull('year_level');
+                }
+
+                $studentGen = trim((string)($user->generation ?? ''));
+                if ($studentGen !== '') {
+                    $query->where(function ($q) use ($studentGen) {
+                        $q->whereNull('generation')
+                          ->orWhere('generation', '')
+                          ->orWhere('generation', $studentGen);
+                    });
+                } else {
+                    $query->where(function ($q) {
+                        $q->whereNull('generation')
+                          ->orWhere('generation', '');
+                    });
+                }
             } else {
                 $query->whereRaw('1 = 0');
             }
         }
 
-        // គណនាចំនួនសិស្សពិតប្រាកដពី Database តាមដេប៉ាតឺម៉ង់នីមួយៗ
-        $deptCounts = \App\Models\User::where('role', 'student')
+        // ទាញសិស្សដើម្បីគណនាចំនួនសិស្សពិតប្រាកដតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី + ជំនាន់
+        $allStudents = \App\Models\User::where('role', 'student')
             ->whereNotNull('department')
-            ->selectRaw('department, COUNT(*) as total')
-            ->groupBy('department')
-            ->pluck('total', 'department');
+            ->select('department', 'year_level', 'generation')
+            ->get();
 
         // គណនាចំនួនថ្ងៃ/សប្តាហ៍ដែលបានស្កេនវត្តមានពិតប្រាកដក្នុង DB សម្រាប់ថ្នាក់នីមួយៗ
         $sessionCounts = \App\Models\Attendance::selectRaw('class_id, COUNT(DISTINCT date) as total_days')
             ->groupBy('class_id')
             ->pluck('total_days', 'class_id');
 
-        $classes = $query->orderBy('id', 'desc')->get()->map(function ($c) use ($deptCounts, $sessionCounts) {
-            $realStudentCount = !empty($c->department)
-                ? (int)($deptCounts[$c->department] ?? 0)
-                : 0;
+        $classes = $query->orderBy('id', 'desc')->get()->map(function ($c) use ($allStudents, $sessionCounts) {
+            $realStudentCount = 0;
+            if (!empty($c->department)) {
+                $classDept = trim((string)$c->department);
+                $classYear = $c->year_level !== null ? (int)$c->year_level : null;
+                $classGen = trim((string)($c->generation ?? ''));
+
+                $realStudentCount = $allStudents->filter(function ($s) use ($classDept, $classYear, $classGen) {
+                    if (trim((string)$s->department) !== $classDept) return false;
+                    if ($classYear !== null && (int)($s->year_level ?? 0) !== $classYear) return false;
+                    if ($classGen !== '' && trim((string)($s->generation ?? '')) !== $classGen) return false;
+                    return true;
+                })->count();
+            }
+
             $realCompletedSessions = max(
                 (int)($c->completed_sessions ?? 0),
                 (int)($sessionCounts[$c->id] ?? 0)
@@ -60,6 +94,8 @@ class ClassController extends Controller
                 'subject_name' => $c->subject_name,
                 'subject_code' => $c->subject_code,
                 'department' => $c->department,
+                'generation' => $c->generation,
+                'year_level' => $c->year_level !== null ? (int)$c->year_level : null,
                 'room' => $c->room,
                 'day_of_week' => $c->day_of_week,
                 'time' => $c->time,
@@ -99,6 +135,8 @@ class ClassController extends Controller
             'subject_name' => 'required|string|max:255',
             'subject_code' => 'required|string|max:50',
             'department' => 'nullable|string|max:255',
+            'generation' => 'nullable|string|max:255',
+            'year_level' => 'nullable|integer|min:1|max:6',
             'lecturer_id' => 'nullable|exists:users,id',
             'room' => 'nullable|string|max:100',
             'day_of_week' => 'nullable|string|max:50',
@@ -127,6 +165,8 @@ class ClassController extends Controller
             'subject_name' => $request->subject_name,
             'subject_code' => $code,
             'department' => $department,
+            'generation' => $request->filled('generation') ? trim($request->generation) : null,
+            'year_level' => $request->filled('year_level') ? (int)$request->year_level : null,
             'room' => $request->room,
             'day_of_week' => $request->day_of_week,
             'time' => $request->time,
@@ -240,6 +280,8 @@ class ClassController extends Controller
             'subject_name' => 'sometimes|required|string|max:255',
             'subject_code' => 'sometimes|required|string|max:50',
             'department' => 'nullable|string|max:255',
+            'generation' => 'nullable|string|max:255',
+            'year_level' => 'nullable|integer|min:1|max:6',
             'lecturer_id' => 'nullable|exists:users,id',
             'room' => 'nullable|string|max:100',
             'day_of_week' => 'nullable|string|max:50',
@@ -255,6 +297,8 @@ class ClassController extends Controller
         if ($request->filled('subject_name')) $class->subject_name = $request->subject_name;
         if ($request->filled('subject_code')) $class->subject_code = strtoupper(trim($request->subject_code));
         if ($request->has('department')) $class->department = $request->filled('department') ? trim($request->department) : null;
+        if ($request->has('generation')) $class->generation = $request->filled('generation') ? trim($request->generation) : null;
+        if ($request->has('year_level')) $class->year_level = $request->filled('year_level') ? (int)$request->year_level : null;
         if ($request->has('lecturer_id') && $request->lecturer_id) $class->user_id = $request->lecturer_id;
         if ($request->has('room')) $class->room = $request->room;
         if ($request->has('day_of_week')) $class->day_of_week = $request->day_of_week;
@@ -346,8 +390,17 @@ class ClassController extends Controller
             ->get()
             ->keyBy('user_id');
 
-        $students = \App\Models\User::where('role', 'student')
-            ->where('department', $class->department)
+        $studentsQuery = \App\Models\User::where('role', 'student')
+            ->where('department', $class->department);
+
+        if ($class->year_level !== null) {
+            $studentsQuery->where('year_level', (int)$class->year_level);
+        }
+        if (!empty($class->generation)) {
+            $studentsQuery->where('generation', trim((string)$class->generation));
+        }
+
+        $students = $studentsQuery
             ->orderBy('student_code')
             ->get()
             ->map(function ($s) use ($todayAtts) {
@@ -360,6 +413,9 @@ class ClassController extends Controller
                     'role' => $s->role,
                     'student_code' => $s->student_code,
                     'department' => $s->department,
+                    'generation' => $s->generation,
+                    'intake_year' => $s->intake_year,
+                    'year_level' => $s->year_level !== null ? (int)$s->year_level : null,
                     'phone' => $s->phone,
                     'gender' => $s->gender,
                     'date_of_birth' => $s->date_of_birth,

@@ -8,6 +8,8 @@ class ClassModel {
   final String subjectName; // ឈ្មោះមុខវិជ្ជា
   final String subjectCode; // កូដមុខវិជ្ជា (ឧ. CS101)
   final String? department; // ដេប៉ាតឺម៉ង់ / ជំនាញ
+  final String? generation; // ជំនាន់ (ឧ. Gen 15)
+  final int? yearLevel; // ឆ្នាំទី (1-4)
   final String room; // បន្ទប់រៀន (ឧ. A201)
   final String dayOfWeek; // ថ្ងៃរៀន (ឧ. ចន្ទ, អង្គារ)
   final String time; // ម៉ោងរៀន (ឧ. 08:00 - 10:00)
@@ -30,6 +32,8 @@ class ClassModel {
     required this.subjectName,
     required this.subjectCode,
     this.department,
+    this.generation,
+    this.yearLevel,
     required this.room,
     required this.dayOfWeek,
     required this.time,
@@ -56,6 +60,10 @@ class ClassModel {
       subjectName: json['subject_name'] as String,
       subjectCode: json['subject_code'] as String,
       department: json['department'] as String?,
+      generation: json['generation'] as String?,
+      yearLevel: json['year_level'] is int
+          ? json['year_level'] as int
+          : int.tryParse(json['year_level']?.toString() ?? ''),
       room: json['room'] as String? ?? '',
       dayOfWeek: json['day_of_week'] as String? ?? '',
       time: json['time'] as String? ?? '',
@@ -84,6 +92,8 @@ class ClassModel {
       'subject_name': subjectName,
       'subject_code': subjectCode,
       'department': department,
+      'generation': generation,
+      'year_level': yearLevel,
       'room': room,
       'day_of_week': dayOfWeek,
       'time': time,
@@ -108,6 +118,8 @@ class ClassModel {
     String? subjectName,
     String? subjectCode,
     String? department,
+    String? generation,
+    int? yearLevel,
     String? room,
     String? dayOfWeek,
     String? time,
@@ -130,6 +142,8 @@ class ClassModel {
       subjectName: subjectName ?? this.subjectName,
       subjectCode: subjectCode ?? this.subjectCode,
       department: department ?? this.department,
+      generation: generation ?? this.generation,
+      yearLevel: yearLevel ?? this.yearLevel,
       room: room ?? this.room,
       dayOfWeek: dayOfWeek ?? this.dayOfWeek,
       time: time ?? this.time,

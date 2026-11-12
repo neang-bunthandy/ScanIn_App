@@ -66,11 +66,19 @@ class StudentDashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      (student.department != null && student.department!.isNotEmpty)
-                          ? student.department!
+                      [
+                        if (student.department != null && student.department!.isNotEmpty) student.department!,
+                        if (student.yearLevel != null) 'ឆ្នាំទី ${student.yearLevel}',
+                        if (student.generation != null && student.generation!.isNotEmpty) student.generation!,
+                      ].isNotEmpty
+                          ? [
+                              if (student.department != null && student.department!.isNotEmpty) student.department!,
+                              if (student.yearLevel != null) 'ឆ្នាំទី ${student.yearLevel}',
+                              if (student.generation != null && student.generation!.isNotEmpty) student.generation!,
+                            ].join(' · ')
                           : AppLanguage.tr('ថ្ងៃព្រហស្បតិ៍ 15 តុលា 2026', 'Thursday, Oct 15, 2026'),
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13.5,
                         color: subTextCol,
                         fontWeight: FontWeight.w500,
                       ),

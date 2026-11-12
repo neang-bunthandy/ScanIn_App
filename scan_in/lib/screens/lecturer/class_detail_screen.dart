@@ -192,7 +192,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                       color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
-                  if (c.department != null && c.department!.isNotEmpty) ...[
+                  if ((c.department != null && c.department!.isNotEmpty) || c.yearLevel != null) ...[
                     const SizedBox(height: 6),
                     Row(
                       children: [
@@ -200,7 +200,11 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            c.department!,
+                            [
+                              if (c.department != null && c.department!.isNotEmpty) c.department!,
+                              if (c.yearLevel != null) 'ឆ្នាំទី ${c.yearLevel}',
+                              if (c.generation != null && c.generation!.isNotEmpty) c.generation!,
+                            ].join(' · '),
                             style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w500,

@@ -7,6 +7,9 @@ class UserModel {
   final String? studentCode; // លេខសម្គាល់សិស្ស (ឧ. STU001)
   final String? staffId; // លេខសម្គាល់គ្រូ/បុគ្គលិក (ឧ. STF001)
   final String? department; // មហាវិទ្យាល័យ / ដេប៉ាតឺម៉ង់
+  final String? generation; // ជំនាន់ (ឧ. Gen 15)
+  final String? intakeYear; // ចាប់ពីឆ្នាំ (ឧ. 2024)
+  final int? yearLevel; // ឆ្នាំទី (1-4)
   final String? phone;
   final String? avatarUrl;
   final DateTime? createdAt;
@@ -20,6 +23,9 @@ class UserModel {
     this.studentCode,
     this.staffId,
     this.department,
+    this.generation,
+    this.intakeYear,
+    this.yearLevel,
     this.phone,
     this.avatarUrl,
     this.createdAt,
@@ -40,6 +46,11 @@ class UserModel {
       studentCode: json['student_code'] as String?,
       staffId: json['staff_id'] as String?,
       department: json['department'] as String?,
+      generation: json['generation'] as String?,
+      intakeYear: json['intake_year']?.toString(),
+      yearLevel: json['year_level'] is int
+          ? json['year_level'] as int
+          : int.tryParse(json['year_level']?.toString() ?? ''),
       phone: json['phone'] as String?,
       avatarUrl: json['avatar_url'] as String?,
       createdAt: json['created_at'] != null
@@ -59,6 +70,9 @@ class UserModel {
       'student_code': studentCode,
       'staff_id': staffId,
       'department': department,
+      'generation': generation,
+      'intake_year': intakeYear,
+      'year_level': yearLevel,
       'phone': phone,
       'avatar_url': avatarUrl,
       'created_at': createdAt?.toIso8601String(),

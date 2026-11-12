@@ -156,10 +156,23 @@ Route::get('/students', function (Request $request) {
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចមើលបញ្ជីសិស្សបាន។',
         ], 403);
     }
-    $students = \App\Models\User::where('role', 'student')
-        ->select('id', 'name', 'latin_name', 'email', 'student_code', 'gender', 'date_of_birth', 'department', 'phone', 'created_at')
-        ->orderBy('id', 'desc')
-        ->get();
+    $studentsQuery = \App\Models\User::where('role', 'student')
+        ->select('id', 'name', 'latin_name', 'email', 'student_code', 'gender', 'date_of_birth', 'department', 'generation', 'intake_year', 'year_level', 'phone', 'created_at');
+
+    if ($request->filled('department')) {
+        $studentsQuery->where('department', trim($request->department));
+    }
+    if ($request->filled('generation')) {
+        $studentsQuery->where('generation', trim($request->generation));
+    }
+    if ($request->filled('intake_year')) {
+        $studentsQuery->where('intake_year', trim($request->intake_year));
+    }
+    if ($request->filled('year_level')) {
+        $studentsQuery->where('year_level', (int)$request->year_level);
+    }
+
+    $students = $studentsQuery->orderBy('id', 'desc')->get();
     return response()->json(['status' => true, 'data' => $students]);
 });
 
@@ -181,6 +194,9 @@ Route::post('/students', function (Request $request) {
         'gender' => 'nullable|string|max:20',
         'date_of_birth' => 'nullable|date',
         'department' => 'nullable|string|max:255',
+        'generation' => 'nullable|string|max:255',
+        'intake_year' => 'nullable|string|max:20',
+        'year_level' => 'nullable|integer|min:1|max:6',
         'phone' => 'nullable|string|max:50',
     ]);
 
@@ -194,6 +210,9 @@ Route::post('/students', function (Request $request) {
         'gender' => $request->gender,
         'date_of_birth' => $request->date_of_birth,
         'department' => $request->department,
+        'generation' => $request->filled('generation') ? trim($request->generation) : null,
+        'intake_year' => $request->filled('intake_year') ? trim($request->intake_year) : null,
+        'year_level' => $request->filled('year_level') ? (int)$request->year_level : null,
         'phone' => $request->phone,
     ]);
 
@@ -256,6 +275,10 @@ Route::post('/students/import', function (Request $request) {
         $gender = trim($row['gender'] ?? $row['sex'] ?? '');
         $dob = trim($row['date_of_birth'] ?? $row['dob'] ?? '');
         $dept = trim($row['department'] ?? $row['major'] ?? 'General');
+        $generation = trim($row['generation'] ?? $row['batch'] ?? '');
+        $intakeYear = trim($row['intake_year'] ?? $row['start_year'] ?? '');
+        $yearLevelRaw = $row['year_level'] ?? $row['year'] ?? null;
+        $yearLevel = is_numeric($yearLevelRaw) ? (int)$yearLevelRaw : null;
         $phone = trim($row['phone'] ?? $row['tel'] ?? '');
         $password = !empty($row['password']) ? $row['password'] : 'password123';
 
@@ -288,6 +311,9 @@ Route::post('/students/import', function (Request $request) {
                 'gender' => $gender ?: null,
                 'date_of_birth' => !empty($dob) ? date('Y-m-d', strtotime($dob)) : null,
                 'department' => $dept ?: null,
+                'generation' => $generation ?: null,
+                'intake_year' => $intakeYear ?: null,
+                'year_level' => $yearLevel,
                 'phone' => $phone ?: null,
             ]);
             $imported++;
@@ -331,6 +357,9 @@ Route::put('/students/{id}', function (Request $request, $id) {
         'gender' => 'nullable|string|max:20',
         'date_of_birth' => 'nullable|date',
         'department' => 'nullable|string|max:255',
+        'generation' => 'nullable|string|max:255',
+        'intake_year' => 'nullable|string|max:20',
+        'year_level' => 'nullable|integer|min:1|max:6',
         'phone' => 'nullable|string|max:50',
     ]);
 
@@ -342,6 +371,9 @@ Route::put('/students/{id}', function (Request $request, $id) {
     if ($request->has('gender')) $student->gender = $request->gender;
     if ($request->has('date_of_birth')) $student->date_of_birth = $request->date_of_birth;
     if ($request->has('department')) $student->department = $request->department;
+    if ($request->has('generation')) $student->generation = $request->filled('generation') ? trim($request->generation) : null;
+    if ($request->has('intake_year')) $student->intake_year = $request->filled('intake_year') ? trim($request->intake_year) : null;
+    if ($request->has('year_level')) $student->year_level = $request->filled('year_level') ? (int)$request->year_level : null;
     if ($request->has('phone')) $student->phone = $request->phone;
 
     $student->save();
@@ -351,6 +383,41 @@ Route::put('/students/{id}', function (Request $request, $id) {
         'message' => 'បានកែប្រែគណនីសិស្សដោយជោគជ័យ',
         'data' => $student,
     ]);
+});
+
+// ដំឡើងឆ្នាំសិក្សាសិស្សតាមជំនាន់ ឬទូទាំងប្រព័ន្ធ (Promote Students Year Level - Admin Only)
+Route::post('/students/promote', function (Request $request) {
+    if ($request->user() && $request->user()->role !== 'admin') {
+        return response()->json([
+            'status' => false,
+            'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចដំឡើងឆ្នាំសិក្សាសិស្សបាន។',
+        ], 403);
+    }
+
+    $query = \App\Models\User::where('role', 'student')
+        ->whereNotNull('year_level')
+        ->where('year_level', '<', 4);
+
+    if ($request->filled('generation')) {
+        $query->where('generation', trim($request->generation));
+    }
+    if ($request->filled('intake_year')) {
+        $query->where('intake_year', trim($request->intake_year));
+    }
+    if ($request->filled('department')) {
+        $query->where('department', trim($request->department));
+    }
+    if ($request->filled('from_year_level')) {
+        $query->where('year_level', (int)$request->from_year_level);
+    }
+
+    $promoted = $query->increment('year_level');
+
+    return response()->json([
+        'status' => true,
+        'message' => "បានដំឡើងឆ្នាំសិក្សាឱ្យនិស្សិតចំនួន $promoted នាក់ដោយជោគជ័យ!",
+        'promoted_count' => $promoted,
+    ], 200);
 });
 
 Route::delete('/students/{id}', function (Request $request, $id) {

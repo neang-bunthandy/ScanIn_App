@@ -18,6 +18,31 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   List<Map<String, dynamic>> _students = [];
   UserModel? _currentUser;
   bool _isLoading = true;
+  String? _filterGeneration;
+  String? _filterIntakeYear;
+  int? _filterYearLevel;
+  String? _filterDepartment;
+
+  List<Map<String, dynamic>> get _filteredStudents {
+    return _students.where((stu) {
+      if (_filterGeneration != null && (stu['generation'] ?? '').toString() != _filterGeneration) {
+        return false;
+      }
+      if (_filterIntakeYear != null && (stu['intake_year'] ?? '').toString() != _filterIntakeYear) {
+        return false;
+      }
+      if (_filterYearLevel != null) {
+        final yl = stu['year_level'] is int
+            ? stu['year_level'] as int
+            : int.tryParse(stu['year_level']?.toString() ?? '');
+        if (yl != _filterYearLevel) return false;
+      }
+      if (_filterDepartment != null && (stu['department'] ?? '').toString() != _filterDepartment) {
+        return false;
+      }
+      return true;
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -63,6 +88,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final passwordCtrl = TextEditingController(text: 'password123');
     final codeCtrl = TextEditingController(text: 'STU00${_students.length + 1}');
     String selectedDepartment = ClassService.presetDepartments.first;
+    String selectedGeneration = ClassService.presetGenerations[2]; // Gen 16 default
+    String selectedIntakeYear = '${DateTime.now().year}';
+    if (!ClassService.presetIntakeYears.contains(selectedIntakeYear)) {
+      selectedIntakeYear = ClassService.presetIntakeYears.last;
+    }
+    int selectedYearLevel = ClassService.suggestYearLevelFromIntake(selectedIntakeYear);
     final phoneCtrl = TextEditingController(text: '098 765 432');
     String selectedGender = 'ប្រុស (Male)';
     final dobCtrl = TextEditingController(text: '2004-01-01');
@@ -70,10 +101,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final created = await showDialog<bool>(
       context: context,
       builder: (ctx) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final textCol = isDark ? Colors.white : AppColors.textPrimary;
+        return StatefulBuilder(
+          builder: (context, setDlgState) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final textCol = isDark ? Colors.white : AppColors.textPrimary;
 
-        return AlertDialog(
+            return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
@@ -262,6 +295,79 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     ),
                   ),
+                  const SizedBox(height: 14),
+
+                  // ជំនាន់ & ចាប់ពីឆ្នាំ & ឆ្នាំទីបច្ចុប្បន្ន
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          initialValue: selectedGeneration,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ជំនាន់ (Generation)', 'Generation'),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          items: ClassService.presetGenerations
+                              .map((g) => DropdownMenuItem<String>(
+                                    value: g,
+                                    child: Text(g, overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setDlgState(() => selectedGeneration = val);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          initialValue: selectedIntakeYear,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ចាប់ពីឆ្នាំ', 'Start Year'),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          items: ClassService.presetIntakeYears
+                              .map((y) => DropdownMenuItem<String>(value: y, child: Text(y)))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDlgState(() {
+                                selectedIntakeYear = val;
+                                selectedYearLevel = ClassService.suggestYearLevelFromIntake(val);
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<int>(
+                    key: ValueKey('create-yl-$selectedYearLevel'),
+                    isExpanded: true,
+                    initialValue: selectedYearLevel,
+                    decoration: InputDecoration(
+                      labelText: AppLanguage.tr('ឆ្នាំសិក្សាបច្ចុប្បន្ន (Year Level)', 'Current Year Level'),
+                      prefixIcon: const Icon(Icons.stairs_rounded, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    items: const [1, 2, 3, 4]
+                        .map((y) => DropdownMenuItem<int>(
+                              value: y,
+                              child: Text(ClassService.yearLevelLabel(y)),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setDlgState(() => selectedYearLevel = val);
+                    },
+                  ),
                 ],
               ),
             ),
@@ -300,6 +406,9 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   gender: selectedGender.contains('ស្រី') ? 'ស្រី' : 'ប្រុស',
                   dateOfBirth: dobCtrl.text.trim(),
                   department: selectedDepartment,
+                  generation: selectedGeneration,
+                  intakeYear: selectedIntakeYear,
+                  yearLevel: selectedYearLevel,
                   phone: phoneCtrl.text.trim(),
                 );
 
@@ -319,6 +428,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
               child: Text(AppLanguage.tr('បង្កើតគណនីសិស្ស', 'Create Account')),
             ),
           ],
+        );
+          },
         );
       },
     );
@@ -353,6 +464,24 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
       if (existingDept.isNotEmpty && !ClassService.presetDepartments.contains(existingDept)) existingDept,
     ];
     String selectedDepartment = existingDept.isNotEmpty ? existingDept : deptOptions.first;
+    final existingGen = (stu['generation'] ?? '').toString().trim();
+    final genOptions = [
+      ...ClassService.presetGenerations,
+      if (existingGen.isNotEmpty && !ClassService.presetGenerations.contains(existingGen)) existingGen,
+    ];
+    String selectedGeneration = existingGen.isNotEmpty ? existingGen : genOptions[2];
+    final existingIntake = (stu['intake_year'] ?? '').toString().trim();
+    final intakeOptions = [
+      ...ClassService.presetIntakeYears,
+      if (existingIntake.isNotEmpty && !ClassService.presetIntakeYears.contains(existingIntake)) existingIntake,
+    ];
+    String selectedIntakeYear = existingIntake.isNotEmpty ? existingIntake : '2026';
+    final existingYear = stu['year_level'] is int
+        ? stu['year_level'] as int
+        : int.tryParse(stu['year_level']?.toString() ?? '');
+    int selectedYearLevel = (existingYear != null && existingYear >= 1 && existingYear <= 4)
+        ? existingYear
+        : ClassService.suggestYearLevelFromIntake(selectedIntakeYear);
     final phoneCtrl = TextEditingController(text: stu['phone'] ?? '');
     String selectedGender = (stu['gender'] != null && stu['gender'].toString().contains('ស្រី')) ? 'ស្រី (Female)' : 'ប្រុស (Male)';
     final dobCtrl = TextEditingController(text: stu['date_of_birth'] ?? '');
@@ -360,10 +489,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final updated = await showDialog<bool>(
       context: context,
       builder: (ctx) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        final textCol = isDark ? Colors.white : AppColors.textPrimary;
+        return StatefulBuilder(
+          builder: (context, setDlgState) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final textCol = isDark ? Colors.white : AppColors.textPrimary;
 
-        return AlertDialog(
+            return AlertDialog(
           backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
@@ -540,7 +671,78 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                             ))
                         .toList(),
                     onChanged: (val) {
-                      if (val != null) selectedDepartment = val;
+                      if (val != null) setDlgState(() => selectedDepartment = val);
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          initialValue: selectedGeneration,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ជំនាន់ (Generation)', 'Generation'),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          items: genOptions
+                              .map((g) => DropdownMenuItem<String>(
+                                    value: g,
+                                    child: Text(g, overflow: TextOverflow.ellipsis),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) setDlgState(() => selectedGeneration = val);
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: DropdownButtonFormField<String>(
+                          isExpanded: true,
+                          initialValue: selectedIntakeYear,
+                          decoration: InputDecoration(
+                            labelText: AppLanguage.tr('ចាប់ពីឆ្នាំ', 'Start Year'),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          ),
+                          items: intakeOptions
+                              .map((y) => DropdownMenuItem<String>(value: y, child: Text(y)))
+                              .toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setDlgState(() {
+                                selectedIntakeYear = val;
+                                selectedYearLevel = ClassService.suggestYearLevelFromIntake(val);
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<int>(
+                    key: ValueKey('edit-yl-$selectedYearLevel'),
+                    isExpanded: true,
+                    initialValue: selectedYearLevel,
+                    decoration: InputDecoration(
+                      labelText: AppLanguage.tr('ឆ្នាំសិក្សាបច្ចុប្បន្ន (Year Level)', 'Current Year Level'),
+                      prefixIcon: const Icon(Icons.stairs_rounded, size: 20),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                    items: const [1, 2, 3, 4]
+                        .map((y) => DropdownMenuItem<int>(
+                              value: y,
+                              child: Text(ClassService.yearLevelLabel(y)),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      if (val != null) setDlgState(() => selectedYearLevel = val);
                     },
                   ),
                 ],
@@ -582,6 +784,9 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   dateOfBirth: dobCtrl.text.trim(),
                   password: passwordCtrl.text.isNotEmpty ? passwordCtrl.text : null,
                   department: selectedDepartment,
+                  generation: selectedGeneration,
+                  intakeYear: selectedIntakeYear,
+                  yearLevel: selectedYearLevel,
                   phone: phoneCtrl.text.trim(),
                 );
 
@@ -601,6 +806,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
               child: Text(AppLanguage.tr('រក្សាទុកការកែប្រែ', 'Save Changes')),
             ),
           ],
+        );
+          },
         );
       },
     );
@@ -838,6 +1045,83 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
+  /// ដំឡើងឆ្នាំសិក្សាសិស្ស +1 ឆ្នាំ (Promote Year Level)
+  Future<void> _confirmPromoteStudents() async {
+    final filterDesc = [
+      ?_filterGeneration,
+      if (_filterIntakeYear != null) 'ចាប់ពី $_filterIntakeYear',
+      if (_filterYearLevel != null) 'ឆ្នាំទី $_filterYearLevel',
+      ?_filterDepartment,
+    ].join(' · ');
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              const Icon(Icons.trending_up_rounded, color: AppColors.primary, size: 26),
+              const SizedBox(width: 10),
+              Text(
+                AppLanguage.tr('ដំឡើងឆ្នាំសិក្សាសិស្ស', 'Promote Student Year Level'),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+              ),
+            ],
+          ),
+          content: Text(
+            filterDesc.isEmpty
+                ? AppLanguage.tr(
+                    'តើអ្នកចង់ដំឡើងឆ្នាំសិក្សា +1 ឆ្នាំ (ឆ្នាំទី ១→២, ២→៣, ៣→៤) សម្រាប់សិស្សទាំងអស់ក្នុងប្រព័ន្ធមែនទេ?',
+                    'Promote all students in Year 1-3 up by 1 year?',
+                  )
+                : AppLanguage.tr(
+                    'តើអ្នកចង់ដំឡើងឆ្នាំសិក្សា +1 ឆ្នាំ សម្រាប់សិស្សតាមលក្ខខណ្ឌ ($filterDesc) មែនទេ?',
+                    'Promote students matching ($filterDesc) up by 1 year?',
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(AppLanguage.tr('បញ្ជាក់ដំឡើងឆ្នាំ', 'Promote Now')),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      final result = await ClassService.promoteStudents(
+        generation: _filterGeneration,
+        intakeYear: _filterIntakeYear,
+        department: _filterDepartment,
+        fromYearLevel: _filterYearLevel,
+      );
+      if (result['success'] == true) {
+        await _loadStudents();
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']?.toString() ?? ''),
+            backgroundColor: result['success'] == true ? AppColors.success : AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
   /// បញ្ជាក់ការលុបគណនីសិស្ស
   Future<void> _confirmDeleteStudent(Map<String, dynamic> stu) async {
     final id = stu['id'] as int;
@@ -962,6 +1246,17 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                             builder: (context, constraints) {
                               final isNarrow = constraints.maxWidth < 750;
                               final actionButtons = [
+                                OutlinedButton.icon(
+                                  icon: const Icon(Icons.trending_up_rounded, size: 18),
+                                  label: Text(AppLanguage.tr('ដំឡើងឆ្នាំសិក្សា', 'Promote Year')),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.primary,
+                                    side: const BorderSide(color: AppColors.primary),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                  onPressed: _confirmPromoteStudents,
+                                ),
                                 ElevatedButton.icon(
                                   icon: const Icon(Icons.file_upload_outlined, size: 18),
                                   label: Text(AppLanguage.tr('Import Excel / CSV', 'Import Excel/CSV')),
@@ -1054,7 +1349,124 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                         ),
                         const Divider(height: 1),
 
-                        if (_students.isEmpty)
+                        // របារច្រោះទិន្នន័យតាម ជំនាន់, ចាប់ពីឆ្នាំ, ឆ្នាំទី, ដេប៉ាតឺម៉ង់
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          child: Wrap(
+                            spacing: 12,
+                            runSpacing: 10,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 210,
+                                child: DropdownButtonFormField<String?>(
+                                  isExpanded: true,
+                                  initialValue: _filterGeneration,
+                                  decoration: InputDecoration(
+                                    labelText: AppLanguage.tr('ច្រោះតាមជំនាន់', 'Filter Generation'),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem<String?>(
+                                      value: null,
+                                      child: Text(AppLanguage.tr('គ្រប់ជំនាន់ (All)', 'All Generations')),
+                                    ),
+                                    ...ClassService.presetGenerations.map(
+                                      (g) => DropdownMenuItem<String?>(value: g, child: Text(g, overflow: TextOverflow.ellipsis)),
+                                    ),
+                                  ],
+                                  onChanged: (val) => setState(() => _filterGeneration = val),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 150,
+                                child: DropdownButtonFormField<String?>(
+                                  isExpanded: true,
+                                  initialValue: _filterIntakeYear,
+                                  decoration: InputDecoration(
+                                    labelText: AppLanguage.tr('ចាប់ពីឆ្នាំ', 'Start Year'),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem<String?>(
+                                      value: null,
+                                      child: Text(AppLanguage.tr('គ្រប់ឆ្នាំ', 'All Years')),
+                                    ),
+                                    ...ClassService.presetIntakeYears.map(
+                                      (y) => DropdownMenuItem<String?>(value: y, child: Text(y)),
+                                    ),
+                                  ],
+                                  onChanged: (val) => setState(() => _filterIntakeYear = val),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 170,
+                                child: DropdownButtonFormField<int?>(
+                                  isExpanded: true,
+                                  initialValue: _filterYearLevel,
+                                  decoration: InputDecoration(
+                                    labelText: AppLanguage.tr('ឆ្នាំទី', 'Year Level'),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem<int?>(
+                                      value: null,
+                                      child: Text(AppLanguage.tr('គ្រប់ឆ្នាំទី (1-4)', 'All Levels')),
+                                    ),
+                                    ...[1, 2, 3, 4].map(
+                                      (y) => DropdownMenuItem<int?>(value: y, child: Text(ClassService.yearLevelLabel(y))),
+                                    ),
+                                  ],
+                                  onChanged: (val) => setState(() => _filterYearLevel = val),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 220,
+                                child: DropdownButtonFormField<String?>(
+                                  isExpanded: true,
+                                  initialValue: _filterDepartment,
+                                  decoration: InputDecoration(
+                                    labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់', 'Department'),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem<String?>(
+                                      value: null,
+                                      child: Text(AppLanguage.tr('គ្រប់ដេប៉ាតឺម៉ង់', 'All Departments')),
+                                    ),
+                                    ...ClassService.presetDepartments.map(
+                                      (d) => DropdownMenuItem<String?>(value: d, child: Text(d, overflow: TextOverflow.ellipsis)),
+                                    ),
+                                  ],
+                                  onChanged: (val) => setState(() => _filterDepartment = val),
+                                ),
+                              ),
+                              if (_filterGeneration != null ||
+                                  _filterIntakeYear != null ||
+                                  _filterYearLevel != null ||
+                                  _filterDepartment != null)
+                                TextButton.icon(
+                                  icon: const Icon(Icons.clear_rounded, size: 16),
+                                  label: Text(AppLanguage.tr('សម្អាត', 'Clear')),
+                                  onPressed: () {
+                                    setState(() {
+                                      _filterGeneration = null;
+                                      _filterIntakeYear = null;
+                                      _filterYearLevel = null;
+                                      _filterDepartment = null;
+                                    });
+                                  },
+                                ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+
+                        if (_filteredStudents.isEmpty)
                           Padding(
                             padding: const EdgeInsets.all(40),
                             child: Center(
@@ -1089,10 +1501,11 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                       DataColumn(label: Text(AppLanguage.tr('ថ្ងៃកំណើត', 'DOB'))),
                                       DataColumn(label: Text(AppLanguage.tr('អ៊ីមែល', 'Email'))),
                                       DataColumn(label: Text(AppLanguage.tr('ដេប៉ាតឺម៉ង់', 'Department'))),
+                                      DataColumn(label: Text(AppLanguage.tr('ជំនាន់ / ឆ្នាំទី', 'Generation / Year'))),
                                       DataColumn(label: Text(AppLanguage.tr('លេខទូរស័ព្ទ', 'Phone'))),
                                       DataColumn(label: Text(AppLanguage.tr('សកម្មភាព (Actions)', 'Actions'))),
                                     ],
-                                    rows: _students.map((stu) {
+                                    rows: _filteredStudents.map((stu) {
                                       final id = stu['id'];
                                       final code = stu['student_code'] ?? '-';
                                       final name = (stu['name'] ?? 'Student #$id').toString();
@@ -1102,6 +1515,11 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                       final isFemale = gender.toString().contains('ស្រី') || gender.toString().toLowerCase().contains('female');
                                       final email = stu['email'] ?? '-';
                                       final dept = stu['department'] ?? 'ទូទៅ (General)';
+                                      final generation = (stu['generation'] ?? '').toString();
+                                      final intakeYear = (stu['intake_year'] ?? '').toString();
+                                      final yearLevel = stu['year_level'] is int
+                                          ? stu['year_level'] as int
+                                          : int.tryParse(stu['year_level']?.toString() ?? '');
                                       final phone = stu['phone'] ?? '-';
 
                                       return DataRow(
@@ -1167,6 +1585,30 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                           DataCell(Text(dob.toString())),
                                           DataCell(Text(email)),
                                           DataCell(Text(dept)),
+                                          DataCell(
+                                            Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  yearLevel != null ? 'ឆ្នាំទី $yearLevel' : 'មិនទាន់កំណត់ឆ្នាំទី',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12,
+                                                    color: yearLevel != null ? AppColors.primary : const Color(0xFFD97706),
+                                                  ),
+                                                ),
+                                                if (generation.isNotEmpty || intakeYear.isNotEmpty)
+                                                  Text(
+                                                    [
+                                                      if (generation.isNotEmpty) generation,
+                                                      if (intakeYear.isNotEmpty) 'ចាប់ពី $intakeYear',
+                                                    ].join(' · '),
+                                                    style: TextStyle(fontSize: 11, color: subTextCol),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
                                           DataCell(Text(phone)),
                                           DataCell(
                                             Row(

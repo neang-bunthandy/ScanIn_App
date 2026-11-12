@@ -29,6 +29,9 @@ class User extends Authenticatable
         'date_of_birth',
         'staff_id',
         'department',
+        'generation',
+        'intake_year',
+        'year_level',
         'phone',
         'avatar_url',
     ];

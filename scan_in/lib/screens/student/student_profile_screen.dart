@@ -631,6 +631,27 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     value: student.department ?? AppLanguage.tr('វិទ្យាសាស្ត្រកុំព្យូទ័រ', 'Computer Science'),
                     isDark: isDark,
                   ),
+                  if (student.yearLevel != null) ...[
+                    Divider(height: 18, color: dividerCol),
+                    _buildProfileDetailRow(
+                      icon: Icons.stairs_rounded,
+                      title: AppLanguage.tr('ឆ្នាំទីបច្ចុប្បន្ន', 'Current Year Level'),
+                      value: AppLanguage.tr('ឆ្នាំទី ${student.yearLevel}', 'Year ${student.yearLevel}'),
+                      isDark: isDark,
+                    ),
+                  ],
+                  if (student.generation != null && student.generation!.isNotEmpty) ...[
+                    Divider(height: 18, color: dividerCol),
+                    _buildProfileDetailRow(
+                      icon: Icons.groups_outlined,
+                      title: AppLanguage.tr('ជំនាន់ / ចាប់ពីឆ្នាំ', 'Generation / Start Year'),
+                      value: [
+                        student.generation!,
+                        if (student.intakeYear != null && student.intakeYear!.isNotEmpty) 'ចាប់ពី ${student.intakeYear}',
+                      ].join(' · '),
+                      isDark: isDark,
+                    ),
+                  ],
                   Divider(height: 18, color: dividerCol),
                   _buildProfileDetailRow(
                     icon: Icons.calendar_today_outlined,

@@ -20,6 +20,28 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
   List<ClassModel> _classes = [];
   UserModel? _currentUser;
   bool _isLoading = true;
+  String? _filterAcademicYear;
+  int? _filterYearLevel;
+  String? _filterGeneration;
+  String? _filterDepartment;
+
+  List<ClassModel> get _filteredClasses {
+    return _classes.where((c) {
+      if (_filterAcademicYear != null && c.academicYear != _filterAcademicYear) {
+        return false;
+      }
+      if (_filterYearLevel != null && c.yearLevel != _filterYearLevel) {
+        return false;
+      }
+      if (_filterGeneration != null && (c.generation ?? '') != _filterGeneration) {
+        return false;
+      }
+      if (_filterDepartment != null && (c.department ?? '') != _filterDepartment) {
+        return false;
+      }
+      return true;
+    }).toList();
+  }
 
   List<ClassModel> _filterForRole(List<ClassModel> allClasses, UserModel? user) {
     if (user?.role == 'lecturer' && user?.id != null) {
@@ -79,6 +101,8 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     String selectedSemester = '1';
     String selectedDay = 'ច័ន្ទ (Mon)';
     String selectedDepartment = _presetDepartments.first;
+    int selectedYearLevel = 1;
+    String selectedGeneration = '';
     int? selectedLecturerId;
 
     // ទាញយកបញ្ជីគ្រូបង្រៀនពី Backend
@@ -318,6 +342,58 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                           if (val != null) setDlgState(() => selectedDepartment = val);
                         },
                       ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<int>(
+                              isExpanded: true,
+                              initialValue: selectedYearLevel,
+                              decoration: InputDecoration(
+                                labelText: AppLanguage.tr('សម្រាប់ឆ្នាំទី (Year Level)', 'Target Year Level'),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              ),
+                              items: const [1, 2, 3, 4]
+                                  .map((y) => DropdownMenuItem<int>(
+                                        value: y,
+                                        child: Text(ClassService.yearLevelLabel(y), overflow: TextOverflow.ellipsis),
+                                      ))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) setDlgState(() => selectedYearLevel = val);
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: selectedGeneration,
+                              decoration: InputDecoration(
+                                labelText: AppLanguage.tr('ជំនាន់ (ស្រេចចិត្ត)', 'Generation (Optional)'),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              ),
+                              items: [
+                                DropdownMenuItem<String>(
+                                  value: '',
+                                  child: Text(AppLanguage.tr('គ្រប់ជំនាន់ក្នុងឆ្នាំនេះ', 'Any Generation')),
+                                ),
+                                ...ClassService.presetGenerations.map(
+                                  (g) => DropdownMenuItem<String>(
+                                    value: g,
+                                    child: Text(g, overflow: TextOverflow.ellipsis),
+                                  ),
+                                ),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) setDlgState(() => selectedGeneration = val);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -365,6 +441,8 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       subjectName: nameCtrl.text.trim(),
                       subjectCode: codeCtrl.text.trim().toUpperCase(),
                       department: selectedDepartment,
+                      generation: selectedGeneration,
+                      yearLevel: selectedYearLevel,
                       lecturerId: selectedLecturerId ?? 1,
                       academicYear: selectedYear,
                       semester: selectedSemester,
@@ -421,6 +499,15 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     String selectedDepartment = (c.department != null && c.department!.isNotEmpty)
         ? c.department!
         : deptOptions.first;
+    int selectedYearLevel = (c.yearLevel != null && c.yearLevel! >= 1 && c.yearLevel! <= 4)
+        ? c.yearLevel!
+        : 1;
+    final genOptions = <String>[
+      '',
+      ...ClassService.presetGenerations,
+      if (c.generation != null && c.generation!.isNotEmpty && !ClassService.presetGenerations.contains(c.generation)) c.generation!,
+    ];
+    String selectedGeneration = (c.generation != null && c.generation!.isNotEmpty) ? c.generation! : '';
     int selectedLecturerId = c.lecturerId;
 
     final lecturers = await ClassService.getLecturers();
@@ -628,6 +715,55 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       Row(
                         children: [
                           Expanded(
+                            child: DropdownButtonFormField<int>(
+                              isExpanded: true,
+                              initialValue: selectedYearLevel,
+                              decoration: InputDecoration(
+                                labelText: AppLanguage.tr('សម្រាប់ឆ្នាំទី (Year Level)', 'Target Year Level'),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              ),
+                              items: const [1, 2, 3, 4]
+                                  .map((y) => DropdownMenuItem<int>(
+                                        value: y,
+                                        child: Text(ClassService.yearLevelLabel(y), overflow: TextOverflow.ellipsis),
+                                      ))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) setDlgState(() => selectedYearLevel = val);
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: selectedGeneration,
+                              decoration: InputDecoration(
+                                labelText: AppLanguage.tr('ជំនាន់ (ស្រេចចិត្ត)', 'Generation (Optional)'),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                              ),
+                              items: genOptions.map((g) {
+                                return DropdownMenuItem<String>(
+                                  value: g,
+                                  child: Text(
+                                    g.isEmpty ? AppLanguage.tr('គ្រប់ជំនាន់ក្នុងឆ្នាំនេះ', 'Any Generation') : g,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) setDlgState(() => selectedGeneration = val);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
                             child: TextField(
                               controller: completedSessionsCtrl,
                               keyboardType: TextInputType.number,
@@ -701,6 +837,8 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       subjectName: nameCtrl.text.trim(),
                       subjectCode: codeCtrl.text.trim().toUpperCase(),
                       department: selectedDepartment,
+                      generation: selectedGeneration,
+                      yearLevel: selectedYearLevel,
                       lecturerId: selectedLecturerId,
                       academicYear: selectedYear,
                       semester: selectedSemester,
@@ -941,7 +1079,124 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                         ),
                         const Divider(height: 1),
 
-                        if (_classes.isEmpty)
+                        // របារច្រោះថ្នាក់រៀនតាម ឆ្នាំសិក្សា, ឆ្នាំទី, ជំនាន់, ដេប៉ាតឺម៉ង់
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                          child: Wrap(
+                            spacing: 12,
+                            runSpacing: 10,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 165,
+                                child: DropdownButtonFormField<String?>(
+                                  isExpanded: true,
+                                  initialValue: _filterAcademicYear,
+                                  decoration: InputDecoration(
+                                    labelText: AppLanguage.tr('ឆ្នាំសិក្សា', 'Academic Year'),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem<String?>(
+                                      value: null,
+                                      child: Text(AppLanguage.tr('គ្រប់ឆ្នាំសិក្សា', 'All Years')),
+                                    ),
+                                    const DropdownMenuItem<String?>(value: '2024-2025', child: Text('2024-2025')),
+                                    const DropdownMenuItem<String?>(value: '2025-2026', child: Text('2025-2026')),
+                                    const DropdownMenuItem<String?>(value: '2026-2027', child: Text('2026-2027')),
+                                  ],
+                                  onChanged: (val) => setState(() => _filterAcademicYear = val),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 170,
+                                child: DropdownButtonFormField<int?>(
+                                  isExpanded: true,
+                                  initialValue: _filterYearLevel,
+                                  decoration: InputDecoration(
+                                    labelText: AppLanguage.tr('ឆ្នាំទី', 'Year Level'),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem<int?>(
+                                      value: null,
+                                      child: Text(AppLanguage.tr('គ្រប់ឆ្នាំទី (1-4)', 'All Levels')),
+                                    ),
+                                    ...[1, 2, 3, 4].map(
+                                      (y) => DropdownMenuItem<int?>(value: y, child: Text(ClassService.yearLevelLabel(y))),
+                                    ),
+                                  ],
+                                  onChanged: (val) => setState(() => _filterYearLevel = val),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 205,
+                                child: DropdownButtonFormField<String?>(
+                                  isExpanded: true,
+                                  initialValue: _filterGeneration,
+                                  decoration: InputDecoration(
+                                    labelText: AppLanguage.tr('ជំនាន់', 'Generation'),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem<String?>(
+                                      value: null,
+                                      child: Text(AppLanguage.tr('គ្រប់ជំនាន់', 'All Generations')),
+                                    ),
+                                    ...ClassService.presetGenerations.map(
+                                      (g) => DropdownMenuItem<String?>(value: g, child: Text(g, overflow: TextOverflow.ellipsis)),
+                                    ),
+                                  ],
+                                  onChanged: (val) => setState(() => _filterGeneration = val),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 215,
+                                child: DropdownButtonFormField<String?>(
+                                  isExpanded: true,
+                                  initialValue: _filterDepartment,
+                                  decoration: InputDecoration(
+                                    labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់', 'Department'),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  ),
+                                  items: [
+                                    DropdownMenuItem<String?>(
+                                      value: null,
+                                      child: Text(AppLanguage.tr('គ្រប់ដេប៉ាតឺម៉ង់', 'All Departments')),
+                                    ),
+                                    ...ClassService.presetDepartments.map(
+                                      (d) => DropdownMenuItem<String?>(value: d, child: Text(d, overflow: TextOverflow.ellipsis)),
+                                    ),
+                                  ],
+                                  onChanged: (val) => setState(() => _filterDepartment = val),
+                                ),
+                              ),
+                              if (_filterAcademicYear != null ||
+                                  _filterYearLevel != null ||
+                                  _filterGeneration != null ||
+                                  _filterDepartment != null)
+                                TextButton.icon(
+                                  icon: const Icon(Icons.clear_rounded, size: 16),
+                                  label: Text(AppLanguage.tr('សម្អាត', 'Clear')),
+                                  onPressed: () {
+                                    setState(() {
+                                      _filterAcademicYear = null;
+                                      _filterYearLevel = null;
+                                      _filterGeneration = null;
+                                      _filterDepartment = null;
+                                    });
+                                  },
+                                ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+
+                        if (_filteredClasses.isEmpty)
                           Padding(
                             padding: const EdgeInsets.all(40),
                             child: Center(
@@ -971,14 +1226,14 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                     columns: [
                                       DataColumn(label: Text(AppLanguage.tr('កូដ', 'Code'))),
                                       DataColumn(label: Text(AppLanguage.tr('ឈ្មោះមុខវិជ្ជា', 'Subject Name'))),
-                                      DataColumn(label: Text(AppLanguage.tr('ដេប៉ាតឺម៉ង់', 'Department'))),
+                                      DataColumn(label: Text(AppLanguage.tr('ដេប៉ាតឺម៉ង់ / ឆ្នាំទី', 'Department / Year'))),
                                       DataColumn(label: Text(AppLanguage.tr('បន្ទប់', 'Room'))),
                                       DataColumn(label: Text(AppLanguage.tr('កាលវិភាគ', 'Schedule'))),
                                       DataColumn(label: Text(AppLanguage.tr('ឆមាស/ឆ្នាំ', 'Semester/Year'))),
                                       DataColumn(label: Text(AppLanguage.tr('ស្ថានភាព QR', 'QR Status'))),
                                       DataColumn(label: Text(AppLanguage.tr('សកម្មភាព (Actions)', 'Actions'))),
                                     ],
-                              rows: _classes.map((c) {
+                              rows: _filteredClasses.map((c) {
                                 return DataRow(
                                   cells: [
                                     DataCell(
@@ -1001,26 +1256,43 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                       ),
                                     ),
                                     DataCell(
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: (c.department != null && c.department!.isNotEmpty)
-                                              ? const Color(0xFF0284C7).withValues(alpha: 0.1)
-                                              : const Color(0xFFF59E0B).withValues(alpha: 0.12),
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          (c.department != null && c.department!.isNotEmpty)
-                                              ? c.department!
-                                              : AppLanguage.tr('មិនទាន់កំណត់', 'Unassigned'),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w500,
-                                            color: (c.department != null && c.department!.isNotEmpty)
-                                                ? const Color(0xFF0284C7)
-                                                : const Color(0xFFD97706),
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                            decoration: BoxDecoration(
+                                              color: (c.department != null && c.department!.isNotEmpty)
+                                                  ? const Color(0xFF0284C7).withValues(alpha: 0.1)
+                                                  : const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              (c.department != null && c.department!.isNotEmpty)
+                                                  ? c.department!
+                                                  : AppLanguage.tr('មិនទាន់កំណត់', 'Unassigned'),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: (c.department != null && c.department!.isNotEmpty)
+                                                    ? const Color(0xFF0284C7)
+                                                    : const Color(0xFFD97706),
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            [
+                                              c.yearLevel != null ? 'ឆ្នាំទី ${c.yearLevel}' : 'មិនទាន់កំណត់ឆ្នាំទី',
+                                              if (c.generation != null && c.generation!.isNotEmpty) c.generation!,
+                                            ].join(' · '),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: c.yearLevel != null ? subTextCol : const Color(0xFFD97706),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     DataCell(Text(c.room.isNotEmpty ? c.room : '-')),

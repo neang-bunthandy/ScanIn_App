@@ -16,6 +16,49 @@ class ClassService {
     'ទូទៅ (General)',
   ];
 
+  static const List<String> presetGenerations = [
+    'ជំនាន់ទី ១៤ (Gen 14)',
+    'ជំនាន់ទី ១៥ (Gen 15)',
+    'ជំនាន់ទី ១៦ (Gen 16)',
+    'ជំនាន់ទី ១៧ (Gen 17)',
+    'ជំនាន់ទី ១៨ (Gen 18)',
+    'ជំនាន់ទី ១៩ (Gen 19)',
+  ];
+
+  static const List<String> presetIntakeYears = [
+    '2022',
+    '2023',
+    '2024',
+    '2025',
+    '2026',
+    '2027',
+  ];
+
+  static String yearLevelLabel(int? level) {
+    switch (level) {
+      case 1:
+        return 'ឆ្នាំទី ១ (Year 1)';
+      case 2:
+        return 'ឆ្នាំទី ២ (Year 2)';
+      case 3:
+        return 'ឆ្នាំទី ៣ (Year 3)';
+      case 4:
+        return 'ឆ្នាំទី ៤ (Year 4)';
+      default:
+        return 'មិនទាន់កំណត់ឆ្នាំទី';
+    }
+  }
+
+  static int suggestYearLevelFromIntake(String intakeYear) {
+    final start = int.tryParse(intakeYear.trim());
+    if (start == null) return 1;
+    final currentYear = DateTime.now().year;
+    final diff = currentYear - start + 1;
+    if (diff < 1) return 1;
+    if (diff > 4) return 4;
+    return diff;
+  }
+
   static List<ClassModel>? _cachedClasses;
   static List<Map<String, dynamic>>? _cachedLecturers;
   static List<Map<String, dynamic>>? _cachedStudents;
@@ -303,7 +346,7 @@ class ClassService {
     return [];
   }
 
-  /// Admin បង្កើតគណនីសិស្សថ្មី (Khmer Name, Latin Name, Email, Password, StudentCode, Gender, DOB, Department, Phone)
+  /// Admin បង្កើតគណនីសិស្សថ្មី (Khmer Name, Latin Name, Email, Password, StudentCode, Gender, DOB, Department, Generation, IntakeYear, YearLevel, Phone)
   static Future<Map<String, dynamic>> createStudent({
     required String name,
     String? latinName,
@@ -313,6 +356,9 @@ class ClassService {
     String? gender,
     String? dateOfBirth,
     String? department,
+    String? generation,
+    String? intakeYear,
+    int? yearLevel,
     String? phone,
   }) async {
     try {
@@ -326,6 +372,9 @@ class ClassService {
         'gender': gender ?? '',
         'date_of_birth': dateOfBirth ?? '',
         'department': department ?? '',
+        'generation': generation ?? '',
+        'intake_year': intakeYear ?? '',
+        'year_level': ?yearLevel,
         'phone': phone ?? '',
       };
 
@@ -362,6 +411,9 @@ class ClassService {
     String? dateOfBirth,
     String? password,
     String? department,
+    String? generation,
+    String? intakeYear,
+    int? yearLevel,
     String? phone,
   }) async {
     try {
@@ -374,6 +426,9 @@ class ClassService {
         'gender': gender ?? '',
         'date_of_birth': dateOfBirth ?? '',
         'department': department ?? '',
+        'generation': generation ?? '',
+        'intake_year': intakeYear ?? '',
+        'year_level': ?yearLevel,
         'phone': phone ?? '',
       };
       if (password != null && password.isNotEmpty) {
@@ -460,7 +515,47 @@ class ClassService {
     }
   }
 
-  /// Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន (កំណត់ ឆ្នាំ, ឆមាស, កូដ, ឈ្មោះ, បន្ទប់, ថ្ងៃ, ម៉ោង, ចំនួនសប្តាហ៍)
+  /// Admin ដំឡើងឆ្នាំសិក្សានិស្សិត +1 ឆ្នាំ (Promote Year Level)
+  static Future<Map<String, dynamic>> promoteStudents({
+    String? generation,
+    String? intakeYear,
+    String? department,
+    int? fromYearLevel,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      final body = <String, dynamic>{
+        if (generation != null && generation.isNotEmpty) 'generation': generation,
+        if (intakeYear != null && intakeYear.isNotEmpty) 'intake_year': intakeYear,
+        if (department != null && department.isNotEmpty) 'department': department,
+        'from_year_level': ?fromYearLevel,
+      };
+      final response = await http.post(
+        Uri.parse(ApiConfig.promoteStudentsUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      ).timeout(const Duration(seconds: 8));
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['status'] == true) {
+        _cachedStudents = null;
+        return {
+          'success': true,
+          'message': data['message'] ?? 'ដំឡើងឆ្នាំសិក្សាជោគជ័យ',
+          'promoted_count': data['promoted_count'] ?? 0,
+        };
+      }
+      return {'success': false, 'message': data['message'] ?? 'មិនអាចដំឡើងឆ្នាំសិក្សាបានទេ'};
+    } catch (e) {
+      return {'success': false, 'message': 'បញ្ហាតភ្ជាប់៖ $e'};
+    }
+  }
+
+  /// Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន
   static Future<bool> createClassAdmin({
     required String subjectName,
     required String subjectCode,
@@ -468,6 +563,8 @@ class ClassService {
     required String academicYear,
     required String semester,
     String? department,
+    String? generation,
+    int? yearLevel,
     String? room,
     String? dayOfWeek,
     String? time,
@@ -479,6 +576,8 @@ class ClassService {
         'subject_name': subjectName,
         'subject_code': subjectCode,
         'department': department ?? '',
+        'generation': generation ?? '',
+        'year_level': ?yearLevel,
         'lecturer_id': lecturerId,
         'academic_year': academicYear,
         'semester': semester,
@@ -515,6 +614,8 @@ class ClassService {
     required String academicYear,
     required String semester,
     String? department,
+    String? generation,
+    int? yearLevel,
     String? room,
     String? dayOfWeek,
     String? time,
@@ -527,6 +628,8 @@ class ClassService {
         'subject_name': subjectName,
         'subject_code': subjectCode,
         'department': department ?? '',
+        'generation': generation ?? '',
+        'year_level': ?yearLevel,
         'lecturer_id': lecturerId,
         'academic_year': academicYear,
         'semester': semester,
