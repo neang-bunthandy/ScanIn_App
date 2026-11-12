@@ -36,10 +36,19 @@ class ClassController extends Controller
             ->groupBy('department')
             ->pluck('total', 'department');
 
-        $classes = $query->orderBy('id', 'desc')->get()->map(function ($c) use ($deptCounts) {
+        // គណនាចំនួនថ្ងៃ/សប្តាហ៍ដែលបានស្កេនវត្តមានពិតប្រាកដក្នុង DB សម្រាប់ថ្នាក់នីមួយៗ
+        $sessionCounts = \App\Models\Attendance::selectRaw('class_id, COUNT(DISTINCT date) as total_days')
+            ->groupBy('class_id')
+            ->pluck('total_days', 'class_id');
+
+        $classes = $query->orderBy('id', 'desc')->get()->map(function ($c) use ($deptCounts, $sessionCounts) {
             $realStudentCount = !empty($c->department)
                 ? (int)($deptCounts[$c->department] ?? 0)
                 : 0;
+            $realCompletedSessions = max(
+                (int)($c->completed_sessions ?? 0),
+                (int)($sessionCounts[$c->id] ?? 0)
+            );
 
             return [
                 'id' => $c->id,
@@ -56,8 +65,8 @@ class ClassController extends Controller
                 'semester' => $c->semester,
                 'academic_year' => $c->academic_year,
                 'student_count' => $realStudentCount,
-                'completed_sessions' => $c->completed_sessions,
-                'total_sessions' => $c->total_sessions,
+                'completed_sessions' => $realCompletedSessions,
+                'total_sessions' => (int)($c->total_sessions ?: 15),
                 'description' => $c->description,
                 'is_qr_active' => (bool)$c->is_qr_active,
                 'qr_token' => $c->qr_token,
@@ -96,7 +105,8 @@ class ClassController extends Controller
             'semester' => 'nullable|string|max:50',
             'academic_year' => 'nullable|string|max:50',
             'student_count' => 'nullable|integer',
-            'total_sessions' => 'nullable|integer',
+            'completed_sessions' => 'nullable|integer|min:0|max:60',
+            'total_sessions' => 'nullable|integer|min:1|max:60',
             'description' => 'nullable|string',
             'is_qr_active' => 'nullable|boolean',
             'qr_token' => 'nullable|string',
@@ -122,7 +132,8 @@ class ClassController extends Controller
             'semester' => $request->semester ?? '1',
             'academic_year' => $request->academic_year ?? date('Y'),
             'student_count' => $request->student_count ?? 0,
-            'total_sessions' => $request->total_sessions ?? 15,
+            'completed_sessions' => $request->input('completed_sessions') ?? 0,
+            'total_sessions' => $request->input('total_sessions') ?: 15,
             'description' => $request->description,
             'is_qr_active' => $request->is_qr_active ?? false,
             'qr_token' => $qrToken,
@@ -235,7 +246,8 @@ class ClassController extends Controller
             'semester' => 'nullable|string|max:50',
             'academic_year' => 'nullable|string|max:50',
             'student_count' => 'nullable|integer',
-            'total_sessions' => 'nullable|integer',
+            'completed_sessions' => 'nullable|integer|min:0|max:60',
+            'total_sessions' => 'nullable|integer|min:1|max:60',
             'description' => 'nullable|string',
         ]);
 
@@ -249,7 +261,8 @@ class ClassController extends Controller
         if ($request->has('semester')) $class->semester = $request->semester;
         if ($request->has('academic_year')) $class->academic_year = $request->academic_year;
         if ($request->has('student_count')) $class->student_count = $request->student_count;
-        if ($request->has('total_sessions')) $class->total_sessions = $request->total_sessions;
+        if ($request->has('completed_sessions') && $request->completed_sessions !== null) $class->completed_sessions = $request->completed_sessions;
+        if ($request->has('total_sessions') && $request->total_sessions !== null) $class->total_sessions = $request->total_sessions;
         if ($request->has('description')) $class->description = $request->description;
 
         $class->save();

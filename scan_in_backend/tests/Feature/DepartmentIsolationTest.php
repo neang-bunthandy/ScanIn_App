@@ -215,5 +215,32 @@ class DepartmentIsolationTest extends TestCase
             ->assertStatus(403);
         $this->actingAs($otherLecturer)->getJson("/api/classes/{$class->id}/students")
             ->assertStatus(403);
+
+        // Lecturer also sees completed_sessions = 1 (counted from distinct attendance dates) and default total_sessions = 15
+        $this->assertEquals(1, $foundClass['completed_sessions']);
+        $this->assertEquals(15, $foundClass['total_sessions']);
+
+        // Admin can customize total_sessions per class (e.g. 12 weeks) or leave default 15
+        $customRes = $this->actingAs($admin)->postJson('/api/classes', [
+            'subject_name' => 'Short Course',
+            'subject_code' => 'SHRT12',
+            'department' => $uniqueDept,
+            'lecturer_id' => $owner->id,
+            'total_sessions' => 12,
+        ])->assertStatus(201)->json('data');
+
+        $this->assertEquals(12, $customRes['total_sessions']);
+
+        $this->actingAs($admin)->putJson("/api/classes/{$customRes['id']}", [
+            'total_sessions' => 18,
+            'completed_sessions' => 3,
+        ])->assertStatus(200);
+
+        $updatedList = $this->actingAs($admin)->getJson('/api/classes')
+            ->assertStatus(200)
+            ->json('data');
+        $updatedItem = collect($updatedList)->firstWhere('id', $customRes['id']);
+        $this->assertEquals(18, $updatedItem['total_sessions']);
+        $this->assertEquals(3, $updatedItem['completed_sessions']);
     }
 }

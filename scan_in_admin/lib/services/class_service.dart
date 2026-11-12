@@ -452,7 +452,7 @@ class ClassService {
     }
   }
 
-  /// Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន (កំណត់ ឆ្នាំ, ឆមាស, កូដ, ឈ្មោះ, បន្ទប់, ថ្ងៃ, ម៉ោង)
+  /// Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន (កំណត់ ឆ្នាំ, ឆមាស, កូដ, ឈ្មោះ, បន្ទប់, ថ្ងៃ, ម៉ោង, ចំនួនសប្តាហ៍)
   static Future<bool> createClassAdmin({
     required String subjectName,
     required String subjectCode,
@@ -463,6 +463,7 @@ class ClassService {
     String? room,
     String? dayOfWeek,
     String? time,
+    int? totalSessions,
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -476,6 +477,7 @@ class ClassService {
         'room': room ?? '',
         'day_of_week': dayOfWeek ?? '',
         'time': time ?? '',
+        'total_sessions': ?totalSessions,
       };
 
       final response = await http.post(
@@ -508,6 +510,8 @@ class ClassService {
     String? room,
     String? dayOfWeek,
     String? time,
+    int? totalSessions,
+    int? completedSessions,
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -521,6 +525,8 @@ class ClassService {
         'room': room ?? '',
         'day_of_week': dayOfWeek ?? '',
         'time': time ?? '',
+        'total_sessions': ?totalSessions,
+        'completed_sessions': ?completedSessions,
       };
 
       final response = await http.put(

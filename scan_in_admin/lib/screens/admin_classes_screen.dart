@@ -74,6 +74,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     final codeCtrl = TextEditingController();
     final roomCtrl = TextEditingController(text: 'Room A-101');
     final timeCtrl = TextEditingController(text: '08:00 - 11:00');
+    final totalSessionsCtrl = TextEditingController(text: '15');
     String selectedYear = '2025-2026';
     String selectedSemester = '1';
     String selectedDay = 'ច័ន្ទ (Mon)';
@@ -225,26 +226,47 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      // ថ្ងៃរៀន (Day of week)
-                      DropdownButtonFormField<String>(
-                        initialValue: selectedDay,
-                        decoration: InputDecoration(
-                          labelText: AppLanguage.tr('ថ្ងៃរៀន (Day of Week)', 'Day of Week'),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: 'ច័ន្ទ (Mon)', child: Text('ច័ន្ទ (Monday)')),
-                          DropdownMenuItem(value: 'អង្គារ (Tue)', child: Text('អង្គារ (Tuesday)')),
-                          DropdownMenuItem(value: 'ពុធ (Wed)', child: Text('ពុធ (Wednesday)')),
-                          DropdownMenuItem(value: 'ព្រហស្បតិ៍ (Thu)', child: Text('ព្រហស្បតិ៍ (Thursday)')),
-                          DropdownMenuItem(value: 'សុក្រ (Fri)', child: Text('សុក្រ (Friday)')),
-                          DropdownMenuItem(value: 'សៅរ៍ (Sat)', child: Text('សៅរ៍ (Saturday)')),
-                          DropdownMenuItem(value: 'អាទិត្យ (Sun)', child: Text('អាទិត្យ (Sunday)')),
+                      // ថ្ងៃរៀន (Day of week) & ចំនួនសប្តាហ៍សរុប (Total Weeks - Default 15)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: selectedDay,
+                              decoration: InputDecoration(
+                                labelText: AppLanguage.tr('ថ្ងៃរៀន (Day of Week)', 'Day of Week'),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: 'ច័ន្ទ (Mon)', child: Text('ច័ន្ទ (Monday)')),
+                                DropdownMenuItem(value: 'អង្គារ (Tue)', child: Text('អង្គារ (Tuesday)')),
+                                DropdownMenuItem(value: 'ពុធ (Wed)', child: Text('ពុធ (Wednesday)')),
+                                DropdownMenuItem(value: 'ព្រហស្បតិ៍ (Thu)', child: Text('ព្រហស្បតិ៍ (Thursday)')),
+                                DropdownMenuItem(value: 'សុក្រ (Fri)', child: Text('សុក្រ (Friday)')),
+                                DropdownMenuItem(value: 'សៅរ៍ (Sat)', child: Text('សៅរ៍ (Saturday)')),
+                                DropdownMenuItem(value: 'អាទិត្យ (Sun)', child: Text('អាទិត្យ (Sunday)')),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) setDlgState(() => selectedDay = val);
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 165,
+                            child: TextField(
+                              controller: totalSessionsCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: AppLanguage.tr('សប្តាហ៍សរុប (Default 15)', 'Total Weeks'),
+                                hintText: '15',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              ),
+                            ),
+                          ),
                         ],
-                        onChanged: (val) {
-                          if (val != null) setDlgState(() => selectedDay = val);
-                        },
                       ),
                       const SizedBox(height: 14),
 
@@ -325,6 +347,20 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       return;
                     }
 
+                    final totalWeeks = int.tryParse(totalSessionsCtrl.text.trim()) ?? 15;
+                    if (totalWeeks < 1 || totalWeeks > 60) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(AppLanguage.tr(
+                            'ចំនួនសប្តាហ៍ត្រូវនៅចន្លោះពី 1 ដល់ 60 សប្តាហ៍!',
+                            'Total weeks must be between 1 and 60!',
+                          )),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                      return;
+                    }
+
                     final success = await ClassService.createClassAdmin(
                       subjectName: nameCtrl.text.trim(),
                       subjectCode: codeCtrl.text.trim().toUpperCase(),
@@ -335,6 +371,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       room: roomCtrl.text.trim(),
                       dayOfWeek: selectedDay,
                       time: timeCtrl.text.trim(),
+                      totalSessions: totalWeeks,
                     );
 
                     if (context.mounted) {
@@ -372,6 +409,8 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     final codeCtrl = TextEditingController(text: c.subjectCode);
     final roomCtrl = TextEditingController(text: c.room);
     final timeCtrl = TextEditingController(text: c.time);
+    final completedSessionsCtrl = TextEditingController(text: '${c.completedSessions}');
+    final totalSessionsCtrl = TextEditingController(text: '${c.totalSessions}');
     String selectedYear = c.academicYear.isNotEmpty ? c.academicYear : '2025-2026';
     String selectedSemester = c.semester.isNotEmpty ? c.semester : '1';
     String selectedDay = c.dayOfWeek.isNotEmpty ? c.dayOfWeek : 'ច័ន្ទ (Mon)';
@@ -585,6 +624,34 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                           if (val != null) setDlgState(() => selectedDepartment = val);
                         },
                       ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: completedSessionsCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: AppLanguage.tr('សប្តាហ៍បានរៀន (Completed)', 'Completed Weeks'),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: totalSessionsCtrl,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: AppLanguage.tr('សប្តាហ៍សរុប (Default 15)', 'Total Weeks'),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -614,6 +681,21 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       return;
                     }
 
+                    final totalWeeks = int.tryParse(totalSessionsCtrl.text.trim()) ?? 15;
+                    final completedWeeks = int.tryParse(completedSessionsCtrl.text.trim()) ?? 0;
+                    if (totalWeeks < 1 || totalWeeks > 60 || completedWeeks < 0 || completedWeeks > 60) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(AppLanguage.tr(
+                            'ចំនួនសប្តាហ៍សរុបត្រូវនៅចន្លោះ 1-60 និងសប្តាហ៍បានរៀន 0-60!',
+                            'Total weeks must be 1-60 and completed weeks 0-60!',
+                          )),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                      return;
+                    }
+
                     final success = await ClassService.updateClassAdmin(
                       id: c.id,
                       subjectName: nameCtrl.text.trim(),
@@ -625,6 +707,8 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       room: roomCtrl.text.trim(),
                       dayOfWeek: selectedDay,
                       time: timeCtrl.text.trim(),
+                      totalSessions: totalWeeks,
+                      completedSessions: completedWeeks,
                     );
 
                     if (context.mounted) {
@@ -941,7 +1025,19 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                     ),
                                     DataCell(Text(c.room.isNotEmpty ? c.room : '-')),
                                     DataCell(Text('${c.dayOfWeek} (${c.time})')),
-                                    DataCell(Text('ឆមាស ${c.semester} (${c.academicYear})')),
+                                    DataCell(
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text('ឆមាស ${c.semester} (${c.academicYear})'),
+                                          Text(
+                                            '${c.completedSessions}/${c.totalSessions} ${AppLanguage.tr('សប្តាហ៍', 'weeks')}',
+                                            style: TextStyle(fontSize: 11, color: subTextCol),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                     DataCell(
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
