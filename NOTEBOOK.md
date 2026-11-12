@@ -67,9 +67,9 @@
 
 ### តារាងសំខាន់ៗ (Tables)
 1. **`users` (គណនីអ្នកប្រើប្រាស់ដែលបង្កើតដោយ Admin)៖**
-   * `id`, `name`, `email`, `password`, `role` (`lecturer` / `student` / `admin`), `student_code`, `gender` (ភេទ), `date_of_birth` (ថ្ងៃខែឆ្នាំកំណើត), `staff_id`, `department`, `phone`, `avatar_url`
+   * `id`, `name` (ឈ្មោះជាអក្សរខ្មែរ), `latin_name` (ឈ្មោះជាអក្សរឡាតាំង), `email`, `password`, `role` (`lecturer` / `student` / `admin`), `student_code`, `gender` (ភេទ), `date_of_birth` (ថ្ងៃខែឆ្នាំកំណើត), `staff_id`, `department`, `generation` (ជំនាន់), `intake_year` (ចាប់ពីឆ្នាំ), `year_level` (ឆ្នាំទី ១–៤), `status` (`active` / `graduated` / `inactive`), `phone`, `avatar_url`
 2. **`classes` (ថ្នាក់រៀន/មុខវិជ្ជា)៖**
-   * `id`, `user_id` (ID គ្រូបង្រៀនដែល Admin បានចាត់តាំង), `subject_name`, `subject_code`, `room`, `day_of_week`, `time`, `semester`, `academic_year`, `is_qr_active`, `qr_token`
+   * `id`, `user_id` (ID គ្រូបង្រៀនដែល Admin បានចាត់តាំង), `subject_name`, `subject_code`, `department` (ដេប៉ាតឺម៉ង់), `generation` (ជំនាន់ - ស្រេចចិត្ត), `year_level` (ឆ្នាំទី ១–៤), `room`, `day_of_week`, `time`, `semester`, `academic_year`, `student_count`, `completed_sessions`, `total_sessions` (Default 15 - កែសម្រួលបាន 1–60), `is_qr_active`, `qr_token`
 3. **`attendances` (ទិន្នន័យកត់វត្តមាន)៖**
    * `id`, `class_id` (ID ថ្នាក់), `user_id` (ID សិស្ស), `status` (`present` / `late` / `absent`), `date`, `scanned_at`, `note`
 
@@ -91,10 +91,10 @@
 | 8 | **ទំព័រដើមគ្រូ & ថ្នាក់បង្រៀន** | `lib/screens/lecturer/lecturer_dashboard_screen.dart` | ✅ **រួចរាល់** | ទាញយកថ្នាក់ដែលខ្លួនទទួលបន្ទុកបង្រៀនតាម `GET /api/classes` ពី DB |
 | 9 | **គ្រូបើក/បិទ Dynamic QR** | `lib/screens/lecturer/lecturer_home_screen.dart` | ✅ **រួចរាល់** | បើក/បិទ និង Update Token តាម `POST /api/classes/{id}/toggle-qr` ចូល DB |
 | 10 | **គ្រូបញ្ចាំង QR លើទូរស័ព្ទ** | `lib/screens/lecturer/show_qr_screen.dart` | ✅ **រួចរាល់** | Fullscreen QR, Pause/Resume ធ្វើសមកាលកម្មទៅ `POST /api/classes/{id}/toggle-qr` |
-| 11 | **បញ្ជីសិស្សស្កេន Live ក្នុង ShowQR** | `lib/screens/lecturer/show_qr_screen.dart` | ⏳ **នៅ** | បញ្ជីឈ្មោះសិស្សដែលស្កេនឃើញ Live នៅបាតអេក្រង់ QR លើទូរស័ព្ទ នៅប្រើ MockData |
-| 12 | **បញ្ជីវត្តមានតាមថ្នាក់របស់គ្រូ** | `lib/screens/lecturer/attendance_list_screen.dart` | ✅ **រួចរាល់** | ទាញយកវត្តមានតាមថ្នាក់នីមួយៗតាម `GET /api/classes/{id}/attendances` ពី DB |
+| 11 | **បញ្ជីសិស្សស្កេន Live ក្នុង ShowQR** | `lib/screens/lecturer/show_qr_screen.dart` | ✅ **រួចរាល់** | ទាញយកទិន្នន័យនិស្សិតស្កេនពិតៗពី DB (`GET /api/classes/{id}/students`) Auto-refresh រៀងរាល់ ៥ វិនាទី + Pull-to-Refresh |
+| 12 | **បញ្ជីវត្តមានតាមថ្នាក់របស់គ្រូ** | `lib/screens/lecturer/attendance_list_screen.dart` | ✅ **រួចរាល់** | ទាញយកវត្តមានតាមថ្នាក់នីមួយៗតាម `GET /api/classes/{id}/attendances` ពី DB (គ្មាន MockData fallback) |
 | 13 | **គ្រូកែប្រែវត្តមាន & Note លើទូរស័ព្ទ**| `lib/screens/lecturer/attendance_list_screen.dart` | ✅ **រួចរាល់** | កែប្រែ Status (មក, យឺត, អវត្តមាន) ព្រមទាំង Note តាម `PUT /api/attendances/{id}` ចូល DB (គាំទ្រ Dark Mode ពេញលេញ) |
-| 14 | **ព័ត៌មានលម្អិតថ្នាក់ (សិស្សក្នុងថ្នាក់)** | `lib/screens/lecturer/class_detail_screen.dart` | ⏳ **នៅ** | ព័ត៌មានថ្នាក់បង្ហាញពី DB, គាំទ្រ Dark Mode ពេញលេញ ប៉ុន្តែបញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់នៅប្រើ MockData |
+| 14 | **ព័ត៌មានលម្អិតថ្នាក់ (សិស្សក្នុងថ្នាក់)** | `lib/screens/lecturer/class_detail_screen.dart` | ✅ **រួចរាល់** | ព័ត៌មានថ្នាក់ & បញ្ជីឈ្មោះនិស្សិតពិតតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី + ជំនាន់ ពី `GET /api/classes/{id}/students` |
 | 15 | **គ្រូប្តូរពាក្យសម្ងាត់** | `lib/screens/lecturer/lecturer_profile_screen.dart` | ✅ **រួចរាល់** | ប្តូរ Password តាម `POST /api/user/change-password` រក្សាទុកចូល MySQL DB |
 | 16 | **គ្រូ Upload Avatar & Edit Info** | `lib/screens/lecturer/lecturer_profile_screen.dart` | ⏳ **នៅ** | មិនទាន់មាន API Upload រូបភាព Avatar និងកែប្រែព័ត៌មាន Profile ផ្ទាល់ខ្លួន |
 
@@ -119,58 +119,45 @@
 | 28 | **គ្រូបញ្ចាំង Dynamic QR Projector** | `lib/screens/admin_classes_screen.dart` | ✅ **រួចរាល់** | Projector Fullscreen លើ Laptop, Toggle QR តាម `POST /api/classes/{id}/toggle-qr` ចូល DB |
 | 29 | **ពិនិត្យវត្តមានសិស្សតាមថ្នាក់លើ Web**| `lib/screens/admin_attendances_screen.dart` | ✅ **រួចរាល់** | ទាញយកវត្តមានតាមថ្នាក់ដែលជ្រើសរើសតាម `GET /api/classes/{id}/attendances` ពី DB |
 | 30 | **កែប្រែវត្តមាន & Note លើ Web** | `lib/screens/admin_attendances_screen.dart` | ✅ **រួចរាល់** | ប៊ូតុង "កែប្រែ" ប្តូរ Status និង Quick Note តាម `PUT /api/attendances/{id}` ចូល DB ភ្លាមៗ |
-| 31 | **Export របាយការណ៍វត្តមាន (Excel/PDF)**| `lib/screens/admin_attendances_screen.dart` | ⏳ **នៅ** | មិនទាន់មានប៊ូតុងទាញយកជារបាយការណ៍ Excel ឬ PDF សម្រាប់រដ្ឋបាលសាលា |
+| 31 | **ស្ថិតិនិស្សិត & ប្រវត្តិតាមឆ្នាំ (Admin Only)** | `lib/screens/admin_student_stats_screen.dart` | ✅ **រួចរាល់** | ម៉ឺនុយរងក្រោម `របាយការណ៍` សរុបនិស្សិតអចិន្ត្រៃយ៍ (Active/Graduated/Inactive) តាម ឆ្នាំចូលរៀន × គ្រប់ជំនាញ + CSV Copy |
+| 32 | **ប្តូរស្ថានភាព & ដំឡើងឆ្នាំសិក្សាជាក្រុម** | `lib/screens/admin_students_screen.dart` | ✅ **រួចរាល់** | ប្តូរស្ថានភាព (`Active/Graduated/Inactive`) តាម `POST /api/students/bulk-status` និងដំឡើងឆ្នាំតាម `POST /api/students/promote` |
+| 33 | **Export របាយការណ៍វត្តមាន (Excel/PDF)**| `lib/screens/admin_attendances_screen.dart` | ⏳ **នៅ** | មិនទាន់មានប៊ូតុងទាញយកជារបាយការណ៍ Excel ឬ PDF ផ្ទាល់ពីតារាងវត្តមាន |
 
 ---
 
 ## ៥. សេចក្តីសង្ខេប និងកិច្ចការបន្ត (Summary & Next Steps)
 
-### 📅 កំណត់ត្រាកិច្ចការដែលបានសម្រេចថ្ងៃនេះ (Completed Today — 11/11/2026)៖
-1. **ដោះស្រាយបញ្ហា Responsive & Overflow លើ Web Admin (`scan_in_admin`)៖**
-   * ដោះស្រាយ Error `RIGHT OVERFLOWED BY 338 PIXELS` លើ `admin_students_screen.dart` ដោយប្តូរមកប្រើ `LayoutBuilder` & `Wrap(spacing: 8, runSpacing: 8)` ធ្វើឱ្យប៊ូតុង និងចំណងជើងតម្រៀបស្វ័យប្រវត្តលើ Tablet/Split-screen។
-   * ដោះស្រាយបញ្ហាតារាង `DataTable` ឈរតែកន្លះ Card លើអេក្រង់ធំ ដោយប្រើ `ConstrainedBox(minWidth: tableConstraints.maxWidth)` ធ្វើឱ្យតារាងពង្រីកពេញ 100% នៃ Card លែងសល់ចន្លោះខ្មៅទទេស្អាត។
-   * Sidebar Responsive៖ ពេលអេក្រង់តូចជាង 900px Sidebar នឹងបង្រួមមកត្រឹម `72px` (Icon + Tooltip) ទុកលំហទូលាយសម្រាប់តារាង និង Content។
-   * បានអនុវត្តទម្រង់ Responsive នេះដូចគ្នាលើគ្រប់ទំព័រ (Students, Lecturers, Classes, Attendances, Dashboard)។
-2. **ដោះស្រាយបញ្ហាប្តូរ State ពីមួយទៅមួយទាក់ៗ ("ពេលដូរ state ១ ទៅ state ១ វាដូចទាក់ៗ")៖**
-   * កំណត់ `NoTransitionsOnWebBuilder` លើ `pageTransitionsTheme` ក្នុង `app_theme.dart` ធ្វើឱ្យការចុចប្តូរ Menu រហ័សភ្លាមៗ 0ms គ្មានការញាក់ Animation ឬទាក់ DOM repainting ឡើយ។
-   * បង្កើត In-Memory Caching លើ `AuthService` (`_cachedUser`) និង `ClassService` (`_cachedStudents`, `_cachedLecturers`, `_cachedClasses`) ជាមួយ Stale-while-revalidate ធ្វើឱ្យការបើកទំព័រនានាលែងមានការភ្លឹបភ្លែត Avatar ឬចេញរង្វង់វិល CircularProgressIndicator កាត់មុខទៀតហើយ។
-3. **តម្រឹម Logo និង Header Bar ឱ្យស្មើគ្នាចំកណ្តាល (Aligned Bar & Centered Logo Box)៖**
-   * ប្រអប់ Logo ខាងឆ្វេង និង Top Bar ខាងស្តាំ ឥឡូវនេះមានកម្ពស់ថេរស្មើគ្នាគឺ `height: 70.0;` រួមជាមួយបន្ទាត់ខណ្ឌបាត (Bottom Border `0xFF334155`) រត់ត្រង់ជួរតែមួយគ្មានកាំជណ្តើរ។
-   * តម្រឹម Icon ពណ៌ខៀវ និងអក្សរ `ScanIn Admin` / `System Administration` ឱ្យរត់ចំកណ្តាលបញ្ឈរស្មើគ្នា (Vertical Centering ជាមួយ `crossAxisAlignment: CrossAxisAlignment.center` និង `mainAxisSize: MainAxisSize.min`)។
-4. **Dark Mode & UI Fixes លើ Mobile App (`scan_in`)៖**
-   * Dark Mode ពេញលេញលើ `class_detail_screen.dart` និង `attendance_list_screen.dart`។
-   * ដោះស្រាយ Overflow ពេលបង្វិលទូរស័ព្ទផ្តេក (Landscape) លើ Server IP Dialog និង Center Login Card លើអេក្រង់ Tablet។
-5. **សវនកម្មសុវត្ថិភាព និងការសង្គ្រោះប្រព័ន្ធ (System Recovery after Power Cuts)៖**
-   * ជួសជុល `.git` បន្ទាប់ពីដាច់ភ្លើង និងទាញយក Backup ស្អាតពី `C:\Users\Jitsu Window\Scan_In_App_Backup\`។
-   * `flutter analyze scan_in_admin` 👉 **No issues found! (0 errors, 0 warnings)**
-   * `flutter analyze scan_in` 👉 **No issues found! (0 errors, 0 warnings)**
-   * `php artisan route:list` 👉 **23 API routes សកម្ម និង Laravel Server កំពុងដំណើរការធម្មតាលើ `127.0.0.1:8000`**។
+### 📅 កំណត់ត្រាកិច្ចការដែលបានសម្រេចថ្ងៃនេះ (Completed Today — 12/11/2026)៖
+1. **ការពារសិទ្ធិថ្នាក់រៀន (Role & Ownership Isolation)៖**
+   * ដកមុខងារបង្កើត/កែ/លុបថ្នាក់ចេញពី Mobile App គ្រូ (`scan_in`), កែ `create_class_screen.dart` ចោល, កែការស្វាគមន៍ `"លោកគ្រូ លោកគ្រូ"` ត្រួតគ្នា។
+   * គ្រូម្នាក់ៗមើលឃើញ និងគ្រប់គ្រង **តែថ្នាក់ដែល Admin ចាត់តាំងឱ្យខ្លួន** (`ClassController`, `AttendanceController`, `AdminClassesScreen`), ផ្ទាំងផ្សេងការពារ `403`។
+   * បន្ថែម `RefreshIndicator` (Pull-to-Refresh) គ្រប់អេក្រង់ទាំង Mobile (`scan_in`) និង Web Admin (`scan_in_admin`) ព្រមទាំងជួសជុល Gradle NTFS `build_corrupt`។
+2. **លុប `MockData` ចេញពីកូដដំណើរការ 100% & ភ្ជាប់ DB សុទ្ធ៖**
+   * ដក `MockData` fallback ទាំងអស់ចេញពី `scan_in` និង `scan_in_admin` (រួមទាំង `StudentHomeScreen`, `StudentDashboardScreen`, `ClassDetailScreen`, `ShowQrScreen`, `AttendanceListScreen`, និង Services)។
+   * បង្កើត API `GET /api/classes/{id}/students` ដើម្បីទាញនិស្សិតពិត និងគណនា `student_count` ពិតពី MySQL។
+3. **ដេប៉ាតឺម៉ង់, ជំនាន់, ចាប់ពីឆ្នាំ, ឆ្នាំទី (1–4) & ស្ថានភាពសិស្ស៖**
+   * បន្ថែមជួរឈរ DB (Migrations Batch 5–8)៖ `department` លើ `classes`, `latin_name` លើ `users`, `generation`, `intake_year`, `year_level` លើ `users`/`classes`, និង `status` (`active`, `graduated`, `inactive`) លើ `users`។
+   * សិស្សឃើញ និងស្កេនបាន **តែថ្នាក់ត្រូវតាម `department` + `year_level` + `generation` និងមានស្ថានភាព `active` ប៉ុណ្ណោះ** (បដិសេធ `403` បើខុសឆ្នាំ/ដេប៉ាតឺម៉ង់ ឬរៀនចប់/ឈប់រៀន)។
+   * អាចកំណត់ **ឈ្មោះជាអក្សរខ្មែរ (`name`)** និង **ឈ្មោះជាអក្សរឡាតាំង (`latin_name`)** សម្រាប់ទាំងគ្រូ និងសិស្ស។
+4. **Admin Controls & Historical Reporting៖**
+   * កំណត់ **ចំនួនសប្តាហ៍សិក្សា (`total_sessions`)** ដោយ Default `15` (Admin កែបាន 1–60 តាមសាលានីមួយៗ) និងរាប់ `completed_sessions` ស្វ័យប្រវត្តិពីថ្ងៃស្កេនពិត។
+   * បន្ថែម `EditableComboField` ([editable_combo_field.dart](file:///d:/Flutter_Project/Scan_In_App/scan_in_admin/lib/widgets/editable_combo_field.dart)) ឱ្យ Admin **វាយកំណត់ដោយដៃ ឬរើសរហ័ស** សម្រាប់ `ឆ្នាំសិក្សា`, `ចាប់ពីឆ្នាំ`, និង `ជំនាន់` ដោយកើនតាមឆ្នាំបច្ចុប្បន្នស្វ័យប្រវត្តិ។
+   * រៀបចំម៉ឺនុយ **`របាយការណ៍`** អាចពន្លាជម្រើសរងបាន + ទំព័រ **`ស្ថិតិតាមឆ្នាំ & ជំនាញ` (Admin Only)** (`GET /api/admin/reports/student-stats`) រក្សាទិន្នន័យសិស្សទាំងអស់អចិន្ត្រៃយ៍ + Copy CSV។
+
+### ✅ ស្ថានភាពត្រួតពិនិត្យកូដ File & Folder (Audit — 12/11/2026)៖
+* **Root Workspace (`d:\Flutter_Project\Scan_In_App`)៖** `scan_in` (Mobile App), `scan_in_admin` (Web Portal), `scan_in_backend` (Laravel 12 API), `NOTEBOOK.md`, `APP_OVERVIEW.txt`, `README.md`, `.gitignore` — ស្អាតគ្មាន File លើស។
+* **`flutter analyze` (`scan_in_admin` & `scan_in`)៖** `No issues found!` ទាំងពីរ។
+* **`php artisan migrate:status`៖** Migrations ទាំង ១១ (`Batch 1–8`) បាន Run ចូល MySQL រួចរាល់ (`Ran`)។
+* **`php artisan test`៖** **17 passed (136 assertions)** (`AuthApiTest`, `ClassIsolationTest`, `DepartmentIsolationTest`, `DualNameUsersTest`, `GenerationYearIsolationTest`, `StudentStatusAndReportsTest`)។
+* **Backup៖** បានរក្សាទុកចូល Git និង Backup នៅ `C:\Users\Jitsu Window\Scan_In_App_Backup\`។
 
 ---
 
-### 📊 សរុបស្ថិតិ UI to DB បច្ចុប្បន្ន៖
-* ✅ **មុខងារដែលបានភ្ជាប់ Database រួចរាល់៖** **២៨ មុខងារ** (ស្មើនឹង **៨៨%** នៃប្រព័ន្ធទាំងមូល)។
-* ⏳ **មុខងារដែលនៅសល់ត្រូវបន្តភ្ជាប់ DB៖** **៤ មុខងារ** (ស្មើនឹង **១២%**)។
+### 🚀 ផែនការងារដែលត្រូវធ្វើបន្តនៅថ្ងៃស្អែក (Tomorrow's Roadmap)៖
 
----
-
-### 🚀 ផែនការងារដែលត្រូវធ្វើបន្តនៅថ្ងៃស្អែក (Tomorrow's Roadmap — UI TO DB FOCUS)៖
-
-1. **[អាទិភាពទី ១] ភ្ជាប់បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់ទៅកាន់ Database (Enrolled Students Roster — UI to DB)៖**
-   * **ស្ថានភាពបច្ចុប្បន្ន៖** ក្នុង `scan_in/lib/screens/lecturer/class_detail_screen.dart` និងផ្ទាំង Web បញ្ជីឈ្មោះសិស្សដែលរៀនក្នុងថ្នាក់នីមួយៗនៅប្រើ MockData។
-   * **កិច្ចការស្អែក៖**
-     - បង្កើត Database Pivot Table `class_student` (`class_id`, `student_id`, `enrolled_at`) តាម Laravel Migration។
-     - បង្កើត API Endpoints៖
-       - `GET /api/classes/{id}/students` (ទាញយកបញ្ជីឈ្មោះសិស្សដែលរៀនក្នុងថ្នាក់នេះពី DB)
-       - `POST /api/classes/{id}/students` (Admin ឬគ្រូចុះឈ្មោះសិស្សចូលរៀនក្នុងថ្នាក់)
-       - `DELETE /api/classes/{id}/students/{student_id}` (ដកសិស្សចេញពីថ្នាក់)
-     - ភ្ជាប់ `ClassDetailScreen` (Mobile) និង `AdminClassesScreen` (Web) ទៅកាន់ API ពិត ជំនួស MockData ទាំងស្រុង។
-
-2. **[អាទិភាពទី ២] បញ្ជីសិស្សស្កេនផ្ទាល់ពេលគ្រូបញ្ចាំង QR (Live Scanned Students in ShowQR — UI to DB)៖**
-   * ក្នុង `show_qr_screen.dart` លើទូរស័ព្ទដៃគ្រូ ភ្ជាប់បញ្ជីសិស្សដែលស្កេនជោគជ័យជាក់ស្តែងពី `GET /api/classes/{id}/attendances` ជំនួស MockData។
-
+1. **[តេស្តជាក់ស្តែង End-to-End] ពិនិត្យទិន្នន័យលើ Web Admin & Mobile App៖**
+   * ចូល Web Admin ដើម្បីកំណត់ `ដេប៉ាតឺម៉ង់`, `ឆ្នាំទី`, `ជំនាន់`, `ចាប់ពីឆ្នាំ`, `ឈ្មោះជាអក្សរឡាតាំង` ឱ្យគ្រូ សិស្ស និងថ្នាក់រៀនចាស់ៗដែលបង្កើតមុនការអាប់ដេត, រួចសាក Login ស្កេន QR និងពិនិត្យ `របាយការណ៍ → ស្ថិតិតាមឆ្នាំ & ជំនាញ`។
+2. **[អាទិភាពទី ២] បន្ថែមរបាយការណ៍រងថ្មីៗក្រោមម៉ឺនុយ `របាយការណ៍` & Export (Admin Reports)៖**
+   * បន្ថែមជម្រើសរបាយការណ៍ថ្មីតាមតម្រូវការសាលា និងប៊ូតុង Export របាយការណ៍វត្តមានជា Excel / CSV / PDF ក្នុង `AdminAttendancesScreen`។
 3. **[អាទិភាពទី ៣] Profile Avatar Upload & Personal Info Editing (UI to DB)៖**
    * បង្កើត API `POST /api/user/profile` ដើម្បីឱ្យគ្រូ និងសិស្សអាច Upload រូបថត Profile ពិតប្រាកដ រក្សាទុកក្នុង `storage/app/public/avatars` និង Update ចូល Database។
-
-4. **[អាទិភាពទី ៤] Export របាយការណ៍វត្តមានជា Excel / PDF (Admin Reports)៖**
-   * បន្ថែមប៊ូតុង "Export Excel / PDF" ក្នុង `AdminAttendancesScreen` ដើម្បីទាញយកទិន្នន័យវត្តមានសិស្សតាមថ្នាក់ ឬតាមខែចេញពី Database សម្រាប់រដ្ឋបាលសាលា។
