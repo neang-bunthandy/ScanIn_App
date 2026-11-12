@@ -12,14 +12,27 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::post('/login', [AuthController::class, 'login']);
-Route::get('/classes', [ClassController::class, 'index']);
-Route::put('/classes/{id}', [ClassController::class, 'update']);
-Route::delete('/classes/{id}', [ClassController::class, 'destroy']);
-Route::get('/classes/{id}/attendances', [AttendanceController::class, 'classAttendances']);
-Route::put('/attendances/{id}', [AttendanceController::class, 'update']);
+
+/*
+|--------------------------------------------------------------------------
+| Protected Routes (Requires Bearer Token)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/classes', [ClassController::class, 'index']);
+    Route::put('/classes/{id}', [ClassController::class, 'update']);
+    Route::delete('/classes/{id}', [ClassController::class, 'destroy']);
+    Route::get('/classes/{id}/attendances', [AttendanceController::class, 'classAttendances']);
+    Route::put('/attendances/{id}', [AttendanceController::class, 'update']);
 
 // Lecturers API (Admin provisions lecturer accounts)
-Route::get('/lecturers', function () {
+Route::get('/lecturers', function (Request $request) {
+    if ($request->user()->role !== 'admin') {
+        return response()->json([
+            'status' => false,
+            'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចមើលបញ្ជីគ្រូបង្រៀនបាន។',
+        ], 403);
+    }
     $lecturers = \App\Models\User::where('role', 'lecturer')
         ->withCount('classes')
         ->select('id', 'name', 'email', 'department', 'phone', 'staff_id')
@@ -131,7 +144,13 @@ Route::delete('/lecturers/{id}', function (Request $request, $id) {
 });
 
 // Students API (Admin provisions student accounts)
-Route::get('/students', function () {
+Route::get('/students', function (Request $request) {
+    if ($request->user()->role !== 'admin') {
+        return response()->json([
+            'status' => false,
+            'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចមើលបញ្ជីសិស្សបាន។',
+        ], 403);
+    }
     $students = \App\Models\User::where('role', 'student')
         ->select('id', 'name', 'email', 'student_code', 'gender', 'date_of_birth', 'department', 'phone', 'created_at')
         ->orderBy('id', 'desc')
@@ -349,12 +368,7 @@ Route::delete('/students/{id}', function (Request $request, $id) {
     ]);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Protected Routes (Requires Bearer Token)
-|--------------------------------------------------------------------------
-*/
-Route::middleware('auth:sanctum')->group(function () {
+    // Auth & Student / Lecturer Protected Routes
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/user/change-password', [AuthController::class, 'changePassword']);

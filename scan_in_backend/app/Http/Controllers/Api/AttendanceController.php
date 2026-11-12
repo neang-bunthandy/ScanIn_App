@@ -114,8 +114,23 @@ class AttendanceController extends Controller
     /**
      * បញ្ជីវត្តមានក្នុងថ្នាក់រៀនជាក់លាក់មួយ (សម្រាប់គ្រូមើល)
      */
-    public function classAttendances($classId)
+    public function classAttendances(Request $request, $classId)
     {
+        $class = ClassModel::find($classId);
+        if (!$class) {
+            return response()->json([
+                'status' => false,
+                'message' => 'រកមិនឃើញថ្នាក់រៀននេះទេ',
+            ], 404);
+        }
+
+        if ($request->user() && $request->user()->role === 'lecturer' && (int)$class->user_id !== (int)$request->user()->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'អ្នកគ្មានសិទ្ធិមើលវត្តមានថ្នាក់របស់គ្រូផ្សេងឡើយ។',
+            ], 403);
+        }
+
         $attendances = Attendance::with('student')
             ->where('class_id', $classId)
             ->orderBy('date', 'desc')
@@ -151,13 +166,20 @@ class AttendanceController extends Controller
             'note' => 'nullable|string',
         ]);
 
-        $attendance = Attendance::find($id);
+        $attendance = Attendance::with('classModel')->find($id);
 
         if (!$attendance) {
             return response()->json([
                 'status' => false,
                 'message' => 'រកមិនឃើញទិន្នន័យវត្តមាននេះឡើយ!',
             ], 404);
+        }
+
+        if ($request->user() && $request->user()->role === 'lecturer' && (int)$attendance->classModel?->user_id !== (int)$request->user()->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'អ្នកគ្មានសិទ្ធិកែប្រែវត្តមានថ្នាក់របស់គ្រូផ្សេងឡើយ។',
+            ], 403);
         }
 
         $attendance->status = $request->status;

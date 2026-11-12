@@ -52,6 +52,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   late List<ClassModel> _classes;
   late Map<int, bool> _classQrActive;
   late List<AttendanceModel> _attendanceRecords;
+  bool _isLoading = true;
 
   bool _notificationsEnabled = true;
   String _selectedLanguage = 'ភាសាខ្មែរ (Khmer)';
@@ -59,11 +60,9 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
   @override
   void initState() {
     super.initState();
-    _classes = List.from(MockData.sampleClasses);
-    _classQrActive = {
-      for (var c in _classes) c.id: c.isQrActive,
-    };
-    _attendanceRecords = List.from(MockData.sampleAttendances);
+    _classes = [];
+    _classQrActive = {};
+    _attendanceRecords = [];
     _loadBackendData();
   }
 
@@ -72,22 +71,30 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
     if (cached != null && mounted) {
       setState(() => _cachedLecturer = cached);
     }
+    final activeUser = widget.user ?? cached ?? _cachedLecturer;
     final remoteClasses = await ClassService.getLecturerClasses();
-    if (mounted && remoteClasses.isNotEmpty) {
+
+    // ធានាថាគ្រូម្នាក់ៗឃើញតែថ្នាក់ដែល Admin ចាត់តាំងឱ្យខ្លួន (user_id == activeUser.id) ប៉ុណ្ណោះ
+    final filteredClasses = (activeUser != null && activeUser.role == 'lecturer')
+        ? remoteClasses.where((c) => c.lecturerId == activeUser.id).toList()
+        : remoteClasses;
+
+    if (mounted) {
       setState(() {
-        _classes = remoteClasses;
+        _classes = filteredClasses;
         _classQrActive = {
           for (var c in _classes) c.id: c.isQrActive,
         };
+        _isLoading = false;
       });
 
       // ទាញយកវត្តមានរបស់ថ្នាក់រៀននីមួយៗពី Database
       final List<AttendanceModel> allAttendances = [];
-      for (var c in remoteClasses) {
+      for (var c in filteredClasses) {
         final atts = await AttendanceService.getClassAttendances(c.id);
         allAttendances.addAll(atts);
       }
-      if (mounted && allAttendances.isNotEmpty) {
+      if (mounted) {
         setState(() => _attendanceRecords = allAttendances);
       }
     }
@@ -558,7 +565,9 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
         return Scaffold(
           backgroundColor: scaffoldBg,
           body: SafeArea(
-            child: IndexedStack(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+                : IndexedStack(
               index: _currentIndex,
               children: [
                 // Tab 1: ដើម (Dashboard)

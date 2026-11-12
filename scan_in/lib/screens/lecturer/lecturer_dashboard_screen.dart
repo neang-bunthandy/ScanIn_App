@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
-import '../../data/mock_data.dart';
 import '../../models/class_model.dart';
 import '../../models/user_model.dart';
 import 'class_detail_screen.dart';
@@ -37,11 +36,13 @@ class LecturerDashboardScreen extends StatelessWidget {
     final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
     final avatarBg = isDark ? const Color(0xFF334155) : AppColors.primaryLight;
 
-    // ថ្នាក់ដែលត្រូវបង្ហាញ QR លំនាំដើម
-    final defaultClass = classes.firstWhere(
-      (c) => (classQrActive[c.id] ?? false),
-      orElse: () => classes.isNotEmpty ? classes.first : MockData.sampleClasses.first,
-    );
+    // ថ្នាក់ដែលត្រូវបង្ហាញ QR លំនាំដើម (បើមិនទាន់មានថ្នាក់ មិនប្រើថ្នាក់គំរូរបស់គ្រូផ្សេងឡើយ)
+    final ClassModel? defaultClass = classes.isEmpty
+        ? null
+        : classes.firstWhere(
+            (c) => (classQrActive[c.id] ?? false),
+            orElse: () => classes.first,
+          );
 
     // គណនាស្ថិតិរួម ដោយប្រើ Loop សាមញ្ញ ងាយស្រួលពន្យល់
     int totalStudents = 0;
@@ -135,7 +136,23 @@ class LecturerDashboardScreen extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: InkWell(
-                onTap: () => onShowQr(defaultClass),
+                onTap: () {
+                  if (defaultClass != null) {
+                    onShowQr(defaultClass);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          AppLanguage.tr(
+                            'សាលាមិនទាន់បានចាត់តាំងថ្នាក់បង្រៀនជូនលោកគ្រូនៅឡើយទេ',
+                            'No teaching classes assigned by Admin yet',
+                          ),
+                        ),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  }
+                },
                 borderRadius: BorderRadius.circular(18),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),

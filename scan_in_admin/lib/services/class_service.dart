@@ -44,6 +44,7 @@ class ClassService {
         _cachedClasses = classes;
         return classes;
       }
+      return [];
     } catch (_) {
       // បើ Server មិនទាន់ដំណើរការ យក MockData ជំនួសដើម្បីកុំឱ្យ Error
     }
@@ -74,6 +75,7 @@ class ClassService {
         _cachedClasses = classes;
         return classes;
       }
+      return [];
     } catch (_) {}
     return MockData.sampleClasses;
   }

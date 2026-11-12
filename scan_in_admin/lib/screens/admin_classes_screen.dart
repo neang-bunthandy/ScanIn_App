@@ -21,17 +21,20 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
   UserModel? _currentUser;
   bool _isLoading = true;
 
+  List<ClassModel> _filterForRole(List<ClassModel> allClasses, UserModel? user) {
+    if (user?.role == 'lecturer' && user?.id != null) {
+      return allClasses.where((c) => c.lecturerId == user!.id).toList();
+    }
+    return allClasses;
+  }
+
   @override
   void initState() {
     super.initState();
     _currentUser = AuthService.cachedUser;
     final cached = ClassService.cachedClasses;
-    if (cached != null && cached.isNotEmpty) {
-      final user = _currentUser;
-      final classes = (user?.role == 'lecturer' && user?.id != null)
-          ? cached.where((c) => c.lecturerId == user!.id).toList()
-          : cached;
-      _classes = classes.isNotEmpty ? classes : cached;
+    if (cached != null) {
+      _classes = _filterForRole(cached, _currentUser);
       _isLoading = false;
       _loadClasses();
     } else {
@@ -43,10 +46,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     setState(() => _isLoading = true);
     final user = await AuthService.getCurrentUser();
     final allClasses = await ClassService.getStudentClasses();
-    final classes = (user?.role == 'lecturer' && user?.id != null)
-        ? allClasses.where((c) => c.lecturerId == user!.id).toList()
-        : allClasses;
-    final displayClasses = classes.isNotEmpty ? classes : allClasses;
+    final displayClasses = _filterForRole(allClasses, user);
     if (mounted) {
       setState(() {
         _currentUser = user;
@@ -58,10 +58,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
 
   Future<void> _loadClasses() async {
     final allClasses = await ClassService.getStudentClasses();
-    final classes = (_currentUser?.role == 'lecturer' && _currentUser?.id != null)
-        ? allClasses.where((c) => c.lecturerId == _currentUser!.id).toList()
-        : allClasses;
-    final displayClasses = classes.isNotEmpty ? classes : allClasses;
+    final displayClasses = _filterForRole(allClasses, _currentUser);
     if (mounted) {
       setState(() {
         _classes = displayClasses;

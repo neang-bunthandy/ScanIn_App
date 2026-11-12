@@ -3,6 +3,7 @@ import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_routes.dart';
 import '../services/auth_service.dart';
+import '../services/class_service.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -76,6 +77,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         });
         return;
       }
+
+      ClassService.clearCache();
 
       // ប្រសិនបើជាគ្រូ បញ្ជូនត្រង់ទៅកាន់ផ្ទាំងថ្នាក់បង្រៀន (Classes & Projector)
       if (userRole == 'lecturer') {

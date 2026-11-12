@@ -29,6 +29,7 @@ class ClassService {
         }
         return classes;
       }
+      return [];
     } catch (_) {
       // បើ Server មិនទាន់ដំណើរការ យក MockData ជំនួសដើម្បីកុំឱ្យ Error
     }

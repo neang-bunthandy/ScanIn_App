@@ -4,6 +4,7 @@ import '../core/app_language.dart';
 import '../core/app_routes.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/class_service.dart';
 
 class AdminScaffold extends StatefulWidget {
   final String title;
@@ -70,6 +71,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     );
 
     if (confirmed == true) {
+      ClassService.clearCache();
       await AuthService.logout();
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.login);

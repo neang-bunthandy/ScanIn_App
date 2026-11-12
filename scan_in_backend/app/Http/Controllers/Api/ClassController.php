@@ -112,7 +112,7 @@ class ClassController extends Controller
     /**
      * បង្ហាញព័ត៌មានលម្អិតនៃថ្នាក់រៀន (Class Detail)
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $class = ClassModel::with('lecturer')->find($id);
 
@@ -121,6 +121,13 @@ class ClassController extends Controller
                 'status' => false,
                 'message' => 'រកមិនឃើញថ្នាក់រៀននេះទេ',
             ], 404);
+        }
+
+        if ($request->user() && $request->user()->role === 'lecturer' && (int)$class->user_id !== (int)$request->user()->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'អ្នកគ្មានសិទ្ធិមើលថ្នាក់រៀនរបស់គ្រូផ្សេងឡើយ។',
+            ], 403);
         }
 
         return response()->json([
@@ -141,6 +148,13 @@ class ClassController extends Controller
                 'status' => false,
                 'message' => 'រកមិនឃើញថ្នាក់រៀននេះទេ',
             ], 404);
+        }
+
+        if ($request->user() && $request->user()->role === 'lecturer' && (int)$class->user_id !== (int)$request->user()->id) {
+            return response()->json([
+                'status' => false,
+                'message' => 'អ្នកគ្មានសិទ្ធិបើក/បិទ QR សម្រាប់ថ្នាក់របស់គ្រូផ្សេងឡើយ។',
+            ], 403);
         }
 
         $request->validate([
