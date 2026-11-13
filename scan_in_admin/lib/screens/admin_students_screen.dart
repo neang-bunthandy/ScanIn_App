@@ -174,7 +174,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                           controller: nameCtrl,
                           decoration: InputDecoration(
                             labelText: AppLanguage.tr('ឈ្មោះជាអក្សរខ្មែរ *', 'Khmer Name *'),
-                            hintText: 'ឧ. សុខា ម៉េង',
+                            hintText: 'បញ្ចូលឈ្មោះ',
                             prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

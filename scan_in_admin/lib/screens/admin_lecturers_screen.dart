@@ -130,7 +130,7 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                           controller: nameCtrl,
                           decoration: InputDecoration(
                             labelText: AppLanguage.tr('ឈ្មោះជាអក្សរខ្មែរ *', 'Khmer Name *'),
-                            hintText: 'ឧ. លោកគ្រូ ចាន់ ដារ៉ា',
+                            hintText: 'បញ្ចូលឈ្មោះ',
                             prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
