@@ -183,10 +183,14 @@
 
 ### 🚀 ផែនការងារដែលត្រូវធ្វើបន្ត (Roadmap & Production Checklist)៖
 
-1. **[កត់ចំណាំពេលដាក់ឱ្យប្រើប្រាស់ជាក់ស្តែង — Real Production Checklist]៖**
-   * **ដកគណនីគំរូ (Demo Users)៖** ដក `dara@scanin.app` (គ្រូ ចាន់ ដារ៉ា) និង `student@scanin.app` (សិស្ស សុខា ម៉េង) ចេញពី [DatabaseSeeder.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/database/seeders/DatabaseSeeder.php) ដោយទុកតែគណនី Admin មេពិតប្រាកដ ឬ Seeder ស្អាតស្អំ។
-   * **ធ្វើបច្ចុប្បន្នភាព [AuthApiTest.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/tests/Feature/AuthApiTest.php)៖** ប្តូរពីការហៅគណនីរឹងក្នុង Seeder មកប្រើ `User::factory()->create()` ជាមួយ `DatabaseTransactions` ដូច Test ឯទៀត ដើម្បីឱ្យ Automated Tests ទាំងអស់នៅតែ pass 100% ទោះបី Database គ្មានទិន្នន័យគំរូ Seeder សូម្បីតែមួយក៏ដោយ។
-   * **សម្អាត MySQL Database៖** សម្អាតថ្នាក់រៀនសាកល្បង និងសិស្សសាកល្បងចេញ ដើម្បីទុកតែទិន្នន័យពិតរបស់សាលា។
+1. **[កិច្ចការបន្ទាប់សម្រាប់រៀបចំ Real Production — កត់ត្រាទុកតាមការណែនាំ]៖**
+   * **បង្កើត CLI Command `php artisan make:admin`៖** បង្កើតពាក្យបញ្ជា Terminal សម្រាប់បង្កើតគណនី Master Admin ដោយផ្ទាល់ (វាយ Name, Email, Password លាក់ផ្កាយ) ដោយមិនចាំបាច់មានគណនីរឹងក្នុង Seeder ឬ Git ឡើយ។
+   * **ប្រព័ន្ធគ្រប់គ្រង Sub-Admin (បុគ្គលិកការិយាល័យសិក្សា)៖** Master Admin អាចបង្កើតគណនី Sub-Admin ឱ្យបុគ្គលិកការិយាល័យជួយគ្រប់គ្រងសិស្ស/ថ្នាក់រៀន ព្រមទាំងកំណត់សិទ្ធិ (Permissions) មិនឱ្យលុប Master Admin ឬ Audit logs។
+   * **មុខងារប្តូរពាក្យសម្ងាត់លើ Web Admin (Admin Change Password Dialog)៖** បន្ថែមប៊ូតុង "ប្តូរពាក្យសម្ងាត់ (Change Password)" លើ Sidebar/Profile នៃ [admin_scaffold.dart](file:///d:/Flutter_Project/Scan_In_App/scan_in_admin/lib/screens/admin_scaffold.dart) ដោយហៅ API `POST /api/user/change-password` ដើម្បីឱ្យ Admin អាចផ្លាស់ប្តូរ Password ផ្ទាល់ខ្លួនបានភ្លាមៗ។
+   * **សម្អាត Demo Seed Data ទៅកាន់ Clean Production DB៖**
+     - កែសម្រួល [AuthApiTest.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/tests/Feature/AuthApiTest.php) ឱ្យប្រើ `User::factory()->create()` ជាមួយ `DatabaseTransactions` ដើម្បីកុំឱ្យ tests ពឹងលើ seeder users ទៀត។
+     - ដកគណនីគំរូចេញពី [DatabaseSeeder.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/database/seeders/DatabaseSeeder.php) (ទុកតែ Seeder ស្អាតស្អំ)។
+     - ដំណើរការ `php artisan make:admin` បង្កើត Admin មេពិតប្រាកដ រួច Admin ចូលទៅបង្កើតគ្រូ និង Import បញ្ជីសិស្ស Real Data តែម្តង។
 
 2. **[តេស្តជាក់ស្តែង End-to-End] ពិនិត្យទិន្នន័យលើ Web Admin & Mobile App៖**
    * ចូល Web Admin ដើម្បីកំណត់ `ដេប៉ាតឺម៉ង់`, `ឆ្នាំទី`, `ជំនាន់`, `ចាប់ពីឆ្នាំ`, `ឈ្មោះជាអក្សរឡាតាំង` ឱ្យគ្រូ សិស្ស និងថ្នាក់រៀនចាស់ៗដែលបង្កើតមុនការអាប់ដេត, រួចសាក Login ស្កេន QR និងពិនិត្យ `របាយការណ៍ → ស្ថិតិតាមឆ្នាំ & ជំនាញ`។
