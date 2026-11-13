@@ -1,4 +1,19 @@
-# 📓 កំណត់ត្រាសង្ខេបគម្រោង (ScanIn App Notebook)
+# 📓 កំណត់ត្រាសង្ខេបគម្រោង (ScanIn Attendance System Notebook)
+
+---
+
+## 🌟 គោលបំណង និងចក្ខុវិស័យរបស់ម្ចាស់គម្រោង (Owner's Vision & Production Philosophy)
+
+1. **ផ្លាស់ប្តូរទៅកាន់ប្រព័ន្ធផលិតកម្មពិតប្រាកដ (Transition to Real Clean Production)៖**
+   * ប្រព័ន្ធត្រូវតែស្អាតស្អំ (Clean State) គ្មានគណនីតេស្ត ឬ Demo Seed Data រឹង (`dara@scanin.app`, `student@scanin.app`) នៅសេសសល់ក្នុង MySQL ឬ Seeder ឡើយ។
+   * គ្រប់គណនី គ្រូ សិស្ស និងថ្នាក់រៀន គឺជាទិន្នន័យពិតប្រាកដ (Real Production Data) ដែលត្រូវបានបង្កើត និងគ្រប់គ្រងតាមលំដាប់លំដោយរដ្ឋបាលសាលា។
+
+2. **រចនាសម្ព័ន្ធអ្នកគ្រប់គ្រង និងការបង្កើតគណនី (Admin Hierarchy & Provisioning)៖**
+   * **មិនអនុញ្ញាតឱ្យមានការចុះឈ្មោះ Admin សេរីលើ Web ឡើយ** ដើម្បីធានាសុវត្ថិភាពអតិបរមា។
+   * **Master Admin (អ្នកគ្រប់គ្រងកំពូល)៖** បង្កើតឡើងដោយផ្ទាល់តាមរយៈពាក្យបញ្ជា Terminal CLI `php artisan make:admin` (មានសុវត្ថិភាពខ្ពស់ ដោយវាយបញ្ចូល Name, Email និង Password លាក់ផ្កាយ)។
+   * **Sub-Admin (បុគ្គលិកការិយាល័យសិក្សា)៖** Master Admin ជាអ្នកបង្កើត និងកំណត់សិទ្ធិ (Permissions) លើ Web Admin ដើម្បីជួយសម្រួលការងារចុះឈ្មោះសិស្ស បង្កើតថ្នាក់រៀន និងពិនិត្យរបាយការណ៍។
+   * **គ្រូបង្រៀន (Lecturers)៖** បង្កើតដោយ Admin លើ Web Admin និងផ្តល់គណនីឱ្យគ្រូចូលប្រើលើ Laptop (សម្រាប់បញ្ចាំង QR Projector) ឬទូរស័ព្ទ។
+   * **សិស្ស (Students)៖** Admin បង្កើតម្តងមួយៗ ឬ Import ជាក្រុមធំពី Excel/CSV តាមជំនាញ និងឆ្នាំសិក្សា។ សិស្សប្រើតែ Mobile App សម្រាប់បើកកាមេរ៉ាស្កេនកត់វត្តមាន។
 
 ---
 
@@ -6,11 +21,11 @@
 * **ឈ្មោះគម្រោង៖** ScanIn Attendance System
 * **បច្ចេកវិទ្យា (Tech Stack)៖**
   * **Frontend (Mobile)៖** Flutter (Dart) — `scan_in` (សម្រាប់សិស្សស្កេនកាមេរ៉ា និងគ្រូប្រើចល័ត)
-  * **Web Portal (Laptop / Desktop)៖** Flutter for Web (Dart) — `scan_in_admin` (ញែកដាច់រវាង Admin Panel និង Lecturer Classroom View)
+  * **Web Portal (Laptop / Desktop)៖** Flutter for Web (Dart) — `scan_in_admin` (Admin Panel & Lecturer Classroom Projector View)
   * **Backend (API)៖** Laravel 12 (PHP) — `scan_in_backend` (RESTful API + Sanctum + Multi-role Guard)
-  * **Database៖** MySQL (Database Name: `scan_in`)
+  * **Database៖** MySQL (Database Name: `scan_in`, Port: 3306)
 * **តួនាទីអ្នកប្រើប្រាស់ និងការបែងចែកសិទ្ធិដាច់ខាត (Roles & Strict Access Control)៖**
-  * **Admin (អ្នកគ្រប់គ្រងសាលា)៖** មានសិទ្ធិផ្តាច់មុខក្នុងការបង្កើតគណនីគ្រូ, បង្កើតគណនីសិស្ស, បង្កើតថ្នាក់រៀន (ឆ្នាំសិក្សា, ឆមាស, កូដ, ឈ្មោះ, បន្ទប់, ម៉ោង) និងចាត់តាំងគ្រូបង្រៀន, មើល Dashboard និងរបាយការណ៍សរុបទូទាំងសាកលវិទ្យាល័យ។ **(គ្រូ និងសិស្ស មិនអាចចូលជា Admin បានដាច់ខាត)**។
+  * **Admin (អ្នកគ្រប់គ្រងសាលា)៖** មានសិទ្ធិផ្តាច់មុខក្នុងការបង្កើតគណនីគ្រូ, បង្កើតគណនីសិស្ស, Import សិស្សពី Excel/CSV, បង្កើតថ្នាក់រៀន (ឆ្នាំសិក្សា, ឆមាស, កូដ, ឈ្មោះ, បន្ទប់, ម៉ោង) និងចាត់តាំងគ្រូបង្រៀន, មើល Dashboard និងរបាយការណ៍សរុបទូទាំងសាកលវិទ្យាល័យ។ **(គ្រូ និងសិស្ស មិនអាចចូលជា Admin បានដាច់ខាត)**។
   * **គ្រូ (Lecturer - Laptop Web & Mobile)៖** ទទួលបានគណនីពីសាលា, ពិនិត្យតែថ្នាក់ដែលខ្លួនត្រូវបានចាត់តាំង, បើក Projector Fullscreen QR Code លើ Laptop ក្នុងថ្នាក់រៀន, តាមដានវត្តមានសិស្សស្កេនផ្ទាល់, កែប្រែ Status វត្តមានជាក់ស្តែង (មក, យឺត, អវត្តមាន, ច្បាប់)។ **(គ្មានសិទ្ធិបង្កើតគណនី ឬកែប្រែកាលវិភាគមេរបស់ Admin ឡើយ)**។
   * **សិស្ស (Student - Mobile App Only)៖** ទទួលបានគណនីពីសាលា (Email/Password), ចូល Mobile App, បើក Camera ទូរស័ព្ទស្កេន QR Code កត់វត្តមាន, មើលស្ថិតិ Dashboard (មក, យឺត, អវត្តមាន), តាមដានប្រវត្តិវត្តមានផ្ទាល់ខ្លួន, ប្តូរពាក្យសម្ងាត់ផ្ទាល់ខ្លួន។ **(មិនអនុញ្ញាតឱ្យចូលប្រើលើ Web ឡើយ)**។
 
@@ -33,7 +48,7 @@
 
 ### ខ. Flow Admin បង្កើតគណនី និងកាលវិភាគ (Admin Provisioning Flow)
 1. **បង្កើតគណនីគ្រូ៖** Admin ចូលផ្ទាំង `AdminLecturersScreen` -> `POST /api/lecturers` -> ប្រគល់ Email/Pass ជូនគ្រូ។
-2. **បង្កើតគណនីសិស្ស៖** Admin ចូលផ្ទាំង `AdminStudentsScreen` -> `POST /api/students` -> ប្រគល់ Email/Pass ជូនសិស្ស។
+2. **បង្កើតគណនីសិស្ស៖** Admin ចូលផ្ទាំង `AdminStudentsScreen` -> `POST /api/students` (ឬ Import CSV) -> ប្រគល់ Email/Pass ជូនសិស្ស។
 3. **បង្កើតថ្នាក់រៀន៖** Admin ចូលផ្ទាំង `AdminClassesScreen` -> `POST /api/classes` -> ចាត់តាំងគ្រូទទួលបន្ទុកបង្រៀន។
 
 ### គ. Flow គ្រូបញ្ចាំង QR លើ Laptop Projector (Lecturer Web Flow)
@@ -66,10 +81,10 @@
 ```
 
 ### តារាងសំខាន់ៗ (Tables)
-1. **`users` (គណនីអ្នកប្រើប្រាស់ដែលបង្កើតដោយ Admin)៖**
+1. **`users` (គណនីអ្នកប្រើប្រាស់ដែលបង្កើតដោយ Admin ឬ CLI)៖**
    * `id`, `name` (ឈ្មោះជាអក្សរខ្មែរ), `latin_name` (ឈ្មោះជាអក្សរឡាតាំង), `email`, `password`, `role` (`lecturer` / `student` / `admin`), `student_code`, `gender` (ភេទ), `date_of_birth` (ថ្ងៃខែឆ្នាំកំណើត), `staff_id`, `department`, `generation` (ជំនាន់), `intake_year` (ចាប់ពីឆ្នាំ), `year_level` (ឆ្នាំទី ១–៤), `status` (`active` / `graduated` / `inactive`), `phone`, `avatar_url`
 2. **`classes` (ថ្នាក់រៀន/មុខវិជ្ជា)៖**
-   * `id`, `user_id` (ID គ្រូបង្រៀនដែល Admin បានចាត់តាំង), `subject_name`, `subject_code`, `department` (ដេប៉ាតឺម៉ង់), `generation` (ជំនាន់ - ស្រេចចិត្ត), `year_level` (ឆ្នាំទី ១–៤), `room`, `day_of_week`, `time`, `semester`, `academic_year`, `student_count`, `completed_sessions`, `total_sessions` (Default 15 - កែសម្រួលបាន 1–60), `is_qr_active`, `qr_token`
+   * `id`, `user_id` (ID គ្រូបង្រៀនដែល Admin បានចាត់តាំង), `subject_name`, `subject_code`, `department` (ដេប៉ាតឺម៉ង់), `generation` (ជំនាន់), `year_level` (ឆ្នាំទី ១–៤), `room`, `day_of_week`, `time`, `semester`, `academic_year`, `student_count`, `completed_sessions`, `total_sessions` (Default 15 - កែសម្រួលបាន 1–60), `is_qr_active`, `qr_token`
 3. **`attendances` (ទិន្នន័យកត់វត្តមាន)៖**
    * `id`, `class_id` (ID ថ្នាក់), `user_id` (ID សិស្ស), `status` (`present` / `late` / `absent`), `date`, `scanned_at`, `note`
 
@@ -126,75 +141,75 @@
 | 34 | **បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់ (Enrolled Students Roster)** | `lib/screens/admin_classes_screen.dart` | ✅ **រួចរាល់** | ប៊ូតុង `[បញ្ជីសិស្ស]` បង្ហាញ Modal បញ្ជីឈ្មោះសិស្សតាមថ្នាក់ពិតពី DB (`GET /api/classes/{id}/students`) ជាមួយ Badge វត្តមានថ្ងៃនេះ |
 | 35 | **Batch Import សិស្ស & Smart Normalization** | `lib/screens/admin_students_screen.dart` | ✅ **រួចរាល់** | ផ្ទាំង Import សិស្សមានជម្រើសរួម (ជំនាន់, ឆ្នាំចូលរៀន, ឆ្នាំទី, ដេប៉ាតឺម៉ង់), Auto-map ឈ្មោះជំនាញពី English ទៅខ្មែរ, និង Scrollbar អូស Mouse សកម្មភាព |
 | 36 | **ដេប៉ាតឺម៉ង់កំណត់ដោយដៃ & Sync គ្រប់អេក្រង់** | `lib/services/class_service.dart` | ✅ **រួចរាល់** | ប្តូរទៅជា `EditableComboField` លើផ្ទាំងបង្កើត/កែប្រែគ្រូ សិស្ស និងថ្នាក់រៀន, បង្កើត API `GET /api/departments` Sync រាល់ជំនាញ/ដេប៉ាតឺម៉ង់ថ្មីៗទូទាំងប្រព័ន្ធ |
+| 37 | **Artisan Command បង្កើត Master Admin** | `app/Console/Commands/MakeAdmin.php` | ✅ **រួចរាល់** | ពាក្យបញ្ជា CLI `php artisan make:admin` បង្កើត Admin មេដំបូងដោយសុវត្ថិភាព ផ្ទៀងផ្ទាត់ Email និងលាក់ Password |
 
 ---
 
-## ៥. សេចក្តីសង្ខេប និងកិច្ចការបន្ត (Summary & Next Steps)
+## ៥. សេចក្តីសង្ខេបកិច្ចការដែលបានសម្រេចថ្ងៃនេះ (Completed Today — 13/11/2026)
 
-### 📅 កំណត់ត្រាកិច្ចការដែលបានសម្រេច (13/11/2026)៖
-1. **បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់រៀន (Class Student Roster Dialog)៖**
-   * បន្ថែម `ClassService.getClassStudents(classId)` ហៅទៅ API `GET /api/classes/{id}/students`។
-   * បន្ថែមប៊ូតុង `[បញ្ជីសិស្ស]` ក្នុងតារាងថ្នាក់រៀន `admin_classes_screen.dart` ដើម្បីបើក Modal មើលឈ្មោះខ្មែរ, ឈ្មោះឡាតាំង, អត្តលេខ, ភេទ, លេខទូរស័ព្ទ និងស្ថានភាពវត្តមានថ្ងៃនេះ។
-2. **Export វត្តមានតាមថ្នាក់ជា CSV៖**
-   * បន្ថែមប៊ូតុង `[Export CSV]` លើ `admin_attendances_screen.dart` អាចទាញយកទិន្នន័យវត្តមានសិស្សទាំងអស់ជា CSV ទៅបើកក្នុង Microsoft Excel ភ្លាមៗ។
-3. **កែលម្អការ Import សិស្សពី Excel / CSV និង Horizontal Drag៖**
-   * បន្ថែមប្រអប់កំណត់តម្លៃរួម (Batch Defaults) ក្នុងផ្ទាំង Import ៖ ជំនាន់ (Generation), ចាប់ពីឆ្នាំ (Intake Year), ឆ្នាំទី (Year Level), ដេប៉ាតឺម៉ង់លំនាំដើម។
-   * គាំទ្រទាំងទម្រង់ពេញលេញ ១១ ជួរឈរ និងទម្រង់ចាស់ ៧ ជួរឈរ ដោយបំពេញជំនាន់/ឆ្នាំទីស្វ័យប្រវត្តិ (មិនឱ្យសិស្សជាប់ស្ថានភាព "មិនទាន់កំណត់ឆ្នាំទី" ទៀតឡើយ)។
-   * បន្ថែមមុខងារ Smart Department Normalization ទាំងខាង Backend និង Web Admin (ឧ. "Information Technology" -> "ព័ត៌មានវិទ្យា (IT)", "Computer Science" -> "វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS)")។
-   * បំពាក់ `ScrollConfiguration` គាំទ្រ Mouse Drag និង `Scrollbar` ជាប់ជាមួយ `_horizontalScrollCtrl` ទាំងលើតារាងសិស្ស និងតារាងថ្នាក់រៀន ជួយឱ្យ User អាចអូសទៅស្ដាំមើលជួរឈរ "សកម្មភាព (Actions)" បានយ៉ាងរលូន។
-4. **អនុញ្ញាតឱ្យកំណត់ដោយដៃ (Dynamic & Manual Entry) មិនចងស្លាប់លើ Dropdown៖**
-   * ពង្រីក `buildIntakeYearOptions`, `buildAcademicYearOptions`, និង `buildGenerationOptions` ក្នុង `ClassService` ឱ្យបង្កើតជម្រើសឆ្លាតវៃវែងឆ្ងាយ (ជំនាន់ទី ១០–៣០, ឆ្នាំ ២០២០–២០៣៥+) មិនបាច់សរសេរកូដសារជាថ្មីពេលឆ្លងឆ្នាំ។
-   * គ្រប់ប្រអប់បញ្ចូលប្រើ `EditableComboField` ដែលអាចឱ្យ Admin វាយតម្លៃណាមួយដោយដៃផ្ទាល់ក៏បាន ឬចុចរើសពីបញ្ជីរហ័សក៏បាន។
-5. **ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ អាចវាយបន្ថែមដោយដៃ និងឆ្លុះបញ្ចាំងគ្រប់អេក្រង់ (Global Department Sync)៖**
-   * បង្កើត API `GET /api/departments` ទាញយកដេប៉ាតឺម៉ង់ និងជំនាញទាំងអស់ដែលធ្លាប់បង្កើតក្នុង DB (ទាំងពីតារាង `users` និង `classes`) បូកបញ្ចូលជាមួយ Preset ដេប៉ាតឺម៉ង់។
-   * ប្តូរប្រអប់ "ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ" លើផ្ទាំង **បង្កើត/កែប្រែគ្រូបង្រៀន (`admin_lecturers_screen.dart`)**, **បង្កើត/កែប្រែសិស្ស (`admin_students_screen.dart`)**, និង **បង្កើត/កែប្រែថ្នាក់រៀន (`admin_classes_screen.dart`)** ពី Dropdown ចងស្លាប់ មកជា `EditableComboField` អាចវាយបញ្ចូលដោយដៃសេរី ឬរើសពីបញ្ជីរហ័ស។
-   * ពេល Admin វាយឈ្មោះដេប៉ាតឺម៉ង់ថ្មីណាមួយ ប្រព័ន្ធនឹង Register និង Sync ចូល `ClassService` ភ្លាមៗ ធ្វើឱ្យឈ្មោះដេប៉ាតឺម៉ង់ថ្មីនោះលេចចេញក្នុងបញ្ជីជ្រើសរើសនៃគ្រប់ផ្ទាំង (សិស្ស, ថ្នាក់រៀន, គ្រូ, ផ្ទាំង Import, និង Dropdown Filter) ដោយស្វ័យប្រវត្តិ។
-6. **ជួសជុល និង Sync ទិន្នន័យក្រោយដាច់ភ្លើង (NTFS Healing & Recovery)៖**
-   * ជួសជុល File 0-byte ក្នុង `.git` និង `vendor` ពី Backup mirror ស្អាតស្អំ ១០០%។
+1. **បង្កើត Artisan CLI Command `php artisan make:admin` សម្រាប់បង្កើត Master Admin៖**
+   * បង្កើត [MakeAdmin.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/app/Console/Commands/MakeAdmin.php) ជាភាសាអង់គ្លេសស្អាត មិនបែក Font លើ Windows PowerShell/CMD។
+   * មុខងារ៖ សួរឈ្មោះ, ពិនិត្យ Email Format & Duplicate, សួរ Password ដោយលាក់ផ្កាយ (`secret()`), ផ្ទៀងផ្ទាត់ Confirm Password, និងបង្កើតចូល MySQL តួនាទី `role = 'admin'`។
+   * **លទ្ធផលជាក់ស្តែង៖** ម្ចាស់គម្រោងបាន Run បង្កើតគណនី Master Admin ដំបូងដោយជោគជ័យ ១០០%៖ `masteradmin@scanin.edu.kh` (ឈ្មោះ `NEANG BUNTHANDY`, Role: `admin`)។
+
+2. **ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ វាយបន្ថែមដោយដៃ និង Sync ស្វ័យប្រវត្តិគ្រប់អេក្រង់ (Global Department Sync)៖**
+   * បង្កើត Endpoint `GET /api/departments` ក្នុង [api.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/routes/api.php) រួមបញ្ចូលគ្នាឆ្លាតវៃរវាង Preset ដេប៉ាតឺម៉ង់ + ជំនាញទាំងអស់ដែលមានក្នុង DB (`users` & `classes`)។
+   * បំពាក់ `EditableComboField` លើផ្ទាំង **បង្កើត/កែប្រែគ្រូបង្រៀន (`admin_lecturers_screen.dart`)**, **បង្កើត/កែប្រែសិស្ស (`admin_students_screen.dart`)**, និង **បង្កើត/កែប្រែថ្នាក់រៀន (`admin_classes_screen.dart`)**។
+   * ពេល Admin វាយឈ្មោះដេប៉ាតឺម៉ង់ថ្មីណាមួយ ប្រព័ន្ធនឹងហៅ `ClassService.registerCustomDepartment()` រួច Sync លេចចេញក្នុង Dropdown Filter និងផ្ទាំងផ្សេងៗទូទាំងប្រព័ន្ធភ្លាមៗ។
+
+3. **បំពាក់ Mouse Drag Scrolling & Visible Scrollbars លើតារាង DataTables ទាំងអស់៖**
+   * ដាក់ `ScrollConfiguration` គាំទ្រ `PointerDeviceKind.mouse` និង `Scrollbar` អមដោយ `_horizontalScrollCtrl` លើតារាងសិស្ស, ថ្នាក់រៀន, និងគ្រូបង្រៀន។
+   * អ្នកប្រើប្រាស់អាចយក Mouse ចុចអូសទៅស្តាំ (Horizontal Drag) មើលជួរឈរ "សកម្មភាព (Actions)" បានយ៉ាងរលូនលើ Desktop Web។
+
+4. **ស្តារ និងជួសជុល Package Vendor ក្រោយដាច់ភ្លើង (NTFS Healing & Recovery)៖**
+   * ជួសជុលឯកសារខូច 0-byte ក្នុង `vendor/nikic/php-parser` ពី Mirror Backup ស្អាតស្អំ ១០០%។
    * ធ្វើតេស្ត `php artisan test` ឆ្លងកាត់ទាំង **18 passed (141 assertions)**, `flutter analyze` ទាំង Mobile និង Web **No issues found**។
 
----
-
-### 📅 កំណត់ត្រាកិច្ចការដែលបានសម្រេចថ្ងៃនេះ (Completed Today — 12/11/2026)៖
-1. **ការពារសិទ្ធិថ្នាក់រៀន (Role & Ownership Isolation)៖**
-   * ដកមុខងារបង្កើត/កែ/លុបថ្នាក់ចេញពី Mobile App គ្រូ (`scan_in`), កែ `create_class_screen.dart` ចោល, កែការស្វាគមន៍ `"លោកគ្រូ លោកគ្រូ"` ត្រួតគ្នា។
-   * គ្រូម្នាក់ៗមើលឃើញ និងគ្រប់គ្រង **តែថ្នាក់ដែល Admin ចាត់តាំងឱ្យខ្លួន** (`ClassController`, `AttendanceController`, `AdminClassesScreen`), ផ្ទាំងផ្សេងការពារ `403`។
-   * បន្ថែម `RefreshIndicator` (Pull-to-Refresh) គ្រប់អេក្រង់ទាំង Mobile (`scan_in`) និង Web Admin (`scan_in_admin`) ព្រមទាំងជួសជុល Gradle NTFS `build_corrupt`។
-2. **លុប `MockData` ចេញពីកូដដំណើរការ 100% & ភ្ជាប់ DB សុទ្ធ៖**
-   * ដក `MockData` fallback ទាំងអស់ចេញពី `scan_in` និង `scan_in_admin` (រួមទាំង `StudentHomeScreen`, `StudentDashboardScreen`, `ClassDetailScreen`, `ShowQrScreen`, `AttendanceListScreen`, និង Services)។
-   * បង្កើត API `GET /api/classes/{id}/students` ដើម្បីទាញនិស្សិតពិត និងគណនា `student_count` ពិតពី MySQL។
-3. **ដេប៉ាតឺម៉ង់, ជំនាន់, ចាប់ពីឆ្នាំ, ឆ្នាំទី (1–4) & ស្ថានភាពសិស្ស៖**
-   * បន្ថែមជួរឈរ DB (Migrations Batch 5–8)៖ `department` លើ `classes`, `latin_name` លើ `users`, `generation`, `intake_year`, `year_level` លើ `users`/`classes`, និង `status` (`active`, `graduated`, `inactive`) លើ `users`។
-   * សិស្សឃើញ និងស្កេនបាន **តែថ្នាក់ត្រូវតាម `department` + `year_level` + `generation` និងមានស្ថានភាព `active` ប៉ុណ្ណោះ** (បដិសេធ `403` បើខុសឆ្នាំ/ដេប៉ាតឺម៉ង់ ឬរៀនចប់/ឈប់រៀន)។
-   * អាចកំណត់ **ឈ្មោះជាអក្សរខ្មែរ (`name`)** និង **ឈ្មោះជាអក្សរឡាតាំង (`latin_name`)** សម្រាប់ទាំងគ្រូ និងសិស្ស។
-4. **Admin Controls & Historical Reporting៖**
-   * កំណត់ **ចំនួនសប្តាហ៍សិក្សា (`total_sessions`)** ដោយ Default `15` (Admin កែបាន 1–60 តាមសាលានីមួយៗ) និងរាប់ `completed_sessions` ស្វ័យប្រវត្តិពីថ្ងៃស្កេនពិត។
-   * បន្ថែម `EditableComboField` ([editable_combo_field.dart](file:///d:/Flutter_Project/Scan_In_App/scan_in_admin/lib/widgets/editable_combo_field.dart)) ឱ្យ Admin **វាយកំណត់ដោយដៃ ឬរើសរហ័ស** សម្រាប់ `ឆ្នាំសិក្សា`, `ចាប់ពីឆ្នាំ`, និង `ជំនាន់` ដោយកើនតាមឆ្នាំបច្ចុប្បន្នស្វ័យប្រវត្តិ។
-   * រៀបចំម៉ឺនុយ **`របាយការណ៍`** អាចពន្លាជម្រើសរងបាន + ទំព័រ **`ស្ថិតិតាមឆ្នាំ & ជំនាញ` (Admin Only)** (`GET /api/admin/reports/student-stats`) រក្សាទិន្នន័យសិស្សទាំងអស់អចិន្ត្រៃយ៍ + Copy CSV។
-
-### ✅ ស្ថានភាពត្រួតពិនិត្យកូដ File & Folder (Audit — 12/11/2026)៖
-* **Root Workspace (`d:\Flutter_Project\Scan_In_App`)៖** `scan_in` (Mobile App), `scan_in_admin` (Web Portal), `scan_in_backend` (Laravel 12 API), `NOTEBOOK.md`, `APP_OVERVIEW.txt`, `README.md`, `.gitignore` — ស្អាតគ្មាន File លើស។
-* **`flutter analyze` (`scan_in_admin` & `scan_in`)៖** `No issues found!` ទាំងពីរ។
-* **`php artisan migrate:status`៖** Migrations ទាំង ១១ (`Batch 1–8`) បាន Run ចូល MySQL រួចរាល់ (`Ran`)។
-* **`php artisan test`៖** **17 passed (136 assertions)** (`AuthApiTest`, `ClassIsolationTest`, `DepartmentIsolationTest`, `DualNameUsersTest`, `GenerationYearIsolationTest`, `StudentStatusAndReportsTest`)។
-* **Backup៖** បានរក្សាទុកចូល Git និង Backup នៅ `C:\Users\Jitsu Window\Scan_In_App_Backup\`។
+5. **បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់ (Class Roster) & Export វត្តមានជា CSV៖**
+   * បន្ថែមប៊ូតុង `[បញ្ជីសិស្ស]` ក្នុងតារាងថ្នាក់រៀន `admin_classes_screen.dart` បង្ហាញ Popup ឈ្មោះខ្មែរ/ឡាតាំង, អត្តលេខ, ភេទ, លេខទូរស័ព្ទ និងវត្តមានថ្ងៃនេះ។
+   * បន្ថែមប៊ូតុង `[Export CSV]` លើ `admin_attendances_screen.dart` សម្រាប់ទាញយកវត្តមានទៅបើកក្នុង Microsoft Excel ភ្លាមៗ។
 
 ---
 
-### 🚀 ផែនការងារដែលត្រូវធ្វើបន្ត (Roadmap & Production Checklist)៖
+## ៦. ស្ថានភាពត្រួតពិនិត្យសុខភាពកូដ & ឯកសារ (Code & Folder Health Check — 13/11/2026)
 
-1. **[កិច្ចការបន្ទាប់សម្រាប់រៀបចំ Real Production — កត់ត្រាទុកតាមការណែនាំ]៖**
-   * **បង្កើត CLI Command `php artisan make:admin`៖** បង្កើតពាក្យបញ្ជា Terminal សម្រាប់បង្កើតគណនី Master Admin ដោយផ្ទាល់ (វាយ Name, Email, Password លាក់ផ្កាយ) ដោយមិនចាំបាច់មានគណនីរឹងក្នុង Seeder ឬ Git ឡើយ។
-   * **ប្រព័ន្ធគ្រប់គ្រង Sub-Admin (បុគ្គលិកការិយាល័យសិក្សា)៖** Master Admin អាចបង្កើតគណនី Sub-Admin ឱ្យបុគ្គលិកការិយាល័យជួយគ្រប់គ្រងសិស្ស/ថ្នាក់រៀន ព្រមទាំងកំណត់សិទ្ធិ (Permissions) មិនឱ្យលុប Master Admin ឬ Audit logs។
-   * **មុខងារប្តូរពាក្យសម្ងាត់លើ Web Admin (Admin Change Password Dialog)៖** បន្ថែមប៊ូតុង "ប្តូរពាក្យសម្ងាត់ (Change Password)" លើ Sidebar/Profile នៃ [admin_scaffold.dart](file:///d:/Flutter_Project/Scan_In_App/scan_in_admin/lib/screens/admin_scaffold.dart) ដោយហៅ API `POST /api/user/change-password` ដើម្បីឱ្យ Admin អាចផ្លាស់ប្តូរ Password ផ្ទាល់ខ្លួនបានភ្លាមៗ។
-   * **សម្អាត Demo Seed Data ទៅកាន់ Clean Production DB៖**
-     - កែសម្រួល [AuthApiTest.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/tests/Feature/AuthApiTest.php) ឱ្យប្រើ `User::factory()->create()` ជាមួយ `DatabaseTransactions` ដើម្បីកុំឱ្យ tests ពឹងលើ seeder users ទៀត។
-     - ដកគណនីគំរូចេញពី [DatabaseSeeder.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/database/seeders/DatabaseSeeder.php) (ទុកតែ Seeder ស្អាតស្អំ)។
-     - ដំណើរការ `php artisan make:admin` បង្កើត Admin មេពិតប្រាកដ រួច Admin ចូលទៅបង្កើតគ្រូ និង Import បញ្ជីសិស្ស Real Data តែម្តង។
+* **Git Status:** Clean working tree, On branch `main`, Up to date with `origin/main` (Commit `b2b0994`).
+* **Stray/Unused Files:** គ្មានឯកសារខូច, គ្មានឯកសារលើស, គ្មាន temp file ឥតប្រយោជន៍ឡើយ។
+* **Laravel API Backend (`scan_in_backend`):** `php artisan test` ទទួលបាន **18 passed (141 assertions)** ដំណើរការលឿនរលូន (Duration: 3.24s)។
+* **Web Admin Portal (`scan_in_admin`):** `flutter analyze` ទទួលបាន **No issues found!** (0 errors, 0 warnings)។
+* **Mobile App (`scan_in`):** `flutter analyze` ទទួលបាន **No issues found!** (0 errors, 0 warnings)។
+* **Database (MySQL):** Database `scan_in` ដំណើរការល្អធម្មតាលើ port 3306។
+* **Offline Mirror Backup:** ធ្វើសមកាលកម្មទៅកាន់ `C:\Users\Jitsu Window\Scan_In_App_Backup\` រួចរាល់។
 
-2. **[តេស្តជាក់ស្តែង End-to-End] ពិនិត្យទិន្នន័យលើ Web Admin & Mobile App៖**
-   * ចូល Web Admin ដើម្បីកំណត់ `ដេប៉ាតឺម៉ង់`, `ឆ្នាំទី`, `ជំនាន់`, `ចាប់ពីឆ្នាំ`, `ឈ្មោះជាអក្សរឡាតាំង` ឱ្យគ្រូ សិស្ស និងថ្នាក់រៀនចាស់ៗដែលបង្កើតមុនការអាប់ដេត, រួចសាក Login ស្កេន QR និងពិនិត្យ `របាយការណ៍ → ស្ថិតិតាមឆ្នាំ & ជំនាញ`។
-2. **[អាទិភាពទី ២] បន្ថែមរបាយការណ៍រងថ្មីៗក្រោមម៉ឺនុយ `របាយការណ៍` & Export (Admin Reports)៖**
-   * បន្ថែមជម្រើសរបាយការណ៍ថ្មីតាមតម្រូវការសាលា និងប៊ូតុង Export របាយការណ៍វត្តមានជា Excel / CSV / PDF ក្នុង `AdminAttendancesScreen`។
-3. **[អាទិភាពទី ៣] Profile Avatar Upload & Personal Info Editing (UI to DB)៖**
-   * បង្កើត API `POST /api/user/profile` ដើម្បីឱ្យគ្រូ និងសិស្សអាច Upload រូបថត Profile ពិតប្រាកដ រក្សាទុកក្នុង `storage/app/public/avatars` និង Update ចូល Database។
+---
+
+## 🚀 ៧. ផែនការងារជាក់លាក់សម្រាប់ថ្ងៃស្អែក (Next Day Action Plan — Step-by-Step)
+
+ពេលត្រឡប់មកធ្វើការបន្តនៅថ្ងៃស្អែក យើងនឹងបន្តធ្វើ **ជំហានទី ២** នៃ Production Roadmap ៖
+
+### 📌 ជំហានទី ២ (Step 2 — អាទិភាពទី ១ សម្រាប់ថ្ងៃស្អែក)៖
+1. **Web Admin — បន្ថែមប៊ូតុង និង Dialog "ប្តូរពាក្យសម្ងាត់ (Change Password)"៖**
+   * **ទីតាំង៖** ក្នុង [admin_scaffold.dart](file:///d:/Flutter_Project/Scan_In_App/scan_in_admin/lib/screens/admin_scaffold.dart) នៅជាប់ប៊ូតុង Logout (ទាំង Compact និង Expanded Sidebar)។
+   * **ផ្ទាំង Dialog៖** បញ្ចូល Current Password, New Password, Confirm New Password ជាមួយប៊ូតុង Show/Hide Password។
+   * **API Connection៖** ហៅ `AuthService.changePassword(currentPassword, newPassword)` ដែលភ្ជាប់ទៅ `POST /api/user/change-password`។
+2. **Backend — កែសម្រួល [AuthApiTest.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/tests/Feature/AuthApiTest.php) ឱ្យប្រើ Factory៖**
+   * បន្ថែម `use DatabaseTransactions;`។
+   * ប្តូរពីការហៅ hardcoded email `dara@scanin.app` និង `student@scanin.app` មកជា `User::factory()->create(...)` ក្នុង Memory។
+   * ធានាថា `php artisan test` នៅតែ Pass 18/18 ពេញលេញ ១០០% ទោះបីជាគ្មាន Demo Seeder ក៏ដោយ។
+
+---
+
+### 📌 ជំហានទី ៣ (Step 3 — សម្អាត Demo Seed Data ទៅកាន់ Clean Production DB)៖
+1. ដកទិន្នន័យគំរូ (`dara@scanin.app`, `student@scanin.app`) ចេញពី [DatabaseSeeder.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/database/seeders/DatabaseSeeder.php)។
+2. សម្អាត Record ចាស់ៗដែលជា Demo Data ចេញពីតារាង `users`, `classes`, និង `attendances` ក្នុង MySQL។
+
+---
+
+### 📌 ជំហានទី ៤ (Step 4 — Master Admin បង្កើត Real Data)៖
+1. Master Admin ចូល Login តាម Web Admin ដោយប្រើ `masteradmin@scanin.edu.kh`។
+2. ចាប់ផ្តើមបង្កើតគណនីគ្រូពិតប្រាកដ និង Import បញ្ជីឈ្មោះសិស្ស Real Data ពី Excel/CSV។
+
+---
+
+### 📌 ជំហានទី ៥ (Step 5 — ប្រព័ន្ធគ្រប់គ្រង Sub-Admin ការិយាល័យសិក្សា)៖
+1. បង្កើតផ្ទាំងគ្រប់គ្រង Sub-Admin (Academic Affairs) លើ Web Admin សម្រាប់ឱ្យ Master Admin បង្កើតគណនីបុគ្គលិកការិយាល័យជួយគ្រប់គ្រងសិស្ស/ថ្នាក់រៀន ដោយមាន Role Isolation ច្បាស់លាស់។
