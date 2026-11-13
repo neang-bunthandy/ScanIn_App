@@ -243,4 +243,30 @@ class DepartmentIsolationTest extends TestCase
         $this->assertEquals(18, $updatedItem['total_sessions']);
         $this->assertEquals(3, $updatedItem['completed_sessions']);
     }
+
+    public function test_departments_endpoint_returns_presets_and_custom_departments(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'department' => 'មហាវិទ្យាល័យនីតិសាស្ត្រ (Faculty of Law)',
+        ]);
+
+        $customClass = ClassModel::create([
+            'user_id' => $admin->id,
+            'subject_name' => 'Medical Science 101',
+            'subject_code' => 'MED101',
+            'department' => 'វេជ្ជសាស្ត្រ (Medicine)',
+            'room' => 'Lab Med',
+            'qr_token' => 'QR-MED-101',
+        ]);
+
+        $response = $this->actingAs($admin)->getJson('/api/departments')
+            ->assertStatus(200)
+            ->json('data');
+
+        $this->assertContains('ព័ត៌មានវិទ្យា (IT)', $response);
+        $this->assertContains('វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS)', $response);
+        $this->assertContains('មហាវិទ្យាល័យនីតិសាស្ត្រ (Faculty of Law)', $response);
+        $this->assertContains('វេជ្ជសាស្ត្រ (Medicine)', $response);
+    }
 }

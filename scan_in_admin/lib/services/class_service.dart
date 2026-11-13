@@ -137,6 +137,89 @@ class ClassService {
     return trimmed;
   }
 
+  static final Set<String> _dynamicCustomDepartments = <String>{};
+  static List<String>? _cachedDepartments;
+
+  /// ចុះឈ្មោះដេប៉ាតឺម៉ង់ថ្មីដែលបានវាយបញ្ចូលដោយដៃ ដើម្បីឱ្យលេចចេញគ្រប់ផ្ទាំង (សិស្ស, ថ្នាក់រៀន, គ្រូ)
+  static void registerCustomDepartment(String? dept) {
+    if (dept != null) {
+      final trimmed = dept.trim();
+      if (trimmed.isNotEmpty) {
+        _dynamicCustomDepartments.add(trimmed);
+      }
+    }
+  }
+
+  /// បង្កើតបញ្ជីជម្រើសដេប៉ាតឺម៉ង់ដោយស្វ័យប្រវត្តិ (Preset + តម្លៃដែលបានវាយដោយដៃ + តម្លៃមានស្រាប់ក្នុង DB)
+  static List<String> buildDepartmentOptions([Iterable<String?> extra = const []]) {
+    final set = <String>{
+      ...presetDepartments,
+      ..._dynamicCustomDepartments,
+    };
+    if (_cachedDepartments != null) {
+      set.addAll(_cachedDepartments!);
+    }
+    if (_cachedClasses != null) {
+      for (final c in _cachedClasses!) {
+        if (c.department != null && c.department!.trim().isNotEmpty) {
+          set.add(c.department!.trim());
+        }
+      }
+    }
+    if (_cachedStudents != null) {
+      for (final s in _cachedStudents!) {
+        final d = s['department']?.toString().trim();
+        if (d != null && d.isNotEmpty) {
+          set.add(d);
+        }
+      }
+    }
+    if (_cachedLecturers != null) {
+      for (final l in _cachedLecturers!) {
+        final d = l['department']?.toString().trim();
+        if (d != null && d.isNotEmpty) {
+          set.add(d);
+        }
+      }
+    }
+    for (final e in extra) {
+      if (e != null) {
+        final trimmed = e.trim();
+        if (trimmed.isNotEmpty) {
+          set.add(trimmed);
+        }
+      }
+    }
+    return set.toList();
+  }
+
+  /// ទាញយកបញ្ជីដេប៉ាតឺម៉ង់ទាំងអស់ពី DB (GET /api/departments)
+  static Future<List<String>> fetchDepartments() async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.get(
+        Uri.parse(ApiConfig.departmentsUrl),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['data'] is List) {
+          final list = (data['data'] as List)
+              .map((e) => e.toString().trim())
+              .where((e) => e.isNotEmpty)
+              .toList();
+          _cachedDepartments = list;
+          return buildDepartmentOptions(list);
+        }
+      }
+    } catch (_) {}
+    return buildDepartmentOptions();
+  }
+
   static List<ClassModel>? _cachedClasses;
   static List<Map<String, dynamic>>? _cachedLecturers;
   static List<Map<String, dynamic>>? _cachedStudents;
@@ -149,6 +232,7 @@ class ClassService {
     _cachedClasses = null;
     _cachedLecturers = null;
     _cachedStudents = null;
+    _cachedDepartments = null;
   }
 
   /// ទាញយកបញ្ជីថ្នាក់រៀនរបស់គ្រូ (Lecturer Classes)

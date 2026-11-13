@@ -20,6 +20,38 @@ Route::post('/login', [AuthController::class, 'login']);
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->group(function () {
+    // Departments API (Distinct departments from preset, users & classes)
+    Route::get('/departments', function () {
+        $preset = [
+            'ព័ត៌មានវិទ្យា (IT)',
+            'វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS)',
+            'វិស្វកម្មសូហ្វវែរ (SE)',
+            'គ្រប់គ្រងពាណិជ្ជកម្ម (BBA)',
+            'គណនេយ្យ និងហិរញ្ញវត្ថុ (Accounting)',
+            'ភាសាអង់គ្លេស (English)',
+            'វិស្វកម្មសំណង់ស៊ីវិល (Civil Engineering)',
+            'ទូទៅ (General)',
+        ];
+
+        $fromUsers = \App\Models\User::whereNotNull('department')
+            ->where('department', '!=', '')
+            ->distinct()
+            ->pluck('department')
+            ->toArray();
+
+        $fromClasses = \App\Models\ClassModel::whereNotNull('department')
+            ->where('department', '!=', '')
+            ->distinct()
+            ->pluck('department')
+            ->toArray();
+
+        $all = array_values(array_unique(array_filter(array_merge($preset, $fromUsers, $fromClasses))));
+        return response()->json([
+            'status' => true,
+            'data' => $all,
+        ]);
+    });
+
     Route::get('/classes', [ClassController::class, 'index']);
     Route::put('/classes/{id}', [ClassController::class, 'update']);
     Route::delete('/classes/{id}', [ClassController::class, 'destroy']);

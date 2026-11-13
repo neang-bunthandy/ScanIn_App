@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import '../widgets/editable_combo_field.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_routes.dart';
@@ -15,7 +17,14 @@ class AdminLecturersScreen extends StatefulWidget {
 }
 
 class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
+  final ScrollController _horizontalScrollCtrl = ScrollController();
   List<Map<String, dynamic>> _lecturers = [];
+
+  @override
+  void dispose() {
+    _horizontalScrollCtrl.dispose();
+    super.dispose();
+  }
   UserModel? _currentUser;
   bool _isLoading = true;
 
@@ -23,6 +32,9 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
   void initState() {
     super.initState();
     _currentUser = AuthService.cachedUser;
+    ClassService.fetchDepartments().then((_) {
+      if (mounted) setState(() {});
+    });
     final cached = ClassService.cachedLecturers;
     if (cached != null && cached.isNotEmpty) {
       _lecturers = cached;
@@ -61,7 +73,10 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
     final latinNameCtrl = TextEditingController();
     final emailCtrl = TextEditingController();
     final passwordCtrl = TextEditingController(text: 'password123');
-    String selectedDepartment = ClassService.presetDepartments.first;
+    final deptCtrl = TextEditingController(text: ClassService.presetDepartments.first);
+    final deptOptions = ClassService.buildDepartmentOptions(
+      _lecturers.map((l) => (l['department'] ?? '').toString()),
+    );
     final staffIdCtrl = TextEditingController(text: 'LEC-0${_lecturers.length + 1}');
     final phoneCtrl = TextEditingController(text: '012 345 678');
 
@@ -171,25 +186,13 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ដេប៉ាតឺម៉ង់
-                  DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    initialValue: selectedDepartment,
-                    decoration: InputDecoration(
-                      labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department / Faculty'),
-                      prefixIcon: const Icon(Icons.account_balance_outlined, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                    items: ClassService.presetDepartments
-                        .map((d) => DropdownMenuItem<String>(
-                              value: d,
-                              child: Text(d, overflow: TextOverflow.ellipsis),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) selectedDepartment = val;
-                    },
+                  // ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ (អាចវាយដោយដៃ ឬរើសរហ័ស)
+                  EditableComboField(
+                    controller: deptCtrl,
+                    labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department / Faculty'),
+                    hintText: 'ឧ. ព័ត៌មានវិទ្យា (IT) ឬវាយបញ្ចូលឈ្មោះថ្មី',
+                    prefixIcon: Icons.account_balance_outlined,
+                    suggestions: deptOptions,
                   ),
                   const SizedBox(height: 14),
 
@@ -248,14 +251,19 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                   return;
                 }
 
+                final deptVal = deptCtrl.text.trim().isNotEmpty
+                    ? deptCtrl.text.trim()
+                    : ClassService.presetDepartments.first;
+                ClassService.registerCustomDepartment(deptVal);
+
                 final result = await ClassService.createLecturer(
                   name: nameCtrl.text.trim(),
-                  latinName: latinNameCtrl.text.trim(),
+                  latinName: latinNameCtrl.text.trim().isNotEmpty ? latinNameCtrl.text.trim() : null,
                   email: emailCtrl.text.trim(),
                   password: passwordCtrl.text,
-                  department: selectedDepartment,
-                  staffId: staffIdCtrl.text.trim(),
-                  phone: phoneCtrl.text.trim(),
+                  department: deptVal,
+                  staffId: staffIdCtrl.text.trim().isNotEmpty ? staffIdCtrl.text.trim() : null,
+                  phone: phoneCtrl.text.trim().isNotEmpty ? phoneCtrl.text.trim() : null,
                 );
 
                 if (ctx.mounted) {
@@ -302,11 +310,12 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
     final emailCtrl = TextEditingController(text: lec['email'] ?? '');
     final passwordCtrl = TextEditingController();
     final existingDept = (lec['department'] ?? '').toString().trim();
-    final deptOptions = [
-      ...ClassService.presetDepartments,
-      if (existingDept.isNotEmpty && !ClassService.presetDepartments.contains(existingDept)) existingDept,
-    ];
-    String selectedDepartment = existingDept.isNotEmpty ? existingDept : deptOptions.first;
+    final deptOptions = ClassService.buildDepartmentOptions(
+      _lecturers.map((l) => (l['department'] ?? '').toString()),
+    );
+    final deptCtrl = TextEditingController(
+      text: existingDept.isNotEmpty ? existingDept : ClassService.presetDepartments.first,
+    );
     final staffIdCtrl = TextEditingController(text: lec['staff_id'] ?? '');
     final phoneCtrl = TextEditingController(text: lec['phone'] ?? '');
 
@@ -411,24 +420,12 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    initialValue: selectedDepartment,
-                    decoration: InputDecoration(
-                      labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department / Faculty'),
-                      prefixIcon: const Icon(Icons.account_balance_outlined, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                    items: deptOptions
-                        .map((d) => DropdownMenuItem<String>(
-                              value: d,
-                              child: Text(d, overflow: TextOverflow.ellipsis),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) selectedDepartment = val;
-                    },
+                  EditableComboField(
+                    controller: deptCtrl,
+                    labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department / Faculty'),
+                    hintText: 'ឧ. ព័ត៌មានវិទ្យា (IT) ឬវាយបញ្ចូលឈ្មោះថ្មី',
+                    prefixIcon: Icons.account_balance_outlined,
+                    suggestions: deptOptions,
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -485,15 +482,20 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                   return;
                 }
 
+                final deptVal = deptCtrl.text.trim().isNotEmpty
+                    ? deptCtrl.text.trim()
+                    : ClassService.presetDepartments.first;
+                ClassService.registerCustomDepartment(deptVal);
+
                 final result = await ClassService.updateLecturer(
                   id: id,
                   name: nameCtrl.text.trim(),
-                  latinName: latinNameCtrl.text.trim(),
+                  latinName: latinNameCtrl.text.trim().isNotEmpty ? latinNameCtrl.text.trim() : null,
                   email: emailCtrl.text.trim(),
                   password: passwordCtrl.text.isNotEmpty ? passwordCtrl.text : null,
-                  department: selectedDepartment,
-                  staffId: staffIdCtrl.text.trim(),
-                  phone: phoneCtrl.text.trim(),
+                  department: deptVal,
+                  staffId: staffIdCtrl.text.trim().isNotEmpty ? staffIdCtrl.text.trim() : null,
+                  phone: phoneCtrl.text.trim().isNotEmpty ? phoneCtrl.text.trim() : null,
                 );
 
                 if (ctx.mounted) {
@@ -755,11 +757,27 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                         else
                           LayoutBuilder(
                             builder: (context, tableConstraints) {
-                              return SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(minWidth: tableConstraints.maxWidth),
-                                  child: DataTable(
+                              return ScrollConfiguration(
+                                behavior: ScrollConfiguration.of(context).copyWith(
+                                  dragDevices: {
+                                    PointerDeviceKind.touch,
+                                    PointerDeviceKind.mouse,
+                                    PointerDeviceKind.trackpad,
+                                    PointerDeviceKind.stylus,
+                                  },
+                                ),
+                                child: Scrollbar(
+                                  controller: _horizontalScrollCtrl,
+                                  thumbVisibility: true,
+                                  trackVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _horizontalScrollCtrl,
+                                    scrollDirection: Axis.horizontal,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(minWidth: tableConstraints.maxWidth),
+                                      child: DataTable(
+                                        columnSpacing: 18,
+                                        horizontalMargin: 12,
                                     headingRowColor: WidgetStateProperty.all(
                                       isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
                                     ),
@@ -862,9 +880,11 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                                     }).toList(),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                       ],
                     ),
                   ),

@@ -49,6 +49,7 @@ class ApiConfig {
   static String get changePasswordUrl => '$baseUrl/user/change-password';
 
   // Classes & Users Endpoints (Laravel REST API)
+  static String get departmentsUrl => '$baseUrl/departments';
   static String get classesUrl => '$baseUrl/classes';
   static String get lecturersUrl => '$baseUrl/lecturers';
   static String get studentsUrl => '$baseUrl/students';

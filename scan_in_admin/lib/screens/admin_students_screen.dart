@@ -62,6 +62,9 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   void initState() {
     super.initState();
     _currentUser = AuthService.cachedUser;
+    ClassService.fetchDepartments().then((_) {
+      if (mounted) setState(() {});
+    });
     final cached = ClassService.cachedStudents;
     if (cached != null && cached.isNotEmpty) {
       _students = cached;
@@ -101,7 +104,10 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final emailCtrl = TextEditingController();
     final passwordCtrl = TextEditingController(text: 'password123');
     final codeCtrl = TextEditingController(text: 'STU00${_students.length + 1}');
-    String selectedDepartment = ClassService.presetDepartments.first;
+    final deptCtrl = TextEditingController(text: ClassService.presetDepartments.first);
+    final deptOptions = ClassService.buildDepartmentOptions(
+      _students.map((s) => (s['department'] ?? '').toString()),
+    );
     final genOptions = ClassService.buildGenerationOptions(
       _students.map((s) => (s['generation'] ?? '').toString()),
     );
@@ -210,23 +216,11 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: DropdownButtonFormField<String>(
-                          isExpanded: true,
-                          initialValue: selectedDepartment,
-                          decoration: InputDecoration(
-                            labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department'),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          ),
-                          items: ClassService.presetDepartments
-                              .map((d) => DropdownMenuItem<String>(
-                                    value: d,
-                                    child: Text(d, overflow: TextOverflow.ellipsis),
-                                  ))
-                              .toList(),
-                          onChanged: (val) {
-                            if (val != null) selectedDepartment = val;
-                          },
+                        child: EditableComboField(
+                          controller: deptCtrl,
+                          labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department'),
+                          hintText: 'ឧ. ព័ត៌មានវិទ្យា (IT) ឬវាយថ្មី',
+                          suggestions: deptOptions,
                         ),
                       ),
                     ],
@@ -424,15 +418,20 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   return;
                 }
 
+                final deptVal = deptCtrl.text.trim().isNotEmpty
+                    ? deptCtrl.text.trim()
+                    : ClassService.presetDepartments.first;
+                ClassService.registerCustomDepartment(deptVal);
+
                 final result = await ClassService.createStudent(
                   name: nameCtrl.text.trim(),
-                  latinName: latinNameCtrl.text.trim(),
+                  latinName: latinNameCtrl.text.trim().isNotEmpty ? latinNameCtrl.text.trim() : null,
                   email: emailCtrl.text.trim(),
                   password: passwordCtrl.text,
                   studentCode: codeCtrl.text.trim(),
                   gender: selectedGender.contains('ស្រី') ? 'ស្រី' : 'ប្រុស',
                   dateOfBirth: dobCtrl.text.trim(),
-                  department: selectedDepartment,
+                  department: deptVal,
                   generation: generationCtrl.text.trim(),
                   intakeYear: intakeYearCtrl.text.trim(),
                   yearLevel: selectedYearLevel,
@@ -487,11 +486,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final passwordCtrl = TextEditingController();
     final codeCtrl = TextEditingController(text: stu['student_code'] ?? '');
     final existingDept = (stu['department'] ?? '').toString().trim();
-    final deptOptions = [
-      ...ClassService.presetDepartments,
-      if (existingDept.isNotEmpty && !ClassService.presetDepartments.contains(existingDept)) existingDept,
-    ];
-    String selectedDepartment = existingDept.isNotEmpty ? existingDept : deptOptions.first;
+    final deptOptions = ClassService.buildDepartmentOptions(
+      _students.map((s) => (s['department'] ?? '').toString()),
+    );
+    final deptCtrl = TextEditingController(
+      text: existingDept.isNotEmpty ? existingDept : ClassService.presetDepartments.first,
+    );
     final genOptions = ClassService.buildGenerationOptions(
       _students.map((s) => (s['generation'] ?? '').toString()),
     );
@@ -687,24 +687,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  DropdownButtonFormField<String>(
-                    isExpanded: true,
-                    initialValue: selectedDepartment,
-                    decoration: InputDecoration(
-                      labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department / Faculty'),
-                      prefixIcon: const Icon(Icons.account_balance_outlined, size: 20),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    ),
-                    items: deptOptions
-                        .map((d) => DropdownMenuItem<String>(
-                              value: d,
-                              child: Text(d, overflow: TextOverflow.ellipsis),
-                            ))
-                        .toList(),
-                    onChanged: (val) {
-                      if (val != null) setDlgState(() => selectedDepartment = val);
-                    },
+                  EditableComboField(
+                    controller: deptCtrl,
+                    labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department / Faculty'),
+                    hintText: 'ឧ. ព័ត៌មានវិទ្យា (IT) ឬវាយឈ្មោះថ្មី',
+                    prefixIcon: Icons.account_balance_outlined,
+                    suggestions: deptOptions,
                   ),
                   const SizedBox(height: 14),
                   Row(
@@ -815,16 +803,21 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   return;
                 }
 
+                final deptVal = deptCtrl.text.trim().isNotEmpty
+                    ? deptCtrl.text.trim()
+                    : ClassService.presetDepartments.first;
+                ClassService.registerCustomDepartment(deptVal);
+
                 final result = await ClassService.updateStudent(
                   id: id,
                   name: nameCtrl.text.trim(),
-                  latinName: latinNameCtrl.text.trim(),
+                  latinName: latinNameCtrl.text.trim().isNotEmpty ? latinNameCtrl.text.trim() : null,
                   email: emailCtrl.text.trim(),
                   studentCode: codeCtrl.text.trim(),
                   gender: selectedGender.contains('ស្រី') ? 'ស្រី' : 'ប្រុស',
                   dateOfBirth: dobCtrl.text.trim(),
                   password: passwordCtrl.text.isNotEmpty ? passwordCtrl.text : null,
-                  department: selectedDepartment,
+                  department: deptVal,
                   generation: generationCtrl.text.trim(),
                   intakeYear: intakeYearCtrl.text.trim(),
                   yearLevel: selectedYearLevel,
@@ -878,7 +871,10 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final batchGenCtrl = TextEditingController(text: 'ជំនាន់ទី ១៦ (Gen 16)');
     final batchIntakeCtrl = TextEditingController(text: '2024');
     int batchYearLevel = 2;
-    String batchDept = ClassService.presetDepartments.first;
+    final batchDeptCtrl = TextEditingController(text: ClassService.presetDepartments.first);
+    final deptOptions = ClassService.buildDepartmentOptions(
+      _students.map((s) => (s['department'] ?? '').toString()),
+    );
 
     final genOptions = ClassService.buildGenerationOptions(
       _students.map((s) => (s['generation'] ?? '').toString()),
@@ -912,7 +908,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           String gender = 'ប្រុស';
           String dob = '';
           String email = '';
-          String dept = batchDept;
+          String dept = batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first;
           String gen = batchGenCtrl.text.trim();
           String intake = batchIntakeCtrl.text.trim();
           int yearLevel = batchYearLevel;
@@ -923,7 +919,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
             gender = parts.length > 3 && parts[3].isNotEmpty ? parts[3] : 'ប្រុស';
             dob = parts.length > 4 ? parts[4] : '';
             email = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : '@student.scanin.app';
-            dept = parts.length > 6 && parts[6].isNotEmpty ? parts[6] : batchDept;
+            dept = parts.length > 6 && parts[6].isNotEmpty ? parts[6] : (batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first);
             if (parts.length > 7 && parts[7].isNotEmpty) gen = parts[7];
             if (parts.length > 8 && parts[8].isNotEmpty) intake = parts[8];
             if (parts.length > 9 && parts[9].isNotEmpty && int.tryParse(parts[9]) != null) {
@@ -934,7 +930,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
             gender = parts.length > 2 && parts[2].isNotEmpty ? parts[2] : 'ប្រុស';
             dob = parts.length > 3 ? parts[3] : '';
             email = parts.length > 4 && parts[4].isNotEmpty ? parts[4] : '@student.scanin.app';
-            dept = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : batchDept;
+            dept = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : (batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first);
             phone = parts.length > 6 ? parts[6] : '';
             if (parts.length > 7) latinName = parts[7];
           }
@@ -1072,23 +1068,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
-                                  child: DropdownButtonFormField<String>(
-                                    initialValue: batchDept,
-                                    isExpanded: true,
-                                    decoration: InputDecoration(
-                                      labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់លំនាំដើម', 'Default Dept'),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                    ),
-                                    items: ClassService.presetDepartments.map(
-                                      (d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis)),
-                                    ).toList(),
-                                    onChanged: (val) {
-                                      if (val != null) {
-                                        setDlgState(() => batchDept = val);
-                                        parseCsv(csvTextCtrl.text, setDlgState);
-                                      }
-                                    },
+                                  child: EditableComboField(
+                                    controller: batchDeptCtrl,
+                                    labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់លំនាំដើម', 'Default Dept'),
+                                    hintText: 'ឧ. ព័ត៌មានវិទ្យា (IT) ឬវាយថ្មី',
+                                    suggestions: deptOptions,
+                                    onChanged: (_) => parseCsv(csvTextCtrl.text, setDlgState),
                                   ),
                                 ),
                               ],

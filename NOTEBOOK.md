@@ -125,6 +125,7 @@
 | 33 | **Export របាយការណ៍វត្តមាន (CSV / Excel)**| `lib/screens/admin_attendances_screen.dart` | ✅ **រួចរាល់** | ប៊ូតុង `[Export CSV]` ចម្លងទិន្នន័យវត្តមានសិស្សតាមថ្នាក់ជា CSV សម្រាប់យកទៅ Paste ចូល Excel ភ្លាមៗ |
 | 34 | **បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់ (Enrolled Students Roster)** | `lib/screens/admin_classes_screen.dart` | ✅ **រួចរាល់** | ប៊ូតុង `[បញ្ជីសិស្ស]` បង្ហាញ Modal បញ្ជីឈ្មោះសិស្សតាមថ្នាក់ពិតពី DB (`GET /api/classes/{id}/students`) ជាមួយ Badge វត្តមានថ្ងៃនេះ |
 | 35 | **Batch Import សិស្ស & Smart Normalization** | `lib/screens/admin_students_screen.dart` | ✅ **រួចរាល់** | ផ្ទាំង Import សិស្សមានជម្រើសរួម (ជំនាន់, ឆ្នាំចូលរៀន, ឆ្នាំទី, ដេប៉ាតឺម៉ង់), Auto-map ឈ្មោះជំនាញពី English ទៅខ្មែរ, និង Scrollbar អូស Mouse សកម្មភាព |
+| 36 | **ដេប៉ាតឺម៉ង់កំណត់ដោយដៃ & Sync គ្រប់អេក្រង់** | `lib/services/class_service.dart` | ✅ **រួចរាល់** | ប្តូរទៅជា `EditableComboField` លើផ្ទាំងបង្កើត/កែប្រែគ្រូ សិស្ស និងថ្នាក់រៀន, បង្កើត API `GET /api/departments` Sync រាល់ជំនាញ/ដេប៉ាតឺម៉ង់ថ្មីៗទូទាំងប្រព័ន្ធ |
 
 ---
 
@@ -144,9 +145,13 @@
 4. **អនុញ្ញាតឱ្យកំណត់ដោយដៃ (Dynamic & Manual Entry) មិនចងស្លាប់លើ Dropdown៖**
    * ពង្រីក `buildIntakeYearOptions`, `buildAcademicYearOptions`, និង `buildGenerationOptions` ក្នុង `ClassService` ឱ្យបង្កើតជម្រើសឆ្លាតវៃវែងឆ្ងាយ (ជំនាន់ទី ១០–៣០, ឆ្នាំ ២០២០–២០៣៥+) មិនបាច់សរសេរកូដសារជាថ្មីពេលឆ្លងឆ្នាំ។
    * គ្រប់ប្រអប់បញ្ចូលប្រើ `EditableComboField` ដែលអាចឱ្យ Admin វាយតម្លៃណាមួយដោយដៃផ្ទាល់ក៏បាន ឬចុចរើសពីបញ្ជីរហ័សក៏បាន។
-5. **ជួសជុល និង Sync ទិន្នន័យក្រោយដាច់ភ្លើង (NTFS Healing & Recovery)៖**
+5. **ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ អាចវាយបន្ថែមដោយដៃ និងឆ្លុះបញ្ចាំងគ្រប់អេក្រង់ (Global Department Sync)៖**
+   * បង្កើត API `GET /api/departments` ទាញយកដេប៉ាតឺម៉ង់ និងជំនាញទាំងអស់ដែលធ្លាប់បង្កើតក្នុង DB (ទាំងពីតារាង `users` និង `classes`) បូកបញ្ចូលជាមួយ Preset ដេប៉ាតឺម៉ង់។
+   * ប្តូរប្រអប់ "ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ" លើផ្ទាំង **បង្កើត/កែប្រែគ្រូបង្រៀន (`admin_lecturers_screen.dart`)**, **បង្កើត/កែប្រែសិស្ស (`admin_students_screen.dart`)**, និង **បង្កើត/កែប្រែថ្នាក់រៀន (`admin_classes_screen.dart`)** ពី Dropdown ចងស្លាប់ មកជា `EditableComboField` អាចវាយបញ្ចូលដោយដៃសេរី ឬរើសពីបញ្ជីរហ័ស។
+   * ពេល Admin វាយឈ្មោះដេប៉ាតឺម៉ង់ថ្មីណាមួយ ប្រព័ន្ធនឹង Register និង Sync ចូល `ClassService` ភ្លាមៗ ធ្វើឱ្យឈ្មោះដេប៉ាតឺម៉ង់ថ្មីនោះលេចចេញក្នុងបញ្ជីជ្រើសរើសនៃគ្រប់ផ្ទាំង (សិស្ស, ថ្នាក់រៀន, គ្រូ, ផ្ទាំង Import, និង Dropdown Filter) ដោយស្វ័យប្រវត្តិ។
+6. **ជួសជុល និង Sync ទិន្នន័យក្រោយដាច់ភ្លើង (NTFS Healing & Recovery)៖**
    * ជួសជុល File 0-byte ក្នុង `.git` និង `vendor` ពី Backup mirror ស្អាតស្អំ ១០០%។
-   * ធ្វើតេស្ត `php artisan test` ឆ្លងកាត់ទាំង **17 passed (136 assertions)**, `flutter analyze` ទាំង Mobile និង Web **No issues found**។
+   * ធ្វើតេស្ត `php artisan test` ឆ្លងកាត់ទាំង **18 passed (141 assertions)**, `flutter analyze` ទាំង Mobile និង Web **No issues found**។
 
 ---
 

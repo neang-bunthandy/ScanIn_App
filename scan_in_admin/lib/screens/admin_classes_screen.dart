@@ -63,6 +63,9 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
   void initState() {
     super.initState();
     _currentUser = AuthService.cachedUser;
+    ClassService.fetchDepartments().then((_) {
+      if (mounted) setState(() {});
+    });
     final cached = ClassService.cachedClasses;
     if (cached != null) {
       _classes = _filterForRole(cached, _currentUser);
@@ -97,8 +100,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     }
   }
 
-  static const List<String> _presetDepartments = ClassService.presetDepartments;
-
   /// បើកផ្ទាំង Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន
   Future<void> _openCreateClassDialog() async {
     final nameCtrl = TextEditingController();
@@ -117,7 +118,10 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     final generationCtrl = TextEditingController();
     String selectedSemester = '1';
     String selectedDay = 'ច័ន្ទ (Mon)';
-    String selectedDepartment = _presetDepartments.first;
+    final deptCtrl = TextEditingController(text: ClassService.presetDepartments.first);
+    final deptOptions = ClassService.buildDepartmentOptions(
+      _classes.map((c) => c.department ?? ''),
+    );
     int selectedYearLevel = 1;
     int? selectedLecturerId;
 
@@ -330,23 +334,12 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                         },
                       ),
                       const SizedBox(height: 14),
-                      DropdownButtonFormField<String>(
-                        initialValue: selectedDepartment,
-                        decoration: InputDecoration(
-                          labelText: AppLanguage.tr('សម្រាប់ដេប៉ាតឺម៉ង់ / ជំនាញ (Department)', 'Target Department'),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          prefixIcon: const Icon(Icons.account_balance_outlined, color: AppColors.primary),
-                        ),
-                        items: _presetDepartments.map((dept) {
-                          return DropdownMenuItem<String>(
-                            value: dept,
-                            child: Text(dept, overflow: TextOverflow.ellipsis),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setDlgState(() => selectedDepartment = val);
-                        },
+                      EditableComboField(
+                        controller: deptCtrl,
+                        labelText: AppLanguage.tr('សម្រាប់ដេប៉ាតឺម៉ង់ / ជំនាញ (Department)', 'Target Department'),
+                        hintText: 'ឧ. ព័ត៌មានវិទ្យា (IT) ឬវាយបញ្ចូលថ្មី',
+                        prefixIcon: Icons.account_balance_outlined,
+                        suggestions: deptOptions,
                       ),
                       const SizedBox(height: 14),
                       Row(
@@ -426,10 +419,15 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       return;
                     }
 
+                    final deptVal = deptCtrl.text.trim().isNotEmpty
+                        ? deptCtrl.text.trim()
+                        : ClassService.presetDepartments.first;
+                    ClassService.registerCustomDepartment(deptVal);
+
                     final success = await ClassService.createClassAdmin(
                       subjectName: nameCtrl.text.trim(),
                       subjectCode: codeCtrl.text.trim().toUpperCase(),
-                      department: selectedDepartment,
+                      department: deptVal,
                       generation: generationCtrl.text.trim(),
                       yearLevel: selectedYearLevel,
                       lecturerId: selectedLecturerId ?? 1,
@@ -488,13 +486,14 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     );
     String selectedSemester = c.semester.isNotEmpty ? c.semester : '1';
     String selectedDay = c.dayOfWeek.isNotEmpty ? c.dayOfWeek : 'ច័ន្ទ (Mon)';
-    final deptOptions = List<String>.from(_presetDepartments);
-    if (c.department != null && c.department!.isNotEmpty && !deptOptions.contains(c.department)) {
-      deptOptions.insert(0, c.department!);
-    }
-    String selectedDepartment = (c.department != null && c.department!.isNotEmpty)
-        ? c.department!
-        : deptOptions.first;
+    final deptOptions = ClassService.buildDepartmentOptions(
+      _classes.map((item) => item.department ?? ''),
+    );
+    final deptCtrl = TextEditingController(
+      text: (c.department != null && c.department!.isNotEmpty)
+          ? c.department!
+          : ClassService.presetDepartments.first,
+    );
     int selectedYearLevel = (c.yearLevel != null && c.yearLevel! >= 1 && c.yearLevel! <= 4)
         ? c.yearLevel!
         : 1;
@@ -675,23 +674,12 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                         },
                       ),
                       const SizedBox(height: 14),
-                      DropdownButtonFormField<String>(
-                        initialValue: selectedDepartment,
-                        decoration: InputDecoration(
-                          labelText: AppLanguage.tr('សម្រាប់ដេប៉ាតឺម៉ង់ / ជំនាញ (Department)', 'Target Department'),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          prefixIcon: const Icon(Icons.account_balance_outlined, color: AppColors.primary),
-                        ),
-                        items: deptOptions.map((dept) {
-                          return DropdownMenuItem<String>(
-                            value: dept,
-                            child: Text(dept, overflow: TextOverflow.ellipsis),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setDlgState(() => selectedDepartment = val);
-                        },
+                      EditableComboField(
+                        controller: deptCtrl,
+                        labelText: AppLanguage.tr('សម្រាប់ដេប៉ាតឺម៉ង់ / ជំនាញ (Department)', 'Target Department'),
+                        hintText: 'ឧ. ព័ត៌មានវិទ្យា (IT) ឬវាយបញ្ចូលថ្មី',
+                        prefixIcon: Icons.account_balance_outlined,
+                        suggestions: deptOptions,
                       ),
                       const SizedBox(height: 14),
                       Row(
@@ -800,11 +788,16 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       return;
                     }
 
+                    final deptVal = deptCtrl.text.trim().isNotEmpty
+                        ? deptCtrl.text.trim()
+                        : ClassService.presetDepartments.first;
+                    ClassService.registerCustomDepartment(deptVal);
+
                     final success = await ClassService.updateClassAdmin(
                       id: c.id,
                       subjectName: nameCtrl.text.trim(),
                       subjectCode: codeCtrl.text.trim().toUpperCase(),
-                      department: selectedDepartment,
+                      department: deptVal,
                       generation: generationCtrl.text.trim(),
                       yearLevel: selectedYearLevel,
                       lecturerId: selectedLecturerId,
