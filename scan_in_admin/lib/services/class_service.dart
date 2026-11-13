@@ -232,6 +232,28 @@ class ClassService {
     return false;
   }
 
+  /// ទាញយកបញ្ជីឈ្មោះនិស្សិតក្នុងថ្នាក់តាមដេប៉ាតឺម៉ង់ (Class Roster) ពី Backend
+  static Future<List<Map<String, dynamic>>> getClassStudents(int classId) async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.get(
+        Uri.parse(ApiConfig.classStudentsUrl(classId)),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['status'] == true && data['data'] != null) {
+          return List<Map<String, dynamic>>.from(data['data']);
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
   /// ទាញយកបញ្ជីគ្រូបង្រៀនទាំងអស់សម្រាប់ Admin ជ្រើសរើសចាត់តាំងថ្នាក់រៀន
   static Future<List<Map<String, dynamic>>> getLecturers() async {
     try {

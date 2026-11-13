@@ -114,6 +114,7 @@
 | 24 | **Admin កែប្រែ / លុបគណនីសិស្ស** | `lib/screens/admin_students_screen.dart` | ✅ **រួចរាល់** | មានប៊ូតុង Actions (Edit & Delete) កែសម្រួលព័ត៌មាន/Password និងលុបគណនីសិស្សព្រមទាំង Attendance ពាក់ព័ន្ធតាម `PUT/DELETE /api/students/{id}` ចូល DB |
 | 24.1 | **Admin Import សិស្សពី Excel/CSV** | `lib/screens/admin_students_screen.dart` | ✅ **រួចរាល់** | Import សិស្សជាក្រុមពី Excel/CSV, បង្កើតគណនីស្វ័យប្រវត្តិតាមជួរ (ឈ្មោះ, អត្តលេខ, ភេទ, ថ្ងៃកំណើត, អ៊ីមែល, ដេប៉ាតឺម៉ង់, ទូរស័ព្ទ) តាម `POST /api/students/import` ចូល DB |
 | 25 | **មើលបញ្ជីថ្នាក់រៀន & ចាត់តាំងគ្រូ** | `lib/screens/admin_classes_screen.dart` | ✅ **រួចរាល់** | ទាញយកថ្នាក់រៀនទាំងអស់ (Admin) ឬថ្នាក់ផ្ទាល់ខ្លួន (គ្រូ) តាម `GET /api/classes` ពី DB |
+| 25.1 | **មើលបញ្ជីសិស្សក្នុងថ្នាក់ (Class Roster)** | `lib/screens/admin_classes_screen.dart` | ✅ **រួចរាល់** | ប៊ូតុង `[បញ្ជីសិស្ស]` បើក Popup បង្ហាញបញ្ជីឈ្មោះសិស្សពិតក្នុងថ្នាក់តាម DB (ឈ្មោះខ្មែរ/ឡាតាំង, អត្តលេខ, ភេទ, ទូរស័ព្ទ, វត្តមានថ្ងៃនេះ) តាម `GET /api/classes/{id}/students` |
 | 26 | **Admin បង្កើតថ្នាក់រៀនកណ្តាល** | `lib/screens/admin_classes_screen.dart` | ✅ **រួចរាល់** | បង្កើតថ្នាក់ (ឆ្នាំ, ឆមាស, កូដ, ឈ្មោះ, បន្ទប់, ម៉ោង, គ្រូ) តាម `POST /api/classes` ចូល DB |
 | 27 | **Admin កែប្រែ / លុបថ្នាក់រៀន** | `lib/screens/admin_classes_screen.dart` | ✅ **រួចរាល់** | មានប៊ូតុង Actions (Edit & Delete) កែប្រែព័ត៌មាន និងលុបថ្នាក់រៀនព្រមទាំង Attendance ពាក់ព័ន្ធតាម `PUT/DELETE /api/classes/{id}` ចូល DB |
 | 28 | **គ្រូបញ្ចាំង Dynamic QR Projector** | `lib/screens/admin_classes_screen.dart` | ✅ **រួចរាល់** | Projector Fullscreen លើ Laptop, Toggle QR តាម `POST /api/classes/{id}/toggle-qr` ចូល DB |
@@ -121,7 +122,7 @@
 | 30 | **កែប្រែវត្តមាន & Note លើ Web** | `lib/screens/admin_attendances_screen.dart` | ✅ **រួចរាល់** | ប៊ូតុង "កែប្រែ" ប្តូរ Status និង Quick Note តាម `PUT /api/attendances/{id}` ចូល DB ភ្លាមៗ |
 | 31 | **ស្ថិតិនិស្សិត & ប្រវត្តិតាមឆ្នាំ (Admin Only)** | `lib/screens/admin_student_stats_screen.dart` | ✅ **រួចរាល់** | ម៉ឺនុយរងក្រោម `របាយការណ៍` សរុបនិស្សិតអចិន្ត្រៃយ៍ (Active/Graduated/Inactive) តាម ឆ្នាំចូលរៀន × គ្រប់ជំនាញ + CSV Copy |
 | 32 | **ប្តូរស្ថានភាព & ដំឡើងឆ្នាំសិក្សាជាក្រុម** | `lib/screens/admin_students_screen.dart` | ✅ **រួចរាល់** | ប្តូរស្ថានភាព (`Active/Graduated/Inactive`) តាម `POST /api/students/bulk-status` និងដំឡើងឆ្នាំតាម `POST /api/students/promote` |
-| 33 | **Export របាយការណ៍វត្តមាន (Excel/PDF)**| `lib/screens/admin_attendances_screen.dart` | ⏳ **នៅ** | មិនទាន់មានប៊ូតុងទាញយកជារបាយការណ៍ Excel ឬ PDF ផ្ទាល់ពីតារាងវត្តមាន |
+| 33 | **Export របាយការណ៍វត្តមាន (CSV / Excel)**| `lib/screens/admin_attendances_screen.dart` | ✅ **រួចរាល់** | ប៊ូតុង `[Export CSV]` ចម្លងទិន្នន័យវត្តមានសិស្សតាមថ្នាក់ជា CSV សម្រាប់យកទៅ Paste ចូល Excel ភ្លាមៗ |
 
 ---
 

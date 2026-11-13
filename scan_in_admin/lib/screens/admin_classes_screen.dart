@@ -920,6 +920,219 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     );
   }
 
+  /// បើកផ្ទាំងមើលបញ្ជីឈ្មោះនិស្សិតក្នុងថ្នាក់ (Enrolled Students Roster Dialog)
+  void _openClassRosterDialog(ClassModel c) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+        final borderCol = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+        final textCol = isDark ? Colors.white : AppColors.textPrimary;
+        final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
+
+        return AlertDialog(
+          backgroundColor: cardBg,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.people_alt_rounded, color: Color(0xFF10B981), size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLanguage.tr('បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់', 'Class Student Roster'),
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: textCol),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${c.subjectName} (${c.subjectCode}) · ${c.department ?? "គ្មានដេប៉ាតឺម៉ង់"}${c.yearLevel != null ? " · ឆ្នាំទី ${c.yearLevel}" : ""}${c.generation != null && c.generation!.isNotEmpty ? " · ${c.generation}" : ""}',
+                      style: TextStyle(fontSize: 12, color: subTextCol),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close_rounded, size: 20),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 820,
+            height: 480,
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: ClassService.getClassStudents(c.id),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                }
+                final students = snapshot.data ?? [];
+                if (students.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.people_outline_rounded, size: 48, color: subTextCol),
+                        const SizedBox(height: 12),
+                        Text(
+                          AppLanguage.tr(
+                            'មិនទាន់មាននិស្សិតក្នុងថ្នាក់នេះនៅឡើយទេ',
+                            'No students enrolled in this class yet',
+                          ),
+                          style: TextStyle(fontSize: 14, color: textCol, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          AppLanguage.tr(
+                            'ប្រព័ន្ធច្រោះតាម ដេប៉ាតឺម៉ង់ (${c.department ?? "មិនទាន់កំណត់"}) ឆ្នាំទី (${c.yearLevel ?? "ទាំងអស់"}) និងស្ថានភាព Active',
+                            'Filtered by Department (${c.department ?? "None"}), Year (${c.yearLevel ?? "All"}), and Active status',
+                          ),
+                          style: TextStyle(fontSize: 12, color: subTextCol),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: [
+                    // Summary bar
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline_rounded, size: 16, color: subTextCol),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${AppLanguage.tr("សិស្សសរុប៖", "Total Students:")} ${students.length} ${AppLanguage.tr("នាក់", "students")}',
+                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: textCol),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '${AppLanguage.tr("វត្តមានថ្ងៃនេះ៖", "Present Today:")} ${students.where((s) => (s["today_status"] ?? "").toString() == "present").length} ${AppLanguage.tr("នាក់", "students")}',
+                            style: const TextStyle(fontSize: 12, color: Color(0xFF16A34A), fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Scrollbar(
+                        thumbVisibility: true,
+                        child: SingleChildScrollView(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: DataTable(
+                              headingRowColor: WidgetStateProperty.all(
+                                isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                              ),
+                              border: TableBorder.all(color: borderCol, width: 0.5, borderRadius: BorderRadius.circular(8)),
+                              columns: [
+                                const DataColumn(label: Text('#', style: TextStyle(fontWeight: FontWeight.bold))),
+                                DataColumn(label: Text(AppLanguage.tr('អត្តលេខ', 'Code'), style: const TextStyle(fontWeight: FontWeight.bold))),
+                                DataColumn(label: Text(AppLanguage.tr('ឈ្មោះនិស្សិត', 'Student Name'), style: const TextStyle(fontWeight: FontWeight.bold))),
+                                DataColumn(label: Text(AppLanguage.tr('ភេទ', 'Gender'), style: const TextStyle(fontWeight: FontWeight.bold))),
+                                DataColumn(label: Text(AppLanguage.tr('លេខទូរស័ព្ទ', 'Phone'), style: const TextStyle(fontWeight: FontWeight.bold))),
+                                DataColumn(label: Text(AppLanguage.tr('វត្តមានថ្ងៃនេះ', 'Today Status'), style: const TextStyle(fontWeight: FontWeight.bold))),
+                              ],
+                              rows: List.generate(students.length, (index) {
+                                final s = students[index];
+                                final name = (s['name'] ?? '').toString();
+                                final latinName = (s['latin_name'] ?? '').toString();
+                                final code = (s['student_code'] ?? '-').toString();
+                                final gender = (s['gender'] ?? '-').toString();
+                                final phone = (s['phone'] ?? '-').toString();
+                                final todayStatus = (s['today_status'] ?? '').toString();
+
+                                final bool isPresent = todayStatus == 'present';
+                                final bool isLate = todayStatus == 'late';
+
+                                final Color badgeBg = isPresent
+                                    ? const Color(0xFF16A34A).withValues(alpha: 0.15)
+                                    : isLate
+                                        ? const Color(0xFFF59E0B).withValues(alpha: 0.15)
+                                        : (isDark ? const Color(0xFF334155).withValues(alpha: 0.3) : const Color(0xFFE2E8F0));
+                                final Color badgeText = isPresent
+                                    ? const Color(0xFF16A34A)
+                                    : isLate
+                                        ? const Color(0xFFD97706)
+                                        : subTextCol;
+                                final String statusLabel = isPresent
+                                    ? AppLanguage.tr('✓ វត្តមាន', '✓ Present')
+                                    : isLate
+                                        ? AppLanguage.tr('⏰ យឺត', '⏰ Late')
+                                        : AppLanguage.tr('○ មិនទាន់ស្កេន', '○ Not Scanned');
+
+                                return DataRow(
+                                  cells: [
+                                    DataCell(Text('${index + 1}', style: TextStyle(color: subTextCol, fontSize: 12))),
+                                    DataCell(Text(code, style: TextStyle(fontWeight: FontWeight.w600, color: textCol, fontSize: 12.5))),
+                                    DataCell(
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(name, style: TextStyle(fontWeight: FontWeight.bold, color: textCol, fontSize: 13)),
+                                          if (latinName.isNotEmpty)
+                                            Text(latinName, style: TextStyle(fontSize: 11, color: subTextCol)),
+                                        ],
+                                      ),
+                                    ),
+                                    DataCell(Text(gender, style: TextStyle(color: textCol, fontSize: 12))),
+                                    DataCell(Text(phone, style: TextStyle(color: textCol, fontSize: 12))),
+                                    DataCell(
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: badgeBg,
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          statusLabel,
+                                          style: TextStyle(color: badgeText, fontSize: 11, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(AppLanguage.tr('បិទ', 'Close'), style: TextStyle(color: textCol)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1313,6 +1526,19 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                               elevation: 0,
                                             ),
                                             onPressed: () => _openProjectorModal(c),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          // ប៊ូតុងមើលបញ្ជីសិស្សក្នុងថ្នាក់ (Class Roster)
+                                          OutlinedButton.icon(
+                                            icon: const Icon(Icons.people_alt_outlined, size: 16),
+                                            label: Text(AppLanguage.tr('បញ្ជីសិស្ស', 'Roster')),
+                                            style: OutlinedButton.styleFrom(
+                                              foregroundColor: const Color(0xFF10B981),
+                                              side: const BorderSide(color: Color(0xFF10B981)),
+                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            ),
+                                            onPressed: () => _openClassRosterDialog(c),
                                           ),
                                           const SizedBox(width: 8),
                                           // ប៊ូតុងមើលវត្តមាន

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_routes.dart';
@@ -100,6 +101,69 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  /// ទាញយក ឬចម្លងរបាយការណ៍វត្តមានជាទម្រង់ CSV / Excel
+  void _exportAttendanceCsv() {
+    if (_attendances.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLanguage.tr(
+            'គ្មានកំណត់ត្រាវត្តមានសម្រាប់ Export ទេ',
+            'No attendance records to export',
+          )),
+        ),
+      );
+      return;
+    }
+
+    final selectedClass = _classes.where((c) => c.id == _selectedClassId).firstOrNull;
+
+    final header = [
+      '#',
+      'Student Code',
+      'Student Name',
+      'Class Code',
+      'Class Name',
+      'Date',
+      'Time Scanned',
+      'Status',
+      'Note / Reason',
+    ].join(',');
+
+    final rows = _attendances.asMap().entries.map((entry) {
+      final idx = entry.key + 1;
+      final a = entry.value;
+      final scanTime = a.scannedAt != null
+          ? '${a.scannedAt!.hour.toString().padLeft(2, '0')}:${a.scannedAt!.minute.toString().padLeft(2, '0')}'
+          : '-';
+      return [
+        idx,
+        '"${a.studentCode}"',
+        '"${a.studentName}"',
+        '"${a.subjectCode ?? selectedClass?.subjectCode ?? ''}"',
+        '"${a.subjectName ?? selectedClass?.subjectName ?? ''}"',
+        '"${a.date}"',
+        '"$scanTime"',
+        '"${a.statusText}"',
+        '"${(a.note ?? '').replaceAll('"', '""')}"',
+      ].join(',');
+    });
+
+    final csv = [header, ...rows].join('\n');
+    Clipboard.setData(ClipboardData(text: csv));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLanguage.tr(
+          'បានចម្លងរបាយការណ៍វត្តមាន (${_attendances.length} នាក់) ជា CSV រួចរាល់! អាច Paste ចូល Excel បានភ្លាមៗ។',
+          'Copied attendance CSV (${_attendances.length} records) to clipboard! Ready to paste into Excel.',
+        )),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   /// បើកផ្ទាំង Dialog ឱ្យគ្រូ ឬ Admin កែប្រែស្ថានភាពវត្តមានសិស្សជាក់ស្តែង
@@ -471,6 +535,18 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.download_rounded, size: 16),
+                        label: Text(AppLanguage.tr('Export CSV', 'Export CSV')),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF10B981),
+                          side: const BorderSide(color: Color(0xFF10B981)),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: _attendances.isEmpty ? null : _exportAttendanceCsv,
+                      ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
