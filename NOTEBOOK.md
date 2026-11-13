@@ -123,10 +123,32 @@
 | 31 | **ស្ថិតិនិស្សិត & ប្រវត្តិតាមឆ្នាំ (Admin Only)** | `lib/screens/admin_student_stats_screen.dart` | ✅ **រួចរាល់** | ម៉ឺនុយរងក្រោម `របាយការណ៍` សរុបនិស្សិតអចិន្ត្រៃយ៍ (Active/Graduated/Inactive) តាម ឆ្នាំចូលរៀន × គ្រប់ជំនាញ + CSV Copy |
 | 32 | **ប្តូរស្ថានភាព & ដំឡើងឆ្នាំសិក្សាជាក្រុម** | `lib/screens/admin_students_screen.dart` | ✅ **រួចរាល់** | ប្តូរស្ថានភាព (`Active/Graduated/Inactive`) តាម `POST /api/students/bulk-status` និងដំឡើងឆ្នាំតាម `POST /api/students/promote` |
 | 33 | **Export របាយការណ៍វត្តមាន (CSV / Excel)**| `lib/screens/admin_attendances_screen.dart` | ✅ **រួចរាល់** | ប៊ូតុង `[Export CSV]` ចម្លងទិន្នន័យវត្តមានសិស្សតាមថ្នាក់ជា CSV សម្រាប់យកទៅ Paste ចូល Excel ភ្លាមៗ |
+| 34 | **បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់ (Enrolled Students Roster)** | `lib/screens/admin_classes_screen.dart` | ✅ **រួចរាល់** | ប៊ូតុង `[បញ្ជីសិស្ស]` បង្ហាញ Modal បញ្ជីឈ្មោះសិស្សតាមថ្នាក់ពិតពី DB (`GET /api/classes/{id}/students`) ជាមួយ Badge វត្តមានថ្ងៃនេះ |
+| 35 | **Batch Import សិស្ស & Smart Normalization** | `lib/screens/admin_students_screen.dart` | ✅ **រួចរាល់** | ផ្ទាំង Import សិស្សមានជម្រើសរួម (ជំនាន់, ឆ្នាំចូលរៀន, ឆ្នាំទី, ដេប៉ាតឺម៉ង់), Auto-map ឈ្មោះជំនាញពី English ទៅខ្មែរ, និង Scrollbar អូស Mouse សកម្មភាព |
 
 ---
 
 ## ៥. សេចក្តីសង្ខេប និងកិច្ចការបន្ត (Summary & Next Steps)
+
+### 📅 កំណត់ត្រាកិច្ចការដែលបានសម្រេច (13/11/2026)៖
+1. **បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់រៀន (Class Student Roster Dialog)៖**
+   * បន្ថែម `ClassService.getClassStudents(classId)` ហៅទៅ API `GET /api/classes/{id}/students`។
+   * បន្ថែមប៊ូតុង `[បញ្ជីសិស្ស]` ក្នុងតារាងថ្នាក់រៀន `admin_classes_screen.dart` ដើម្បីបើក Modal មើលឈ្មោះខ្មែរ, ឈ្មោះឡាតាំង, អត្តលេខ, ភេទ, លេខទូរស័ព្ទ និងស្ថានភាពវត្តមានថ្ងៃនេះ។
+2. **Export វត្តមានតាមថ្នាក់ជា CSV៖**
+   * បន្ថែមប៊ូតុង `[Export CSV]` លើ `admin_attendances_screen.dart` អាចទាញយកទិន្នន័យវត្តមានសិស្សទាំងអស់ជា CSV ទៅបើកក្នុង Microsoft Excel ភ្លាមៗ។
+3. **កែលម្អការ Import សិស្សពី Excel / CSV និង Horizontal Drag៖**
+   * បន្ថែមប្រអប់កំណត់តម្លៃរួម (Batch Defaults) ក្នុងផ្ទាំង Import ៖ ជំនាន់ (Generation), ចាប់ពីឆ្នាំ (Intake Year), ឆ្នាំទី (Year Level), ដេប៉ាតឺម៉ង់លំនាំដើម។
+   * គាំទ្រទាំងទម្រង់ពេញលេញ ១១ ជួរឈរ និងទម្រង់ចាស់ ៧ ជួរឈរ ដោយបំពេញជំនាន់/ឆ្នាំទីស្វ័យប្រវត្តិ (មិនឱ្យសិស្សជាប់ស្ថានភាព "មិនទាន់កំណត់ឆ្នាំទី" ទៀតឡើយ)។
+   * បន្ថែមមុខងារ Smart Department Normalization ទាំងខាង Backend និង Web Admin (ឧ. "Information Technology" -> "ព័ត៌មានវិទ្យា (IT)", "Computer Science" -> "វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS)")។
+   * បំពាក់ `ScrollConfiguration` គាំទ្រ Mouse Drag និង `Scrollbar` ជាប់ជាមួយ `_horizontalScrollCtrl` ទាំងលើតារាងសិស្ស និងតារាងថ្នាក់រៀន ជួយឱ្យ User អាចអូសទៅស្ដាំមើលជួរឈរ "សកម្មភាព (Actions)" បានយ៉ាងរលូន។
+4. **អនុញ្ញាតឱ្យកំណត់ដោយដៃ (Dynamic & Manual Entry) មិនចងស្លាប់លើ Dropdown៖**
+   * ពង្រីក `buildIntakeYearOptions`, `buildAcademicYearOptions`, និង `buildGenerationOptions` ក្នុង `ClassService` ឱ្យបង្កើតជម្រើសឆ្លាតវៃវែងឆ្ងាយ (ជំនាន់ទី ១០–៣០, ឆ្នាំ ២០២០–២០៣៥+) មិនបាច់សរសេរកូដសារជាថ្មីពេលឆ្លងឆ្នាំ។
+   * គ្រប់ប្រអប់បញ្ចូលប្រើ `EditableComboField` ដែលអាចឱ្យ Admin វាយតម្លៃណាមួយដោយដៃផ្ទាល់ក៏បាន ឬចុចរើសពីបញ្ជីរហ័សក៏បាន។
+5. **ជួសជុល និង Sync ទិន្នន័យក្រោយដាច់ភ្លើង (NTFS Healing & Recovery)៖**
+   * ជួសជុល File 0-byte ក្នុង `.git` និង `vendor` ពី Backup mirror ស្អាតស្អំ ១០០%។
+   * ធ្វើតេស្ត `php artisan test` ឆ្លងកាត់ទាំង **17 passed (136 assertions)**, `flutter analyze` ទាំង Mobile និង Web **No issues found**។
+
+---
 
 ### 📅 កំណត់ត្រាកិច្ចការដែលបានសម្រេចថ្ងៃនេះ (Completed Today — 12/11/2026)៖
 1. **ការពារសិទ្ធិថ្នាក់រៀន (Role & Ownership Isolation)៖**

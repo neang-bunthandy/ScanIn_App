@@ -288,10 +288,33 @@ Route::post('/students/import', function (Request $request) {
         $gender = trim($row['gender'] ?? $row['sex'] ?? '');
         $dob = trim($row['date_of_birth'] ?? $row['dob'] ?? '');
         $dept = trim($row['department'] ?? $row['major'] ?? 'General');
+        // Auto-normalize department name if English/abbreviation passed
+        $deptLower = strtolower($dept);
+        if (str_contains($deptLower, 'information technology') || $deptLower === 'it') {
+            $dept = 'ព័ត៌មានវិទ្យា (IT)';
+        } elseif (str_contains($deptLower, 'computer science') || $deptLower === 'cs') {
+            $dept = 'វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS)';
+        } elseif (str_contains($deptLower, 'software engineering') || $deptLower === 'se') {
+            $dept = 'វិស្វកម្មសូហ្វវែរ (SE)';
+        } elseif (str_contains($deptLower, 'business') || $deptLower === 'bba') {
+            $dept = 'គ្រប់គ្រងពាណិជ្ជកម្ម (BBA)';
+        } elseif (str_contains($deptLower, 'accounting') || str_contains($deptLower, 'finance')) {
+            $dept = 'គណនេយ្យ និងហិរញ្ញវត្ថុ (Accounting)';
+        } elseif (str_contains($deptLower, 'english')) {
+            $dept = 'ភាសាអង់គ្លេស (English)';
+        } elseif (str_contains($deptLower, 'civil')) {
+            $dept = 'វិស្វកម្មសំណង់ស៊ីវិល (Civil Engineering)';
+        }
+
         $generation = trim($row['generation'] ?? $row['batch'] ?? '');
         $intakeYear = trim($row['intake_year'] ?? $row['start_year'] ?? '');
         $yearLevelRaw = $row['year_level'] ?? $row['year'] ?? null;
         $yearLevel = is_numeric($yearLevelRaw) ? (int)$yearLevelRaw : null;
+        // Auto-suggest year_level from intake_year if not set
+        if ($yearLevel === null && !empty($intakeYear) && is_numeric($intakeYear)) {
+            $diff = (int)date('Y') - (int)$intakeYear + 1;
+            $yearLevel = max(1, min(4, $diff));
+        }
         $statusRaw = strtolower(trim($row['status'] ?? 'active'));
         $statusVal = in_array($statusRaw, ['active', 'graduated', 'inactive'], true) ? $statusRaw : 'active';
         $phone = trim($row['phone'] ?? $row['tel'] ?? '');

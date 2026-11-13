@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_routes.dart';
@@ -16,6 +17,7 @@ class AdminStudentsScreen extends StatefulWidget {
 }
 
 class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
+  final ScrollController _horizontalScrollCtrl = ScrollController();
   List<Map<String, dynamic>> _students = [];
   UserModel? _currentUser;
   bool _isLoading = true;
@@ -24,6 +26,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   int? _filterYearLevel;
   String? _filterDepartment;
   String? _filterStatus;
+
+  @override
+  void dispose() {
+    _horizontalScrollCtrl.dispose();
+    super.dispose();
+  }
 
   List<Map<String, dynamic>> get _filteredStudents {
     return _students.where((stu) {
@@ -867,6 +875,18 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final csvTextCtrl = TextEditingController();
     List<Map<String, dynamic>> parsedStudents = [];
 
+    final batchGenCtrl = TextEditingController(text: 'ជំនាន់ទី ១៦ (Gen 16)');
+    final batchIntakeCtrl = TextEditingController(text: '2024');
+    int batchYearLevel = 2;
+    String batchDept = ClassService.presetDepartments.first;
+
+    final genOptions = ClassService.buildGenerationOptions(
+      _students.map((s) => (s['generation'] ?? '').toString()),
+    );
+    final intakeOptions = ClassService.buildIntakeYearOptions(
+      _students.map((s) => (s['intake_year'] ?? '').toString()),
+    );
+
     void parseCsv(String text, void Function(void Function()) setDlgState) {
       final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
       final list = <Map<String, dynamic>>[];
@@ -886,25 +906,58 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
         if (parts.length >= 2) {
           final code = parts[0];
           final name = parts[1];
-          final gender = parts.length > 2 && parts[2].isNotEmpty ? parts[2] : 'ប្រុស';
-          final dob = parts.length > 3 ? parts[3] : '';
-          final email = parts.length > 4 && parts[4].isNotEmpty ? parts[4] : '${code.toLowerCase()}@student.scanin.app';
-          final dept = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : 'វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS)';
-          final phone = parts.length > 6 ? parts[6] : '';
-          final latinName = parts.length > 7 ? parts[7] : '';
+          if (code.isEmpty || name.isEmpty) continue;
 
-          if (code.isNotEmpty && name.isNotEmpty) {
-            list.add({
-              'student_code': code,
-              'name': name,
-              if (latinName.isNotEmpty) 'latin_name': latinName,
-              'gender': gender,
-              'date_of_birth': dob,
-              'email': email,
-              'department': dept,
-              'phone': phone,
-            });
+          String latinName = '';
+          String gender = 'ប្រុស';
+          String dob = '';
+          String email = '';
+          String dept = batchDept;
+          String gen = batchGenCtrl.text.trim();
+          String intake = batchIntakeCtrl.text.trim();
+          int yearLevel = batchYearLevel;
+          String phone = '';
+
+          if (parts.length >= 10) {
+            latinName = parts.length > 2 ? parts[2] : '';
+            gender = parts.length > 3 && parts[3].isNotEmpty ? parts[3] : 'ប្រុស';
+            dob = parts.length > 4 ? parts[4] : '';
+            email = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : '@student.scanin.app';
+            dept = parts.length > 6 && parts[6].isNotEmpty ? parts[6] : batchDept;
+            if (parts.length > 7 && parts[7].isNotEmpty) gen = parts[7];
+            if (parts.length > 8 && parts[8].isNotEmpty) intake = parts[8];
+            if (parts.length > 9 && parts[9].isNotEmpty && int.tryParse(parts[9]) != null) {
+              yearLevel = int.parse(parts[9]);
+            }
+            phone = parts.length > 10 ? parts[10] : '';
+          } else {
+            gender = parts.length > 2 && parts[2].isNotEmpty ? parts[2] : 'ប្រុស';
+            dob = parts.length > 3 ? parts[3] : '';
+            email = parts.length > 4 && parts[4].isNotEmpty ? parts[4] : '@student.scanin.app';
+            dept = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : batchDept;
+            phone = parts.length > 6 ? parts[6] : '';
+            if (parts.length > 7) latinName = parts[7];
           }
+
+          dept = ClassService.normalizeDepartment(dept);
+          if (email.isEmpty) {
+            email = '@student.scanin.app';
+          }
+
+          list.add({
+            'student_code': code,
+            'name': name,
+            if (latinName.isNotEmpty) 'latin_name': latinName,
+            'gender': gender,
+            'date_of_birth': dob,
+            'email': email,
+            'department': dept,
+            'generation': gen,
+            'intake_year': intake,
+            'year_level': yearLevel,
+            'status': 'active',
+            'phone': phone,
+          });
         }
       }
       setDlgState(() => parsedStudents = list);
@@ -939,12 +992,111 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                 ],
               ),
               content: SizedBox(
-                width: 580,
+                width: 620,
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // ជម្រើសរួម (Batch Defaults) សម្រាប់សិស្សដែលត្រូវ Import
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLanguage.tr('កំណត់តម្លៃរួម (ពេលជួរឈរក្នុង File មិនមាន)៖', 'Batch Defaults (when omitted in CSV):'),
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: EditableComboField(
+                                    controller: batchGenCtrl,
+                                    labelText: AppLanguage.tr('ជំនាន់រួម (Generation)', 'Batch Generation'),
+                                    hintText: 'ឧ. ជំនាន់ទី ១៦ (Gen 16)',
+                                    suggestions: genOptions,
+                                    onChanged: (_) => parseCsv(csvTextCtrl.text, setDlgState),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  flex: 2,
+                                  child: EditableComboField(
+                                    controller: batchIntakeCtrl,
+                                    labelText: AppLanguage.tr('ចាប់ពីឆ្នាំ', 'Intake Year'),
+                                    hintText: 'ឧ. 2024',
+                                    keyboardType: TextInputType.number,
+                                    suggestions: intakeOptions,
+                                    onChanged: (val) {
+                                      if (val.trim().length == 4 && int.tryParse(val.trim()) != null) {
+                                        setDlgState(() {
+                                          batchYearLevel = ClassService.suggestYearLevelFromIntake(val);
+                                        });
+                                      }
+                                      parseCsv(csvTextCtrl.text, setDlgState);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: DropdownButtonFormField<int>(
+                                    key: ValueKey('import-yl-$batchYearLevel'),
+                                    initialValue: batchYearLevel,
+                                    decoration: InputDecoration(
+                                      labelText: AppLanguage.tr('ឆ្នាំទី (Year Level)', 'Year Level'),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    ),
+                                    items: [1, 2, 3, 4].map(
+                                      (y) => DropdownMenuItem(value: y, child: Text(ClassService.yearLevelLabel(y))),
+                                    ).toList(),
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setDlgState(() => batchYearLevel = val);
+                                        parseCsv(csvTextCtrl.text, setDlgState);
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: DropdownButtonFormField<String>(
+                                    initialValue: batchDept,
+                                    isExpanded: true,
+                                    decoration: InputDecoration(
+                                      labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់លំនាំដើម', 'Default Dept'),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    ),
+                                    items: ClassService.presetDepartments.map(
+                                      (d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis)),
+                                    ).toList(),
+                                    onChanged: (val) {
+                                      if (val != null) {
+                                        setDlgState(() => batchDept = val);
+                                        parseCsv(csvTextCtrl.text, setDlgState);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -964,12 +1116,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                 ),
                                 TextButton.icon(
                                   icon: const Icon(Icons.copy_rounded, size: 14),
-                                  label: Text(AppLanguage.tr('ចម្លងទម្រង់គំរូ', 'Copy Template'), style: const TextStyle(fontSize: 12)),
+                                  label: Text(AppLanguage.tr('ចម្លងទម្រង់គំរូពេញលេញ', 'Copy Full Template'), style: const TextStyle(fontSize: 12)),
                                   onPressed: () {
-                                    const template = 'Student Code,Full Name,Gender,Date of Birth,Email,Department,Phone\n'
-                                        'STU101,សុខ ចាន់ដារ៉ា,ប្រុស,2004-05-15,dara@student.scanin.app,Computer Science,012345678\n'
-                                        'STU102,គង់ ស្រីមុំ,ស្រី,2005-02-20,sreymom@student.scanin.app,Computer Science,098765432\n'
-                                        'STU103,ហេង វិបុល,ប្រុស,2004-11-08,vibol@student.scanin.app,Information Technology,011223344';
+                                    const template = 'Student Code,Full Name,Latin Name,Gender,Date of Birth,Email,Department,Generation,Intake Year,Year Level,Phone\n'
+                                        'STU101,សុខ ចាន់ដារ៉ា,Sok Chandara,ប្រុស,2004-05-15,dara@student.scanin.app,វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS),ជំនាន់ទី ១៦ (Gen 16),2024,2,012345678\n'
+                                        'STU102,គង់ ស្រីមុំ,Kong Sreymom,ស្រី,2005-02-20,sreymom@student.scanin.app,វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS),ជំនាន់ទី ១៦ (Gen 16),2024,2,098765432\n'
+                                        'STU103,ហេង វិបុល,Heng Vibol,ប្រុស,2004-11-08,vibol@student.scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ១៧ (Gen 17),2025,1,011223344';
                                     csvTextCtrl.text = template;
                                     parseCsv(template, setDlgState);
                                   },
@@ -978,13 +1130,13 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Student Code, Full Name, Gender, Date of Birth, Email, Department, Phone',
-                              style: const TextStyle(fontSize: 12, color: AppColors.primary, fontFamily: 'monospace'),
+                              'Code, Name, Latin Name, Gender, DOB, Email, Dept, Generation, Intake Year, Year Level, Phone',
+                              style: const TextStyle(fontSize: 11, color: AppColors.primary, fontFamily: 'monospace'),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       Text(
                         AppLanguage.tr(
                           'បិទភ្ជាប់ (Paste) ទិន្នន័យពី Excel ឬ CSV ចូលក្នុងប្រអប់ខាងក្រោម៖',
@@ -998,7 +1150,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                         maxLines: 7,
                         onChanged: (val) => parseCsv(val, setDlgState),
                         decoration: InputDecoration(
-                          hintText: 'STU101,សុខ ចាន់ដារ៉ា,ប្រុស,2004-05-15,dara@student.scanin.app,Computer Science,012345678\nSTU102,គង់ ស្រីមុំ,ស្រី,2005-02-20,sreymom@student.scanin.app,Computer Science,098765432',
+                          hintText: 'STU101,សុខ ចាន់ដារ៉ា,Sok Chandara,ប្រុស,2004-05-15,dara@student.scanin.app,CS,Gen 16,2024,2,012345678',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                           contentPadding: const EdgeInsets.all(12),
                         ),
@@ -1015,8 +1167,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                           const SizedBox(width: 8),
                           Text(
                             AppLanguage.tr(
-                              'រកឃើញសិស្សត្រឹមត្រូវ៖ ${parsedStudents.length} នាក់',
-                              'Detected valid students: ${parsedStudents.length}',
+                              'រកឃើញសិស្សត្រឹមត្រូវ៖  នាក់',
+                              'Detected valid students: ',
                             ),
                             style: TextStyle(
                               fontSize: 13,
@@ -1673,27 +1825,48 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                         else
                           LayoutBuilder(
                             builder: (context, tableConstraints) {
-                              return SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(minWidth: tableConstraints.maxWidth),
-                                  child: DataTable(
-                                    headingRowColor: WidgetStateProperty.all(
-                                      isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                                    ),
-                                    columns: [
-                                      DataColumn(label: Text(AppLanguage.tr('ID', 'ID'))),
-                                      DataColumn(label: Text(AppLanguage.tr('អត្តលេខសិស្ស', 'Student ID'))),
-                                      DataColumn(label: Text(AppLanguage.tr('ឈ្មោះសិស្ស', 'Student Name'))),
-                                      DataColumn(label: Text(AppLanguage.tr('ភេទ', 'Gender'))),
-                                      DataColumn(label: Text(AppLanguage.tr('ថ្ងៃកំណើត', 'DOB'))),
-                                      DataColumn(label: Text(AppLanguage.tr('អ៊ីមែល', 'Email'))),
-                                      DataColumn(label: Text(AppLanguage.tr('ដេប៉ាតឺម៉ង់', 'Department'))),
-                                      DataColumn(label: Text(AppLanguage.tr('ជំនាន់ / ឆ្នាំទី', 'Generation / Year'))),
-                                      DataColumn(label: Text(AppLanguage.tr('ស្ថានភាព', 'Status'))),
-                                      DataColumn(label: Text(AppLanguage.tr('លេខទូរស័ព្ទ', 'Phone'))),
-                                      DataColumn(label: Text(AppLanguage.tr('សកម្មភាព (Actions)', 'Actions'))),
-                                    ],
+                              return ScrollConfiguration(
+                                behavior: ScrollConfiguration.of(context).copyWith(
+                                  dragDevices: {
+                                    PointerDeviceKind.touch,
+                                    PointerDeviceKind.mouse,
+                                    PointerDeviceKind.trackpad,
+                                    PointerDeviceKind.stylus,
+                                  },
+                                ),
+                                child: Scrollbar(
+                                  controller: _horizontalScrollCtrl,
+                                  thumbVisibility: true,
+                                  trackVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _horizontalScrollCtrl,
+                                    scrollDirection: Axis.horizontal,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(minWidth: tableConstraints.maxWidth),
+                                      child: DataTable(
+                                        columnSpacing: 18,
+                                        horizontalMargin: 14,
+                                        headingRowColor: WidgetStateProperty.all(
+                                          isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                        ),
+                                        columns: [
+                                          DataColumn(label: Text(AppLanguage.tr('ID', 'ID'))),
+                                          DataColumn(label: Text(AppLanguage.tr('អត្តលេខសិស្ស', 'Student ID'))),
+                                          DataColumn(label: Text(AppLanguage.tr('ឈ្មោះសិស្ស', 'Student Name'))),
+                                          DataColumn(label: Text(AppLanguage.tr('ភេទ', 'Gender'))),
+                                          DataColumn(label: Text(AppLanguage.tr('ថ្ងៃកំណើត', 'DOB'))),
+                                          DataColumn(label: Text(AppLanguage.tr('អ៊ីមែល', 'Email'))),
+                                          DataColumn(label: Text(AppLanguage.tr('ដេប៉ាតឺម៉ង់', 'Department'))),
+                                          DataColumn(label: Text(AppLanguage.tr('ជំនាន់ / ឆ្នាំទី', 'Generation / Year'))),
+                                          DataColumn(label: Text(AppLanguage.tr('ស្ថានភាព', 'Status'))),
+                                          DataColumn(label: Text(AppLanguage.tr('លេខទូរស័ព្ទ', 'Phone'))),
+                                          DataColumn(
+                                            label: Padding(
+                                              padding: const EdgeInsets.only(right: 16),
+                                              child: Text(AppLanguage.tr('សកម្មភាព (Actions)', 'Actions')),
+                                            ),
+                                          ),
+                                        ],
                                     rows: _filteredStudents.map((stu) {
                                       final id = stu['id'];
                                       final code = stu['student_code'] ?? '-';
@@ -1831,20 +2004,23 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                           ),
                                           DataCell(Text(phone)),
                                           DataCell(
-                                            Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                IconButton(
-                                                  tooltip: AppLanguage.tr('កែសម្រួលគណនីសិស្ស', 'Edit Student'),
-                                                  icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                                                  onPressed: () => _openEditStudentDialog(stu),
-                                                ),
-                                                IconButton(
-                                                  tooltip: AppLanguage.tr('លុបគណនីសិស្ស', 'Delete Student'),
-                                                  icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                                                  onPressed: () => _confirmDeleteStudent(stu),
-                                                ),
-                                              ],
+                                            Padding(
+                                              padding: const EdgeInsets.only(right: 12),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  IconButton(
+                                                    tooltip: AppLanguage.tr('កែសម្រួលគណនីសិស្ស', 'Edit Student'),
+                                                    icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                                                    onPressed: () => _openEditStudentDialog(stu),
+                                                  ),
+                                                  IconButton(
+                                                    tooltip: AppLanguage.tr('លុបគណនីសិស្ស', 'Delete Student'),
+                                                    icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                                                    onPressed: () => _confirmDeleteStudent(stu),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -1852,9 +2028,11 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                     }).toList(),
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                       ],
                     ),
                   ),

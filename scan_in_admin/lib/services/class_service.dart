@@ -81,31 +81,60 @@ class ClassService {
   static List<String> buildIntakeYearOptions([Iterable<String> extra = const []]) {
     final nowYear = DateTime.now().year;
     final set = <String>{
-      for (int y = nowYear - 6; y <= nowYear + 2; y++) '$y',
+      for (int y = nowYear - 12; y <= nowYear + 8; y++) '$y',
       ...extra.map((e) => e.trim()).where((e) => e.isNotEmpty),
     };
     final list = set.toList()..sort((a, b) => b.compareTo(a));
     return list;
   }
 
-  /// បង្កើតជម្រើសឆ្នាំសិក្សាដោយស្វ័យប្រវត្តិ (ឧ. 2025-2026 .. 2029-2030 + តម្លៃមានស្រាប់ក្នុង DB)
+  /// បង្កើតជម្រើសឆ្នាំសិក្សាដោយស្វ័យប្រវត្តិ (ឧ. 2024-2025 .. 2034-2035 + តម្លៃមានស្រាប់ក្នុង DB)
   static List<String> buildAcademicYearOptions([Iterable<String> extra = const []]) {
     final nowYear = DateTime.now().year;
     final set = <String>{
-      for (int y = nowYear - 2; y <= nowYear + 3; y++) '$y-${y + 1}',
+      for (int y = nowYear - 6; y <= nowYear + 8; y++) '$y-${y + 1}',
       ...extra.map((e) => e.trim()).where((e) => e.isNotEmpty),
     };
     final list = set.toList()..sort((a, b) => b.compareTo(a));
     return list;
   }
 
-  /// បង្កើតជម្រើសជំនាន់ (តម្លៃណែនាំ + ជំនាន់ដែលធ្លាប់បង្កើតក្នុង DB)
+  /// បង្កើតជម្រើសជំនាន់ (តម្លៃណែនាំតាមលំដាប់ជំនាន់ + ជំនាន់ដែលធ្លាប់បង្កើតក្នុង DB)
   static List<String> buildGenerationOptions([Iterable<String> extra = const []]) {
     final set = <String>{
-      ...presetGenerations,
+      for (int g = 10; g <= 30; g++) 'ជំនាន់ទី $g (Gen $g)',
       ...extra.map((e) => e.trim()).where((e) => e.isNotEmpty),
     };
     return set.toList();
+  }
+
+  /// កែសម្រួលឈ្មោះដេប៉ាតឺម៉ង់អោយស៊ីគ្នាជាមួយប្រព័ន្ធ (ភាសាអង់គ្លេស ឬកាត់ -> ខ្មែរផ្លូវការ)
+  static String normalizeDepartment(String? dept) {
+    if (dept == null) return presetDepartments.first;
+    final trimmed = dept.trim();
+    if (trimmed.isEmpty) return presetDepartments.first;
+    final lower = trimmed.toLowerCase();
+    if (lower.contains('information technology') || lower == 'it') {
+      return 'ព័ត៌មានវិទ្យា (IT)';
+    } else if (lower.contains('computer science') || lower == 'cs') {
+      return 'វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS)';
+    } else if (lower.contains('software engineering') || lower == 'se') {
+      return 'វិស្វកម្មសូហ្វវែរ (SE)';
+    } else if (lower.contains('business') || lower == 'bba') {
+      return 'គ្រប់គ្រងពាណិជ្ជកម្ម (BBA)';
+    } else if (lower.contains('accounting') || lower.contains('finance')) {
+      return 'គណនេយ្យ និងហិរញ្ញវត្ថុ (Accounting)';
+    } else if (lower.contains('english')) {
+      return 'ភាសាអង់គ្លេស (English)';
+    } else if (lower.contains('civil')) {
+      return 'វិស្វកម្មសំណង់ស៊ីវិល (Civil Engineering)';
+    }
+    for (final p in presetDepartments) {
+      if (p.toLowerCase() == lower || p.contains(trimmed)) {
+        return p;
+      }
+    }
+    return trimmed;
   }
 
   static List<ClassModel>? _cachedClasses;

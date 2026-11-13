@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
@@ -18,6 +19,7 @@ class AdminClassesScreen extends StatefulWidget {
 }
 
 class _AdminClassesScreenState extends State<AdminClassesScreen> {
+  final ScrollController _horizontalScrollCtrl = ScrollController();
   List<ClassModel> _classes = [];
   UserModel? _currentUser;
   bool _isLoading = true;
@@ -25,6 +27,12 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
   int? _filterYearLevel;
   String? _filterGeneration;
   String? _filterDepartment;
+
+  @override
+  void dispose() {
+    _horizontalScrollCtrl.dispose();
+    super.dispose();
+  }
 
   List<ClassModel> get _filteredClasses {
     return _classes.where((c) {
@@ -1394,11 +1402,27 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                         else
                           LayoutBuilder(
                             builder: (context, tableConstraints) {
-                              return SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: ConstrainedBox(
-                                  constraints: BoxConstraints(minWidth: tableConstraints.maxWidth),
-                                  child: DataTable(
+                              return ScrollConfiguration(
+                                behavior: ScrollConfiguration.of(context).copyWith(
+                                  dragDevices: {
+                                    PointerDeviceKind.touch,
+                                    PointerDeviceKind.mouse,
+                                    PointerDeviceKind.trackpad,
+                                    PointerDeviceKind.stylus,
+                                  },
+                                ),
+                                child: Scrollbar(
+                                  controller: _horizontalScrollCtrl,
+                                  thumbVisibility: true,
+                                  trackVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _horizontalScrollCtrl,
+                                    scrollDirection: Axis.horizontal,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(minWidth: tableConstraints.maxWidth),
+                                      child: DataTable(
+                                        columnSpacing: 18,
+                                        horizontalMargin: 12,
                                     headingRowColor: WidgetStateProperty.all(
                                       isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
                                     ),
@@ -1574,9 +1598,11 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                               }).toList(),
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
                       ],
                     ),
                   ),
