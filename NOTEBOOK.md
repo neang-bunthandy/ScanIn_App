@@ -181,9 +181,14 @@
 
 ---
 
-### 🚀 ផែនការងារដែលត្រូវធ្វើបន្តនៅថ្ងៃស្អែក (Tomorrow's Roadmap)៖
+### 🚀 ផែនការងារដែលត្រូវធ្វើបន្ត (Roadmap & Production Checklist)៖
 
-1. **[តេស្តជាក់ស្តែង End-to-End] ពិនិត្យទិន្នន័យលើ Web Admin & Mobile App៖**
+1. **[កត់ចំណាំពេលដាក់ឱ្យប្រើប្រាស់ជាក់ស្តែង — Real Production Checklist]៖**
+   * **ដកគណនីគំរូ (Demo Users)៖** ដក `dara@scanin.app` (គ្រូ ចាន់ ដារ៉ា) និង `student@scanin.app` (សិស្ស សុខា ម៉េង) ចេញពី [DatabaseSeeder.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/database/seeders/DatabaseSeeder.php) ដោយទុកតែគណនី Admin មេពិតប្រាកដ ឬ Seeder ស្អាតស្អំ។
+   * **ធ្វើបច្ចុប្បន្នភាព [AuthApiTest.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/tests/Feature/AuthApiTest.php)៖** ប្តូរពីការហៅគណនីរឹងក្នុង Seeder មកប្រើ `User::factory()->create()` ជាមួយ `DatabaseTransactions` ដូច Test ឯទៀត ដើម្បីឱ្យ Automated Tests ទាំងអស់នៅតែ pass 100% ទោះបី Database គ្មានទិន្នន័យគំរូ Seeder សូម្បីតែមួយក៏ដោយ។
+   * **សម្អាត MySQL Database៖** សម្អាតថ្នាក់រៀនសាកល្បង និងសិស្សសាកល្បងចេញ ដើម្បីទុកតែទិន្នន័យពិតរបស់សាលា។
+
+2. **[តេស្តជាក់ស្តែង End-to-End] ពិនិត្យទិន្នន័យលើ Web Admin & Mobile App៖**
    * ចូល Web Admin ដើម្បីកំណត់ `ដេប៉ាតឺម៉ង់`, `ឆ្នាំទី`, `ជំនាន់`, `ចាប់ពីឆ្នាំ`, `ឈ្មោះជាអក្សរឡាតាំង` ឱ្យគ្រូ សិស្ស និងថ្នាក់រៀនចាស់ៗដែលបង្កើតមុនការអាប់ដេត, រួចសាក Login ស្កេន QR និងពិនិត្យ `របាយការណ៍ → ស្ថិតិតាមឆ្នាំ & ជំនាញ`។
 2. **[អាទិភាពទី ២] បន្ថែមរបាយការណ៍រងថ្មីៗក្រោមម៉ឺនុយ `របាយការណ៍` & Export (Admin Reports)៖**
    * បន្ថែមជម្រើសរបាយការណ៍ថ្មីតាមតម្រូវការសាលា និងប៊ូតុង Export របាយការណ៍វត្តមានជា Excel / CSV / PDF ក្នុង `AdminAttendancesScreen`។
