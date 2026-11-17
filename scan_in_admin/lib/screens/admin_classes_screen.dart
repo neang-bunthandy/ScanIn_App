@@ -100,12 +100,55 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     }
   }
 
+  Widget _buildSessionChip({
+    required String label,
+    required String timeVal,
+    required TextEditingController ctrl,
+    required void Function(void Function()) setDlgState,
+    required bool isDark,
+  }) {
+    final isSelected = ctrl.text.trim() == timeVal;
+    return InkWell(
+      borderRadius: BorderRadius.circular(6),
+      onTap: () {
+        setDlgState(() {
+          ctrl.text = timeVal;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.15)
+              : (isDark ? const Color(0xFF334155).withValues(alpha: 0.5) : const Color(0xFFF1F5F9)),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : (isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+            width: isSelected ? 1.5 : 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected
+                ? AppColors.primary
+                : (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155)),
+          ),
+        ),
+      ),
+    );
+  }
+
   /// បើកផ្ទាំង Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន
   Future<void> _openCreateClassDialog() async {
     final nameCtrl = TextEditingController();
     final codeCtrl = TextEditingController();
     final roomCtrl = TextEditingController(text: 'Room A-101');
-    final timeCtrl = TextEditingController(text: '08:00 - 11:00');
+    final timeCtrl = TextEditingController(text: '07:00 - 08:30');
     final totalSessionsCtrl = TextEditingController(text: '15');
     final academicYearOptions = ClassService.buildAcademicYearOptions(
       _classes.map((c) => c.academicYear),
@@ -255,6 +298,38 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               ),
                             ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Quick Single Session Chips (៦ Sessions ស្តង់ដារសាកលវិទ្យាល័យ មួយ Session = ៩០ នាទី)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppLanguage.tr(
+                              'រើសម៉ោង Session គំរូ (១ QR = ១ Session = ៩០ នាទី)៖',
+                              'Quick University Sessions (1 QR = 1 Session = 90 mins):',
+                            ),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              _buildSessionChip(label: 'S1: 07:00 - 08:30', timeVal: '07:00 - 08:30', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S2: 08:50 - 10:20', timeVal: '08:50 - 10:20', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S3: 10:30 - 12:00', timeVal: '10:30 - 12:00', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S4: 13:00 - 14:30', timeVal: '13:00 - 14:30', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S5: 14:40 - 16:10', timeVal: '14:40 - 16:10', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S6: 16:20 - 17:50', timeVal: '16:20 - 17:50', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                            ],
                           ),
                         ],
                       ),
@@ -625,6 +700,38 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                               ),
                             ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Quick Single Session Chips (៦ Sessions ស្តង់ដារសាកលវិទ្យាល័យ មួយ Session = ៩០ នាទី)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppLanguage.tr(
+                              'រើសម៉ោង Session គំរូ (១ QR = ១ Session = ៩០ នាទី)៖',
+                              'Quick University Sessions (1 QR = 1 Session = 90 mins):',
+                            ),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 6,
+                            children: [
+                              _buildSessionChip(label: 'S1: 07:00 - 08:30', timeVal: '07:00 - 08:30', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S2: 08:50 - 10:20', timeVal: '08:50 - 10:20', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S3: 10:30 - 12:00', timeVal: '10:30 - 12:00', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S4: 13:00 - 14:30', timeVal: '13:00 - 14:30', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S5: 14:40 - 16:10', timeVal: '14:40 - 16:10', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                              _buildSessionChip(label: 'S6: 16:20 - 17:50', timeVal: '16:20 - 17:50', ctrl: timeCtrl, setDlgState: setDlgState, isDark: isDark),
+                            ],
                           ),
                         ],
                       ),
