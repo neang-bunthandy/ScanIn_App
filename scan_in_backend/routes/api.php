@@ -61,7 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Lecturers API (Admin provisions lecturer accounts)
 Route::get('/lecturers', function (Request $request) {
-    if ($request->user()->role !== 'admin') {
+    if (!$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចមើលបញ្ជីគ្រូបង្រៀនបាន។',
@@ -76,8 +76,8 @@ Route::get('/lecturers', function (Request $request) {
 });
 
 Route::post('/lecturers', function (Request $request) {
-    // ធានាសុវត្ថិភាព៖ មានតែ Admin ប៉ុណ្ណោះដែលអាចបង្កើតគណនីគ្រូបង្រៀនបាន
-    if ($request->user() && $request->user()->role !== 'admin') {
+    // ធានាសុវត្ថិភាព៖ មានតែ Admin ឬ Sub-Admin ប៉ុណ្ណោះដែលអាចបង្កើតគណនីគ្រូបង្រៀនបាន
+    if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចបង្កើតគណនីគ្រូបង្រៀនបាន។',
@@ -113,7 +113,7 @@ Route::post('/lecturers', function (Request $request) {
 });
 
 Route::put('/lecturers/{id}', function (Request $request, $id) {
-    if ($request->user() && $request->user()->role !== 'admin') {
+    if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចកែប្រែគណនីគ្រូបង្រៀនបាន។',
@@ -156,7 +156,7 @@ Route::put('/lecturers/{id}', function (Request $request, $id) {
 });
 
 Route::delete('/lecturers/{id}', function (Request $request, $id) {
-    if ($request->user() && $request->user()->role !== 'admin') {
+    if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចលុបគណនីគ្រូបង្រៀនបាន។',
@@ -183,7 +183,7 @@ Route::delete('/lecturers/{id}', function (Request $request, $id) {
 
 // Students API (Admin provisions student accounts)
 Route::get('/students', function (Request $request) {
-    if ($request->user()->role !== 'admin') {
+    if (!$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចមើលបញ្ជីសិស្សបាន។',
@@ -220,8 +220,8 @@ Route::get('/students', function (Request $request) {
 });
 
 Route::post('/students', function (Request $request) {
-    // ធានាសុវត្ថិភាព៖ មានតែ Admin ប៉ុណ្ណោះដែលអាចបង្កើតគណនីសិស្សបាន
-    if ($request->user() && $request->user()->role !== 'admin') {
+    // ធានាសុវត្ថិភាព៖ មានតែ Admin ឬ Sub-Admin ប៉ុណ្ណោះដែលអាចបង្កើតគណនីសិស្សបាន
+    if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចបង្កើតគណនីសិស្សបាន។',
@@ -270,7 +270,7 @@ Route::post('/students', function (Request $request) {
 
 // Import Students in Bulk (from Excel / CSV or JSON)
 Route::post('/students/import', function (Request $request) {
-    if ($request->user() && $request->user()->role !== 'admin') {
+    if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាច Import បញ្ជីសិស្សបាន។',
@@ -404,7 +404,7 @@ Route::post('/students/import', function (Request $request) {
 });
 
 Route::put('/students/{id}', function (Request $request, $id) {
-    if ($request->user() && $request->user()->role !== 'admin') {
+    if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចកែប្រែគណនីសិស្សបាន។',
@@ -460,7 +460,7 @@ Route::put('/students/{id}', function (Request $request, $id) {
 
 // ដំឡើងឆ្នាំសិក្សាសិស្សតាមជំនាន់ ឬទូទាំងប្រព័ន្ធ (Promote Students Year Level - Admin Only)
 Route::post('/students/promote', function (Request $request) {
-    if ($request->user() && $request->user()->role !== 'admin') {
+    if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចដំឡើងឆ្នាំសិក្សាសិស្សបាន។',
@@ -498,7 +498,7 @@ Route::post('/students/promote', function (Request $request) {
 
 // ប្តូរស្ថានភាពសិស្សជាក្រុម (Active / Graduated / Inactive - Admin Only)
 Route::post('/students/bulk-status', function (Request $request) {
-    if ($request->user() && $request->user()->role !== 'admin') {
+    if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចប្តូរស្ថានភាពសិស្សបាន។',
@@ -541,7 +541,7 @@ Route::post('/students/bulk-status', function (Request $request) {
 Route::get('/admin/reports/student-stats', [ReportController::class, 'studentStats']);
 
 Route::delete('/students/{id}', function (Request $request, $id) {
-    if ($request->user() && $request->user()->role !== 'admin') {
+    if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
             'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចលុបគណនីសិស្សបាន។',
@@ -563,6 +563,148 @@ Route::delete('/students/{id}', function (Request $request, $id) {
     return response()->json([
         'status' => true,
         'message' => 'បានលុបគណនីសិស្សដោយជោគជ័យ',
+    ]);
+});
+
+// ==========================================
+// Sub-Admins Management API (Master Admin Only)
+// ==========================================
+Route::get('/sub-admins', function (Request $request) {
+    if (!$request->user()->isMasterAdmin()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'មានតែ Master Admin ប៉ុណ្ណោះដែលអាចមើលបញ្ជី Sub-Admin បាន។',
+        ], 403);
+    }
+    $subAdmins = \App\Models\User::where('role', 'sub_admin')
+        ->select('id', 'name', 'latin_name', 'email', 'department', 'phone', 'status', 'created_at')
+        ->orderBy('id', 'desc')
+        ->get();
+    return response()->json(['status' => true, 'data' => $subAdmins]);
+});
+
+Route::post('/sub-admins', function (Request $request) {
+    if (!$request->user()->isMasterAdmin()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'មានតែ Master Admin ប៉ុណ្ណោះដែលអាចបង្កើត Sub-Admin បាន។',
+        ], 403);
+    }
+
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'latin_name' => 'nullable|string|max:255',
+        'email' => 'required|email|unique:users,email',
+        'password' => 'required|string|min:6',
+        'department' => 'nullable|string|max:255',
+        'phone' => 'nullable|string|max:50',
+    ]);
+
+    $subAdmin = \App\Models\User::create([
+        'name' => trim($request->name),
+        'latin_name' => $request->filled('latin_name') ? trim($request->latin_name) : null,
+        'email' => strtolower(trim($request->email)),
+        'password' => \Illuminate\Support\Facades\Hash::make($request->password),
+        'role' => 'sub_admin',
+        'department' => $request->department,
+        'phone' => $request->phone,
+        'status' => 'active',
+    ]);
+
+    return response()->json([
+        'status' => true,
+        'message' => 'បានបង្កើតគណនី Sub-Admin ដោយជោគជ័យ',
+        'data' => $subAdmin,
+    ], 201);
+});
+
+Route::put('/sub-admins/{id}', function (Request $request, $id) {
+    if (!$request->user()->isMasterAdmin()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'មានតែ Master Admin ប៉ុណ្ណោះដែលអាចកែប្រែ Sub-Admin បាន។',
+        ], 403);
+    }
+
+    $subAdmin = \App\Models\User::where('role', 'sub_admin')->find($id);
+    if (!$subAdmin) {
+        return response()->json([
+            'status' => false,
+            'message' => 'រកមិនឃើញគណនី Sub-Admin នេះទេ',
+        ], 404);
+    }
+
+    $request->validate([
+        'name' => 'sometimes|required|string|max:255',
+        'latin_name' => 'nullable|string|max:255',
+        'email' => 'sometimes|required|email|unique:users,email,' . $id,
+        'password' => 'nullable|string|min:6',
+        'department' => 'nullable|string|max:255',
+        'phone' => 'nullable|string|max:50',
+        'status' => 'nullable|in:active,inactive',
+    ]);
+
+    if ($request->filled('name')) $subAdmin->name = trim($request->name);
+    if ($request->has('latin_name')) $subAdmin->latin_name = $request->filled('latin_name') ? trim($request->latin_name) : null;
+    if ($request->filled('email')) $subAdmin->email = strtolower(trim($request->email));
+    if ($request->filled('password')) $subAdmin->password = \Illuminate\Support\Facades\Hash::make($request->password);
+    if ($request->has('department')) $subAdmin->department = $request->department;
+    if ($request->has('phone')) $subAdmin->phone = $request->phone;
+    if ($request->filled('status')) $subAdmin->status = strtolower(trim($request->status));
+
+    $subAdmin->save();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'បានកែប្រែគណនី Sub-Admin ដោយជោគជ័យ',
+        'data' => $subAdmin,
+    ]);
+});
+
+Route::delete('/sub-admins/{id}', function (Request $request, $id) {
+    if (!$request->user()->isMasterAdmin()) {
+        return response()->json([
+            'status' => false,
+            'message' => 'មានតែ Master Admin ប៉ុណ្ណោះដែលអាចលុប Sub-Admin បាន។',
+        ], 403);
+    }
+
+    // មិនអាចលុបគណនីខ្លួនឯងបានទេ
+    if ((int)$request->user()->id === (int)$id) {
+        return response()->json([
+            'status' => false,
+            'message' => 'មិនអាចលុបគណនី Master Admin ផ្ទាល់ខ្លួនបានឡើយ។',
+        ], 400);
+    }
+
+    $targetUser = \App\Models\User::find($id);
+    if (!$targetUser) {
+        return response()->json([
+            'status' => false,
+            'message' => 'រកមិនឃើញគណនីនេះទេ',
+        ], 404);
+    }
+
+    // ការពារដាច់ខាតមិនឱ្យលុប Master Admin ណាម្នាក់ឡើយ
+    if ($targetUser->role === 'admin') {
+        return response()->json([
+            'status' => false,
+            'message' => 'មិនអាចលុបគណនី Master Admin បានដាច់ខាត។',
+        ], 403);
+    }
+
+    if ($targetUser->role !== 'sub_admin') {
+        return response()->json([
+            'status' => false,
+            'message' => 'គណនីនេះមិនមែនជា Sub-Admin ឡើយ។',
+        ], 400);
+    }
+
+    $targetUser->delete();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'បានលុបគណនី Sub-Admin ដោយជោគជ័យ',
     ]);
 });
 

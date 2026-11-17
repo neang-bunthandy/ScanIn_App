@@ -128,8 +128,8 @@ class ClassController extends Controller
      */
     public function store(Request $request)
     {
-        // ធានាសុវត្ថិភាព៖ មានតែ Admin ប៉ុណ្ណោះដែលអាចបង្កើតថ្នាក់រៀនបាន គ្រូមិនអាចបង្កើតបានទេ
-        if ($request->user() && $request->user()->role !== 'admin') {
+        // ធានាសុវត្ថិភាព៖ មានតែ Admin ឬ Sub-Admin ប៉ុណ្ណោះដែលអាចបង្កើតថ្នាក់រៀនបាន គ្រូមិនអាចបង្កើតបានទេ
+        if ($request->user() && !$request->user()->isAcademicAdmin()) {
             return response()->json([
                 'status' => false,
                 'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចបង្កើតថ្នាក់រៀនបាន។ គ្រូមិនមានសិទ្ធិនេះឡើយ។',
@@ -266,7 +266,7 @@ class ClassController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if ($request->user() && $request->user()->role !== 'admin') {
+        if ($request->user() && !$request->user()->isAcademicAdmin()) {
             return response()->json([
                 'status' => false,
                 'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចកែប្រែថ្នាក់រៀនបាន។',
@@ -329,7 +329,7 @@ class ClassController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        if ($request->user() && $request->user()->role !== 'admin') {
+        if ($request->user() && !$request->user()->isAcademicAdmin()) {
             return response()->json([
                 'status' => false,
                 'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចលុបថ្នាក់រៀនបាន។',

@@ -14,7 +14,7 @@ class ReportController extends Controller
      */
     public function studentStats(Request $request)
     {
-        if (!$request->user() || $request->user()->role !== 'admin') {
+        if (!$request->user() || !$request->user()->isAcademicAdmin()) {
             return response()->json([
                 'status' => false,
                 'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាចមើលរបាយការណ៍ស្ថិតិនេះបាន។',
