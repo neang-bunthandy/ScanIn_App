@@ -387,6 +387,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     final borderCol = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
     final textCol = isDark ? Colors.white : AppColors.textPrimary;
     final isLecturer = _currentUser?.role == 'lecturer';
+    final isMasterAdmin = _currentUser?.isMasterAdmin == true;
 
     final screenWidth = MediaQuery.of(context).size.width;
     final isCompact = screenWidth < 900;
@@ -473,7 +474,11 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    isLecturer ? 'ScanIn Lecturer' : 'ScanIn Admin',
+                                    isLecturer
+                                        ? 'ScanIn Lecturer'
+                                        : (_currentUser?.isSubAdmin == true
+                                            ? 'ScanIn Academic'
+                                            : 'ScanIn Admin'),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -485,7 +490,11 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                   ),
                                   const SizedBox(height: 3),
                                   Text(
-                                    isLecturer ? 'Laptop Workspace' : 'System Administration',
+                                    isLecturer
+                                        ? 'Laptop Workspace'
+                                        : (_currentUser?.isSubAdmin == true
+                                            ? 'Academic Affairs'
+                                            : 'System Administration'),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -532,6 +541,15 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                           isCompact: isCompact,
                         ),
                         const SizedBox(height: 6),
+                        if (isMasterAdmin) ...[
+                          _buildNavItem(
+                            icon: Icons.admin_panel_settings_outlined,
+                            title: AppLanguage.tr('គ្រប់គ្រង Sub-Admin', 'Sub-Admins'),
+                            route: AppRoutes.subAdmins,
+                            isCompact: isCompact,
+                          ),
+                          const SizedBox(height: 6),
+                        ],
                       ],
 
                       _buildNavItem(
@@ -567,7 +585,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                       ? Column(
                           children: [
                             Tooltip(
-                              message: '${_currentUser?.name ?? "User"}\n(${isLecturer ? "Lecturer" : "Admin"})',
+                              message: '${_currentUser?.name ?? "User"}\n(${isLecturer ? "Lecturer" : (_currentUser?.isSubAdmin == true ? "Sub-Admin" : "Master Admin")})',
                               child: CircleAvatar(
                                 radius: 18,
                                 backgroundColor: isLecturer ? const Color(0xFF0284C7) : AppColors.primary,
@@ -623,9 +641,17 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
-                                      isLecturer ? 'គ្រូបង្រៀន (Lecturer)' : 'អ្នកគ្រប់គ្រង (Admin)',
+                                      isLecturer
+                                          ? 'គ្រូបង្រៀន (Lecturer)'
+                                          : (_currentUser?.isSubAdmin == true
+                                              ? 'ការិយាល័យសិក្សា (Sub-Admin)'
+                                              : 'អ្នកគ្រប់គ្រង (Admin)'),
                                       style: TextStyle(
-                                        color: isLecturer ? const Color(0xFF38BDF8) : const Color(0xFF93C5FD),
+                                        color: isLecturer
+                                            ? const Color(0xFF38BDF8)
+                                            : (_currentUser?.isSubAdmin == true
+                                                ? const Color(0xFF34D399)
+                                                : const Color(0xFF93C5FD)),
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                       ),
