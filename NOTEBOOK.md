@@ -224,7 +224,48 @@
 
 ---
 
-### 📌 ជំហានទី ៤ (Step 4 — កិច្ចការបន្តបន្ទាប់) ៖ រៀបចំម៉ោង Session លើ Web Admin & ការគ្រប់គ្រង Sub-Admin
-* **ចំណុច ៤.១ ៖** កែសម្រួលប្រអប់ "ម៉ោងរៀន (Time)" លើផ្ទាំងបង្កើត/កែប្រែថ្នាក់រៀន Web Admin ឱ្យដាក់ Default ជា `07:00 - 08:30` ជាមួយប៊ូតុងចុចរើស Quick Single Session Chips (៦ Sessions ស្តង់ដារ)។
-* **ចំណុច ៤.២ (Sub-Admin Management) ៖** បង្កើតផ្ទាំងគ្រប់គ្រង Sub-Admin (បុគ្គលិកការិយាល័យសិក្សា / Academic Affairs) លើ Web Admin សម្រាប់ឱ្យ Master Admin បង្កើតគណនី និងគ្រប់គ្រងសិទ្ធិបុគ្គលិកការិយាល័យ។
-* **ចំណុច ៤.៣ ៖** Master Admin / Sub-Admin បង្កើតគ្រូ និង Import បញ្ជីឈ្មោះសិស្ស Real Data ពី Excel/CSV តាមជំនាញ និងជំនាន់ជាក់ស្តែង។
+### ✅ ជំហានទី ៤ (Step 4 — រួចរាល់ ១០០%) ៖ ប្រព័ន្ធកាលវិភាគ Single Session, Sub-Admin និងការដោះស្រាយ Bug ចំនួនថ្នាក់គ្រូ
+1. **ចំណុច ៤.១ (Single Session Timetable & Quick Chips) ៖**
+   - បានកែសម្រួលផ្ទាំងបង្កើត និងកែសម្រួលថ្នាក់រៀនលើ Web Admin ដោយដាក់ Default `07:00 - 08:30`។
+   - បានបន្ថែមប៊ូតុង Quick Single Session Chips ចំនួន ៦ ស្តង់ដារ (S1 ដល់ S6 មួយ session = ៩០ នាទី) ស្របតាមច្បាប់ ១ QR = ១ Session។
+2. **ចំណុច ៤.២ (Sub-Admin Management - ការិយាល័យសិក្សា) ៖**
+   - **Backend API (`/api/sub-admins`) ៖** បង្កើត CRUD API សម្រាប់គ្រប់គ្រង Sub-Admin ដោយការពារសិទ្ធិផ្តាច់មុខជូនតែ Master Admin (`isMasterAdmin()`)។ Sub-Admin មិនអាចមើលឃើញ ឬលុប Master Admin បានឡើយ។
+   - **Web Admin UI ៖** បង្កើតអេក្រង់ `AdminSubAdminsScreen`, Service `SubAdminService`, ចុះឈ្មោះ Route `/sub-admins` និងបន្ថែមម៉ឺនុយ «គ្រប់គ្រង Sub-Admin» លើ Sidebar ដែលបង្ហាញជូនតែ Master Admin។
+   - បានបំពាក់ Role Badges យ៉ាងស្រស់ស្អាត៖ Master Admin (ខៀវចាស់), Sub-Admin (បៃតង Mint), Lecturer (ផ្ទៃមេឃ Sky)។
+3. **ចំណុច ៤.៣ (ដោះស្រាយ Bug ចំនួនថ្នាក់គ្រូបង្រៀនបង្ហាញ ០ ថ្នាក់) ៖**
+   - **មូលហេតុបច្ចេកទេស៖** ក្នុង `scan_in_backend/routes/api.php` ត្រង់ route `/api/lecturers` កូដ Eloquent query ចាស់បានហៅ `->withCount('classes')` នៅពីមុខ `->select(...)` ធ្វើឱ្យ Laravel កាត់ចោល subquery នៃ `classes_count` ចេញពី JSON។
+   - **ដំណោះស្រាយ៖** បានប្តូរទីតាំងដាក់ `->select(...)` មកនៅពីមុខ `->withCount('classes')` វិញ និងបានកំណត់ Auto Cache Invalidation (`_cachedLecturers = null;`) រាល់ពេល Admin បង្កើត, កែប្រែ ឬលុបថ្នាក់រៀន។ ចំនួនថ្នាក់គ្រូ `អូន វឌ្ឍនៈ` បានបង្ហាញ «១ ថ្នាក់» ត្រឹមត្រូវ ១០០%។
+
+---
+
+### 🛡️ ជំហានទី ៥ (Step 5 — រួចរាល់ ១០០%) ៖ ផ្លាស់ប្តូរទៅកាន់ Drive C: (SSD) & បន្ថែមកាលបរិច្ឆេទ Session (class_date)
+1. **ការសង្គ្រោះ និងផ្លាស់ប្តូរ Workspace ទៅកាន់ NVMe SSD (Drive C:) ៖**
+   - ពិនិត្យឃើញ Hard Disk ចាស់ Drive D: (Seagate ST3500410SV) មានបញ្ហាផ្នែករឹង Bad Sectors ធ្ងន់ធ្ងរ (Windows Event ID: 154 - Disk Hardware Error & BSOD)។
+   - បានផ្លាស់ប្តូរ Workspace ទាំងស្រុងមកកាន់ `C:\Flutter_Project\Scan_In_App` លើ **NVMe SSD (XPG SPECTRIX S20G)** ដែលមានសុខភាពល្អ ១០០% និងល្បឿនលឿនជាងមុន ៥ ទៅ ១០ ដង។
+   - `flutter analyze` លើ Mobile និង Web Admin ដើរលឿនត្រឹមតែ **២.០ វិនាទី** (0 issues) ហើយ Backend Unit & Feature Tests ដើរត្រឹមតែ **២.៨ វិនាទី**។
+2. **បន្ថែម «កាលបរិច្ឆេទ Session (class_date)» ក្នុងប្រព័ន្ធ ដូចទម្រង់ NUBB ៖**
+   - **Database Migration ៖** បន្ថែម Column `class_date` (nullable `date` with index) លើ table `classes`។
+   - **Backend API & Eloquent ៖** Update `ClassModel.php` និង `ClassController.php` ឱ្យទទួល `class_date`, serialise ទៅ JSON, និងគាំទ្រ Date Filtering (`?date=YYYY-MM-DD`)។
+   - **Web Admin UI ៖** បន្ថែម Date Picker ក្នុង Dialog បង្កើត និងកែប្រែថ្នាក់រៀន (រើសថ្ងៃណា ប្រព័ន្ធស្គាល់ថ្ងៃច័ន្ទ ដល់ អាទិត្យ ស្វ័យប្រវត្តិ) និងរៀបចំជួរឈរ «កាលវិភាគ» ក្នុងតារាងឱ្យបង្ហាញទាំងកាលបរិច្ឆេទ (ឧ. `2026-11-14 (សៅរ៍)`) និងម៉ោង Session (`07:00 - 08:30`)។
+   - **តេស្ត Backend ៖** បន្ថែម Test `test_admin_can_create_class_with_class_date_and_filter_by_date` ឆ្លងកាត់ជោគជ័យ ១០០% (**26 passed, 175 assertions**).
+   - **Git & Backup ៖** Commit `73b45c5` រួចរាល់លើ GitHub និង Robocopy Mirror ទៅកាន់ `C:\Users\Jitsu Window\Scan_In_App_Backup\`។
+
+---
+
+## 📅 ផែនការការងារសម្រាប់ថ្ងៃស្អែក (Tasks for Tomorrow)
+
+1. **កិច្ចការទី ១ (Task 1) — អភិវឌ្ឍអេក្រង់ «កាលវិភាគសិក្សា (Study Timetable)» លើ Mobile App ៖**
+   - បង្កើតអេក្រង់ Timetable ដូចរូបគំរូជាក់ស្តែងរបស់សាកលវិទ្យាល័យ (NUBB)៖
+     - មានរបារប្តូរកាលបរិច្ឆេទ `[ < ] ថ្ងៃ... [ 🔄 ] [ > ]` ជាមួយ Calendar Date Picker។
+     - ចាប់យកកាលបរិច្ឆេទជាក់ស្តែងពីទូរស័ព្ទ (`DateTime.now()`)៖ បើជាថ្ងៃដែលគ្មានថ្នាក់រៀន (ឧ. ថ្ងៃច័ន្ទ-សុក្រ សម្រាប់សិស្សវេន SS) បង្ហាញផ្ទាំងរូបនាឡិកា **«គ្មានថ្នាក់រៀនសម្រាប់ថ្ងៃនេះ»**។
+     - បើជាថ្ងៃមានថ្នាក់រៀន (ឧ. ថ្ងៃសៅរ៍) បង្ហាញកាតថ្នាក់រៀនតាម Session (មុខវិជ្ជា, ម៉ោងរៀន Green Chip, បន្ទប់, ឈ្មោះគ្រូ, លេខទូរស័ព្ទគ្រូជាមួយប៊ូតុង Call)។
+   - **បំពាក់ Smart Status Badges លើស NUBB ៖**
+     - ⏳ `មិនទាន់ដល់ថ្ងៃរៀន (Upcoming)` (សម្រាប់ថ្ងៃអនាគត — មិនបន្លាចសិស្សថាអវត្តមានដូច NUBB ឡើយ)។
+     - 🔔 `មិនទាន់ស្កេន (Not Scanned)` (សម្រាប់ថ្ងៃនេះ និងកំពុងរៀន)។
+     - ✅ `វត្តមាន (Present)` (សម្រាប់ថ្នាក់ដែលបានស្កេនរួច)។
+     - ❌ `អវត្តមាន (Absent)` (សម្រាប់ថ្ងៃកន្លងផុតដែលមិនបានស្កេន)។
+2. **កិច្ចការទី ២ (Task 2) — បញ្ចូលគណនីនិស្សិតពិតប្រាកដ (Real Students Batch Import) ៖**
+   - បង្កើត ឬ Import បញ្ជីឈ្មោះនិស្សិតពិតប្រាកដ ដេប៉ាតឺម៉ង់ ព័ត៌មានវិទ្យា (IT) ជំនាន់ទី 20 ឆ្នាំទី 4 ដើម្បីចូលរៀនថ្នាក់ `Data Mining With Python` របស់លោកគ្រូ `អូន វឌ្ឍនៈ`។
+3. **កិច្ចការទី ៣ (Task 3) — តេស្តដំណើរការស្កេនវត្តមានជាក់ស្តែង (Live End-to-End Test) ៖**
+   - គ្រូ `អូន វឌ្ឍនៈ` បើក QR Code លើ Mobile App / Web Laptop។
+   - សិស្សបើក Camera ស្កេនលើទូរស័ព្ទ និងពិនិត្យមើលវត្តមានដែលកត់ត្រាចូល MySQL Database។
