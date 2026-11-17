@@ -75,4 +75,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Attendance::class, 'user_id');
     }
+
+    public function isMasterAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isSubAdmin(): bool
+    {
+        return $this->role === 'sub_admin';
+    }
+
+    public function isAcademicAdmin(): bool
+    {
+        return in_array($this->role, ['admin', 'sub_admin']);
+    }
 }
