@@ -236,13 +236,17 @@ class ClassService {
   }
 
   /// ទាញយកបញ្ជីថ្នាក់រៀនរបស់គ្រូ (Lecturer Classes)
-  static Future<List<ClassModel>> getLecturerClasses() async {
+  static Future<List<ClassModel>> getLecturerClasses({String? date}) async {
     try {
       final token = await AuthService.getToken();
       if (token == null) return [];
 
+      final uri = date != null && date.isNotEmpty
+          ? Uri.parse(ApiConfig.classesUrl).replace(queryParameters: {'date': date})
+          : Uri.parse(ApiConfig.classesUrl);
+
       final response = await http.get(
-        Uri.parse(ApiConfig.classesUrl),
+        uri,
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
@@ -256,7 +260,7 @@ class ClassService {
         for (var item in list) {
           classes.add(ClassModel.fromJson(item as Map<String, dynamic>));
         }
-        _cachedClasses = classes;
+        if (date == null) _cachedClasses = classes;
         return classes;
       }
     } catch (_) {}
@@ -264,13 +268,17 @@ class ClassService {
   }
 
   /// ទាញយកបញ្ជីថ្នាក់រៀនរបស់សិស្ស / Admin (Classes List)
-  static Future<List<ClassModel>> getStudentClasses() async {
+  static Future<List<ClassModel>> getStudentClasses({String? date}) async {
     try {
       final token = await AuthService.getToken();
       if (token == null) return [];
 
+      final uri = date != null && date.isNotEmpty
+          ? Uri.parse(ApiConfig.studentClassesUrl).replace(queryParameters: {'date': date})
+          : Uri.parse(ApiConfig.studentClassesUrl);
+
       final response = await http.get(
-        Uri.parse(ApiConfig.studentClassesUrl),
+        uri,
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
@@ -284,7 +292,7 @@ class ClassService {
         for (var item in list) {
           classes.add(ClassModel.fromJson(item as Map<String, dynamic>));
         }
-        _cachedClasses = classes;
+        if (date == null) _cachedClasses = classes;
         return classes;
       }
     } catch (_) {}
@@ -840,6 +848,7 @@ class ClassService {
     String? room,
     String? dayOfWeek,
     String? time,
+    String? classDate,
     int? totalSessions,
   }) async {
     try {
@@ -856,6 +865,7 @@ class ClassService {
         'room': room ?? '',
         'day_of_week': dayOfWeek ?? '',
         'time': time ?? '',
+        'class_date': ?classDate,
         'total_sessions': ?totalSessions,
       };
 
@@ -892,6 +902,7 @@ class ClassService {
     String? room,
     String? dayOfWeek,
     String? time,
+    String? classDate,
     int? totalSessions,
     int? completedSessions,
   }) async {
@@ -909,6 +920,7 @@ class ClassService {
         'room': room ?? '',
         'day_of_week': dayOfWeek ?? '',
         'time': time ?? '',
+        'class_date': ?classDate,
         'total_sessions': ?totalSessions,
         'completed_sessions': ?completedSessions,
       };

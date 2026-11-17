@@ -54,6 +54,11 @@ class ClassController extends Controller
             }
         }
 
+        // Filter តាមកាលបរិច្ឆេទជាក់លាក់ (Specific Date Filter: YYYY-MM-DD)
+        if ($request->filled('date')) {
+            $query->whereDate('class_date', $request->date);
+        }
+
         // ទាញសិស្សកំពុងសិក្សា (active) ដើម្បីគណនាចំនួនសិស្សពិតប្រាកដតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី + ជំនាន់
         $allStudents = \App\Models\User::where('role', 'student')
             ->whereNotNull('department')
@@ -69,7 +74,7 @@ class ClassController extends Controller
             ->groupBy('class_id')
             ->pluck('total_days', 'class_id');
 
-        $classes = $query->orderBy('id', 'desc')->get()->map(function ($c) use ($allStudents, $sessionCounts) {
+        $classes = $query->orderByRaw('class_date IS NULL, class_date DESC, id DESC')->get()->map(function ($c) use ($allStudents, $sessionCounts) {
             $realStudentCount = 0;
             if (!empty($c->department)) {
                 $classDept = trim((string)$c->department);
@@ -104,6 +109,7 @@ class ClassController extends Controller
                 'room' => $c->room,
                 'day_of_week' => $c->day_of_week,
                 'time' => $c->time,
+                'class_date' => $c->class_date ? $c->class_date->format('Y-m-d') : null,
                 'semester' => $c->semester,
                 'academic_year' => $c->academic_year,
                 'student_count' => $realStudentCount,
@@ -146,6 +152,7 @@ class ClassController extends Controller
             'room' => 'nullable|string|max:100',
             'day_of_week' => 'nullable|string|max:50',
             'time' => 'nullable|string|max:100',
+            'class_date' => 'nullable|date',
             'semester' => 'nullable|string|max:50',
             'academic_year' => 'nullable|string|max:50',
             'student_count' => 'nullable|integer',
@@ -175,6 +182,7 @@ class ClassController extends Controller
             'room' => $request->room,
             'day_of_week' => $request->day_of_week,
             'time' => $request->time,
+            'class_date' => $request->filled('class_date') ? $request->class_date : null,
             'semester' => $request->semester ?? '1',
             'academic_year' => $request->academic_year ?? date('Y'),
             'student_count' => $request->student_count ?? 0,
@@ -291,6 +299,7 @@ class ClassController extends Controller
             'room' => 'nullable|string|max:100',
             'day_of_week' => 'nullable|string|max:50',
             'time' => 'nullable|string|max:100',
+            'class_date' => 'nullable|date',
             'semester' => 'nullable|string|max:50',
             'academic_year' => 'nullable|string|max:50',
             'student_count' => 'nullable|integer',
@@ -308,6 +317,7 @@ class ClassController extends Controller
         if ($request->has('room')) $class->room = $request->room;
         if ($request->has('day_of_week')) $class->day_of_week = $request->day_of_week;
         if ($request->has('time')) $class->time = $request->time;
+        if ($request->has('class_date')) $class->class_date = $request->filled('class_date') ? $request->class_date : null;
         if ($request->has('semester')) $class->semester = $request->semester;
         if ($request->has('academic_year')) $class->academic_year = $request->academic_year;
         if ($request->has('student_count')) $class->student_count = $request->student_count;

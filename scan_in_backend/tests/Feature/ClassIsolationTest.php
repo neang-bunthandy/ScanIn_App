@@ -85,4 +85,52 @@ class ClassIsolationTest extends TestCase
         $this->actingAs($dara)->postJson("/api/classes/{$daraClass->id}/toggle-qr", ['is_qr_active' => true])
             ->assertStatus(200);
     }
+
+    public function test_admin_can_create_class_with_class_date_and_filter_by_date(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $lecturer = User::factory()->create(['role' => 'lecturer']);
+
+        // Create class with class_date
+        $createRes = $this->actingAs($admin)->postJson('/api/classes', [
+            'subject_name' => 'Data Mining With Python',
+            'subject_code' => 'IT001',
+            'lecturer_id' => $lecturer->id,
+            'department' => 'ព័ត៌មានវិទ្យា (IT)',
+            'room' => 'Room 112',
+            'day_of_week' => 'សៅរ៍ (Sat)',
+            'time' => '07:00 - 08:30',
+            'class_date' => '2026-11-14',
+            'semester' => '1',
+            'academic_year' => '2026-2027',
+        ])->assertStatus(201)->json('data');
+
+        $classId = $createRes['id'];
+        $this->assertEquals('2026-11-14', $createRes['class_date']);
+
+        // Check index returns class_date
+        $listRes = $this->actingAs($admin)->getJson('/api/classes')
+            ->assertStatus(200)->json('data');
+        $found = collect($listRes)->firstWhere('id', $classId);
+        $this->assertEquals('2026-11-14', $found['class_date']);
+
+        // Filter by matching date
+        $filteredMatch = $this->actingAs($admin)->getJson('/api/classes?date=2026-11-14')
+            ->assertStatus(200)->json('data');
+        $this->assertNotEmpty(collect($filteredMatch)->where('id', $classId));
+
+        // Filter by different date
+        $filteredMismatch = $this->actingAs($admin)->getJson('/api/classes?date=2026-11-21')
+            ->assertStatus(200)->json('data');
+        $this->assertEmpty(collect($filteredMismatch)->where('id', $classId));
+
+        // Update class_date
+        $this->actingAs($admin)->putJson("/api/classes/{$classId}", [
+            'class_date' => '2026-11-21',
+        ])->assertStatus(200);
+
+        $updatedFound = $this->actingAs($admin)->getJson('/api/classes?date=2026-11-21')
+            ->assertStatus(200)->json('data');
+        $this->assertNotEmpty(collect($updatedFound)->where('id', $classId));
+    }
 }

@@ -160,7 +160,17 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     final academicYearCtrl = TextEditingController(text: '$nowYear-${nowYear + 1}');
     final generationCtrl = TextEditingController();
     String selectedSemester = '1';
-    String selectedDay = 'ច័ន្ទ (Mon)';
+    DateTime? selectedDate = DateTime.now();
+    const weekDaysKhmer = [
+      'ច័ន្ទ (Mon)',
+      'អង្គារ (Tue)',
+      'ពុធ (Wed)',
+      'ព្រហស្បតិ៍ (Thu)',
+      'សុក្រ (Fri)',
+      'សៅរ៍ (Sat)',
+      'អាទិត្យ (Sun)',
+    ];
+    String selectedDay = weekDaysKhmer[selectedDate.weekday - 1];
     final deptCtrl = TextEditingController(text: ClassService.presetDepartments.first);
     final deptOptions = ClassService.buildDepartmentOptions(
       _classes.map((c) => c.department ?? ''),
@@ -335,9 +345,48 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      // ថ្ងៃរៀន (Day of week) & ចំនួនសប្តាហ៍សរុប (Total Weeks - Default 15)
+                      // កាលបរិច្ឆេទនៃ Session (Session Date) & ថ្ងៃរៀន (Day of week)
                       Row(
                         children: [
+                          Expanded(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(10),
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: selectedDate ?? DateTime.now(),
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime(2035),
+                                );
+                                if (picked != null) {
+                                  setDlgState(() {
+                                    selectedDate = picked;
+                                    if (picked.weekday >= 1 && picked.weekday <= 7) {
+                                      selectedDay = weekDaysKhmer[picked.weekday - 1];
+                                    }
+                                  });
+                                }
+                              },
+                              child: InputDecorator(
+                                decoration: InputDecoration(
+                                  labelText: AppLanguage.tr('កាលបរិច្ឆេទ (Session Date)', 'Session Date'),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  suffixIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
+                                ),
+                                child: Text(
+                                  selectedDate != null
+                                      ? '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}'
+                                      : AppLanguage.tr('ជ្រើសរើសថ្ងៃខែឆ្នាំ', 'Select Date'),
+                                  style: TextStyle(
+                                    color: selectedDate != null ? textCol : Colors.grey,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               isExpanded: true,
@@ -361,9 +410,14 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                               },
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          SizedBox(
-                            width: 165,
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      // ចំនួនសប្តាហ៍សរុប (Total Weeks - Default 15)
+                      Row(
+                        children: [
+                          Expanded(
                             child: TextField(
                               controller: totalSessionsCtrl,
                               keyboardType: TextInputType.number,
@@ -513,6 +567,9 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       room: roomCtrl.text.trim(),
                       dayOfWeek: selectedDay,
                       time: timeCtrl.text.trim(),
+                      classDate: selectedDate != null
+                          ? '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}'
+                          : null,
                       totalSessions: totalWeeks,
                     );
 
@@ -560,6 +617,18 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
       text: c.academicYear.isNotEmpty ? c.academicYear : academicYearOptions.first,
     );
     String selectedSemester = c.semester.isNotEmpty ? c.semester : '1';
+    DateTime? selectedDate = (c.classDate != null && c.classDate!.isNotEmpty)
+        ? DateTime.tryParse(c.classDate!)
+        : null;
+    const weekDaysKhmer = [
+      'ច័ន្ទ (Mon)',
+      'អង្គារ (Tue)',
+      'ពុធ (Wed)',
+      'ព្រហស្បតិ៍ (Thu)',
+      'សុក្រ (Fri)',
+      'សៅរ៍ (Sat)',
+      'អាទិត្យ (Sun)',
+    ];
     String selectedDay = c.dayOfWeek.isNotEmpty ? c.dayOfWeek : 'ច័ន្ទ (Mon)';
     final deptOptions = ClassService.buildDepartmentOptions(
       _classes.map((item) => item.department ?? ''),
@@ -736,27 +805,74 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      DropdownButtonFormField<String>(
-                        initialValue: ['ច័ន្ទ (Mon)', 'អង្គារ (Tue)', 'ពុធ (Wed)', 'ព្រហស្បតិ៍ (Thu)', 'សុក្រ (Fri)', 'សៅរ៍ (Sat)', 'អាទិត្យ (Sun)'].contains(selectedDay)
-                            ? selectedDay
-                            : 'ច័ន្ទ (Mon)',
-                        decoration: InputDecoration(
-                          labelText: AppLanguage.tr('ថ្ងៃរៀន (Day of Week)', 'Day of Week'),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: 'ច័ន្ទ (Mon)', child: Text('ច័ន្ទ (Monday)')),
-                          DropdownMenuItem(value: 'អង្គារ (Tue)', child: Text('អង្គារ (Tuesday)')),
-                          DropdownMenuItem(value: 'ពុធ (Wed)', child: Text('ពុធ (Wednesday)')),
-                          DropdownMenuItem(value: 'ព្រហស្បតិ៍ (Thu)', child: Text('ព្រហស្បតិ៍ (Thursday)')),
-                          DropdownMenuItem(value: 'សុក្រ (Fri)', child: Text('សុក្រ (Friday)')),
-                          DropdownMenuItem(value: 'សៅរ៍ (Sat)', child: Text('សៅរ៍ (Saturday)')),
-                          DropdownMenuItem(value: 'អាទិត្យ (Sun)', child: Text('អាទិត្យ (Sunday)')),
+                      // កាលបរិច្ឆេទនៃ Session (Session Date) & ថ្ងៃរៀន (Day of week)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(10),
+                              onTap: () async {
+                                final picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: selectedDate ?? DateTime.now(),
+                                  firstDate: DateTime(2020),
+                                  lastDate: DateTime(2035),
+                                );
+                                if (picked != null) {
+                                  setDlgState(() {
+                                    selectedDate = picked;
+                                    if (picked.weekday >= 1 && picked.weekday <= 7) {
+                                      selectedDay = weekDaysKhmer[picked.weekday - 1];
+                                    }
+                                  });
+                                }
+                              },
+                              child: InputDecorator(
+                                decoration: InputDecoration(
+                                  labelText: AppLanguage.tr('កាលបរិច្ឆេទ (Session Date)', 'Session Date'),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                  suffixIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.primary),
+                                ),
+                                child: Text(
+                                  selectedDate != null
+                                      ? '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}'
+                                      : AppLanguage.tr('ជ្រើសរើសថ្ងៃខែឆ្នាំ', 'Select Date'),
+                                  style: TextStyle(
+                                    color: selectedDate != null ? textCol : Colors.grey,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: ['ច័ន្ទ (Mon)', 'អង្គារ (Tue)', 'ពុធ (Wed)', 'ព្រហស្បតិ៍ (Thu)', 'សុក្រ (Fri)', 'សៅរ៍ (Sat)', 'អាទិត្យ (Sun)'].contains(selectedDay)
+                                  ? selectedDay
+                                  : 'ច័ន្ទ (Mon)',
+                              decoration: InputDecoration(
+                                labelText: AppLanguage.tr('ថ្ងៃរៀន (Day of Week)', 'Day of Week'),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              ),
+                              items: const [
+                                DropdownMenuItem(value: 'ច័ន្ទ (Mon)', child: Text('ច័ន្ទ (Monday)')),
+                                DropdownMenuItem(value: 'អង្គារ (Tue)', child: Text('អង្គារ (Tuesday)')),
+                                DropdownMenuItem(value: 'ពុធ (Wed)', child: Text('ពុធ (Wednesday)')),
+                                DropdownMenuItem(value: 'ព្រហស្បតិ៍ (Thu)', child: Text('ព្រហស្បតិ៍ (Thursday)')),
+                                DropdownMenuItem(value: 'សុក្រ (Fri)', child: Text('សុក្រ (Friday)')),
+                                DropdownMenuItem(value: 'សៅរ៍ (Sat)', child: Text('សៅរ៍ (Saturday)')),
+                                DropdownMenuItem(value: 'អាទិត្យ (Sun)', child: Text('អាទិត្យ (Sunday)')),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) setDlgState(() => selectedDay = val);
+                              },
+                            ),
+                          ),
                         ],
-                        onChanged: (val) {
-                          if (val != null) setDlgState(() => selectedDay = val);
-                        },
                       ),
                       const SizedBox(height: 14),
                       DropdownButtonFormField<int>(
@@ -915,6 +1031,9 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       room: roomCtrl.text.trim(),
                       dayOfWeek: selectedDay,
                       time: timeCtrl.text.trim(),
+                      classDate: selectedDate != null
+                          ? '${selectedDate!.year}-${selectedDate!.month.toString().padLeft(2, '0')}-${selectedDate!.day.toString().padLeft(2, '0')}'
+                          : null,
                       totalSessions: totalWeeks,
                       completedSessions: completedWeeks,
                     );
@@ -1599,7 +1718,57 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                       ),
                                     ),
                                     DataCell(Text(c.room.isNotEmpty ? c.room : '-')),
-                                    DataCell(Text('${c.dayOfWeek} (${c.time})')),
+                                    DataCell(
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.calendar_today_rounded, size: 12, color: isDark ? const Color(0xFF38BDF8) : AppColors.primary),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                (c.classDate != null && c.classDate!.isNotEmpty)
+                                                    ? c.classDate!
+                                                    : (c.dayOfWeek.isNotEmpty ? c.dayOfWeek : '-'),
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                  color: textCol,
+                                                ),
+                                              ),
+                                              if (c.classDate != null && c.classDate!.isNotEmpty && c.dayOfWeek.isNotEmpty) ...[
+                                                const SizedBox(width: 5),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                                  decoration: BoxDecoration(
+                                                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: Text(
+                                                    c.dayOfWeek.split(' ').first,
+                                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: subTextCol),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.access_time_rounded, size: 12, color: subTextCol),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                c.time.isNotEmpty ? c.time : '-',
+                                                style: TextStyle(fontSize: 11, color: subTextCol, fontWeight: FontWeight.w500),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                     DataCell(
                                       Column(
                                         mainAxisAlignment: MainAxisAlignment.center,

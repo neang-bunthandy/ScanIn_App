@@ -31,6 +31,7 @@ class ClassModel extends Model
         'room',
         'day_of_week',
         'time',
+        'class_date',
         'semester',
         'academic_year',
         'student_count',
@@ -48,6 +49,7 @@ class ClassModel extends Model
      */
     protected $casts = [
         'is_qr_active' => 'boolean',
+        'class_date' => 'date:Y-m-d',
         'student_count' => 'integer',
         'completed_sessions' => 'integer',
         'total_sessions' => 'integer',

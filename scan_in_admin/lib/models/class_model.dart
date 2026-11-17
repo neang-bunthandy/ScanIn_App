@@ -13,6 +13,7 @@ class ClassModel {
   final String room; // បន្ទប់រៀន (ឧ. A201)
   final String dayOfWeek; // ថ្ងៃរៀន (ឧ. ចន្ទ, អង្គារ)
   final String time; // ម៉ោងរៀន (ឧ. 08:00 - 10:00)
+  final String? classDate; // កាលបរិច្ឆេទនៃ Session ជាក់លាក់ (ឧ. 2026-11-14)
   final String semester; // ឆមាស
   final String academicYear; // ឆ្នាំសិក្សា
   final int studentCount; // ចំនួនសិស្សសរុប
@@ -37,6 +38,7 @@ class ClassModel {
     required this.room,
     required this.dayOfWeek,
     required this.time,
+    this.classDate,
     required this.semester,
     required this.academicYear,
     this.studentCount = 0,
@@ -67,6 +69,7 @@ class ClassModel {
       room: json['room'] as String? ?? '',
       dayOfWeek: json['day_of_week'] as String? ?? '',
       time: json['time'] as String? ?? '',
+      classDate: json['class_date'] as String?,
       semester: json['semester'] as String? ?? 'ឆមាសទី ១',
       academicYear: json['academic_year'] as String? ?? '2026-2027',
       studentCount: json['student_count'] as int? ?? 0,
@@ -97,6 +100,7 @@ class ClassModel {
       'room': room,
       'day_of_week': dayOfWeek,
       'time': time,
+      'class_date': classDate,
       'semester': semester,
       'academic_year': academicYear,
       'student_count': studentCount,
@@ -123,6 +127,7 @@ class ClassModel {
     String? room,
     String? dayOfWeek,
     String? time,
+    String? classDate,
     String? semester,
     String? academicYear,
     int? studentCount,
@@ -147,6 +152,7 @@ class ClassModel {
       room: room ?? this.room,
       dayOfWeek: dayOfWeek ?? this.dayOfWeek,
       time: time ?? this.time,
+      classDate: classDate ?? this.classDate,
       semester: semester ?? this.semester,
       academicYear: academicYear ?? this.academicYear,
       studentCount: studentCount ?? this.studentCount,
