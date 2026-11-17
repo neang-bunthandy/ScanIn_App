@@ -3,16 +3,30 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AuthApiTest extends TestCase
 {
+    use DatabaseTransactions;
+
     public function test_lecturer_can_login_with_valid_credentials(): void
     {
+        $lecturer = User::create([
+            'name' => 'Dr. Test Lecturer',
+            'email' => 'lecturer_' . Str::random(6) . '@scanin.test',
+            'password' => Hash::make('password123'),
+            'role' => 'lecturer',
+            'staff_id' => 'STF-' . rand(100, 999),
+            'department' => 'ព័ត៌មានវិទ្យា (IT)',
+            'status' => 'active',
+        ]);
+
         $response = $this->postJson('/api/login', [
-            'email' => 'dara@scanin.app',
-            'password' => '223232323',
+            'email' => $lecturer->email,
+            'password' => 'password123',
             'role' => 'teacher',
         ]);
 
@@ -33,7 +47,7 @@ class AuthApiTest extends TestCase
             ->assertJson([
                 'status' => true,
                 'user' => [
-                    'email' => 'dara@scanin.app',
+                    'email' => $lecturer->email,
                     'role' => 'lecturer',
                 ],
             ]);
@@ -41,9 +55,19 @@ class AuthApiTest extends TestCase
 
     public function test_student_can_login_with_valid_credentials(): void
     {
+        $student = User::create([
+            'name' => 'Test Student',
+            'email' => 'student_' . Str::random(6) . '@scanin.test',
+            'password' => Hash::make('password123'),
+            'role' => 'student',
+            'student_code' => 'STU' . rand(1000, 9999),
+            'department' => 'ព័ត៌មានវិទ្យា (IT)',
+            'status' => 'active',
+        ]);
+
         $response = $this->postJson('/api/login', [
-            'email' => 'student@scanin.app',
-            'password' => '12345678',
+            'email' => $student->email,
+            'password' => 'password123',
             'role' => 'student',
         ]);
 
@@ -51,17 +75,26 @@ class AuthApiTest extends TestCase
             ->assertJson([
                 'status' => true,
                 'user' => [
-                    'email' => 'student@scanin.app',
+                    'email' => $student->email,
                     'role' => 'student',
-                    'student_code' => 'STU001',
+                    'student_code' => $student->student_code,
                 ],
             ]);
     }
 
     public function test_login_fails_with_invalid_password(): void
     {
+        $student = User::create([
+            'name' => 'Test Student',
+            'email' => 'student_' . Str::random(6) . '@scanin.test',
+            'password' => Hash::make('password123'),
+            'role' => 'student',
+            'student_code' => 'STU' . rand(1000, 9999),
+            'status' => 'active',
+        ]);
+
         $response = $this->postJson('/api/login', [
-            'email' => 'student@scanin.app',
+            'email' => $student->email,
             'password' => 'wrongpassword',
         ]);
 
@@ -73,9 +106,18 @@ class AuthApiTest extends TestCase
 
     public function test_authenticated_user_can_access_me_and_logout(): void
     {
+        $student = User::create([
+            'name' => 'Test Student',
+            'email' => 'student_' . Str::random(6) . '@scanin.test',
+            'password' => Hash::make('password123'),
+            'role' => 'student',
+            'student_code' => 'STU' . rand(1000, 9999),
+            'status' => 'active',
+        ]);
+
         $loginResponse = $this->postJson('/api/login', [
-            'email' => 'student@scanin.app',
-            'password' => '12345678',
+            'email' => $student->email,
+            'password' => 'password123',
         ]);
 
         $token = $loginResponse->json('access_token');
@@ -88,7 +130,7 @@ class AuthApiTest extends TestCase
             ->assertJson([
                 'status' => true,
                 'user' => [
-                    'email' => 'student@scanin.app',
+                    'email' => $student->email,
                 ],
             ]);
 
@@ -97,6 +139,47 @@ class AuthApiTest extends TestCase
             ->postJson('/api/logout');
 
         $logoutResponse->assertStatus(200)
+            ->assertJson([
+                'status' => true,
+            ]);
+    }
+
+    public function test_user_can_change_password_successfully(): void
+    {
+        $user = User::create([
+            'name' => 'Test User',
+            'email' => 'user_' . Str::random(6) . '@scanin.test',
+            'password' => Hash::make('oldpassword123'),
+            'role' => 'admin',
+            'status' => 'active',
+        ]);
+
+        $loginResponse = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'oldpassword123',
+        ]);
+
+        $token = $loginResponse->json('access_token');
+
+        // Call change password API
+        $changeResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
+            ->postJson('/api/user/change-password', [
+                'current_password' => 'oldpassword123',
+                'new_password' => 'newpassword456',
+            ]);
+
+        $changeResponse->assertStatus(200)
+            ->assertJson([
+                'status' => true,
+            ]);
+
+        // Verify login with new password works
+        $newLoginResponse = $this->postJson('/api/login', [
+            'email' => $user->email,
+            'password' => 'newpassword456',
+        ]);
+
+        $newLoginResponse->assertStatus(200)
             ->assertJson([
                 'status' => true,
             ]);

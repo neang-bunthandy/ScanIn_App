@@ -82,6 +82,302 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     }
   }
 
+  Future<void> _showChangePasswordDialog() async {
+    final currentPasswordCtrl = TextEditingController();
+    final newPasswordCtrl = TextEditingController();
+    final confirmPasswordCtrl = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+    bool isLoading = false;
+    String? errorMessage;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final isDark = Theme.of(dialogCtx).brightness == Brightness.dark;
+            final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+            final textCol = isDark ? Colors.white : const Color(0xFF0F172A);
+            final subTextCol = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+            final borderCol = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+
+            Future<void> handleSubmit() async {
+              errorMessage = null;
+              if (!formKey.currentState!.validate()) return;
+
+              setDialogState(() => isLoading = true);
+
+              final result = await AuthService.changePassword(
+                currentPassword: currentPasswordCtrl.text,
+                newPassword: newPasswordCtrl.text,
+              );
+
+              if (!mounted) return;
+
+              if (result['success'] == true) {
+                Navigator.pop(dialogCtx);
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            AppLanguage.tr(
+                              'បានប្តូរពាក្យសម្ងាត់ដោយជោគជ័យ!',
+                              'Password changed successfully!',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: const Color(0xFF10B981),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              } else {
+                setDialogState(() {
+                  isLoading = false;
+                  errorMessage = result['message']?.toString() ??
+                      AppLanguage.tr('ការប្តូរពាក្យសម្ងាត់មិនជោគជ័យ', 'Failed to change password');
+                });
+              }
+            }
+
+            return AlertDialog(
+              backgroundColor: cardBg,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(Icons.key_rounded, color: Color(0xFFF59E0B), size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textCol),
+                        ),
+                        if (_currentUser?.email != null)
+                          Text(
+                            _currentUser!.email,
+                            style: TextStyle(fontSize: 12, color: subTextCol, fontWeight: FontWeight.normal),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              content: SizedBox(
+                width: 420,
+                child: Form(
+                  key: formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (errorMessage != null) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColors.error.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 18),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    errorMessage!,
+                                    style: const TextStyle(color: AppColors.error, fontSize: 13),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                        ],
+
+                        // Current Password
+                        Text(
+                          AppLanguage.tr('ពាក្យសម្ងាត់បច្ចុប្បន្ន', 'Current Password'),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textCol),
+                        ),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: currentPasswordCtrl,
+                          obscureText: obscureCurrent,
+                          style: TextStyle(color: textCol, fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: AppLanguage.tr('បញ្ចូលពាក្យសម្ងាត់ចាស់', 'Enter current password'),
+                            hintStyle: TextStyle(color: subTextCol, fontSize: 13),
+                            prefixIcon: Icon(Icons.lock_outline_rounded, color: subTextCol, size: 20),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                color: subTextCol,
+                                size: 20,
+                              ),
+                              onPressed: () => setDialogState(() => obscureCurrent = !obscureCurrent),
+                            ),
+                            filled: true,
+                            fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderCol)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderCol)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+                          ),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return AppLanguage.tr('សូមបញ្ចូលពាក្យសម្ងាត់បច្ចុប្បន្ន', 'Current password is required');
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+
+                        // New Password
+                        Text(
+                          AppLanguage.tr('ពាក្យសម្ងាត់ថ្មី (យ៉ាងតិច ៦ ខ្ទង់)', 'New Password (min 6 chars)'),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textCol),
+                        ),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: newPasswordCtrl,
+                          obscureText: obscureNew,
+                          style: TextStyle(color: textCol, fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: AppLanguage.tr('បញ្ចូលពាក្យសម្ងាត់ថ្មី', 'Enter new password'),
+                            hintStyle: TextStyle(color: subTextCol, fontSize: 13),
+                            prefixIcon: Icon(Icons.lock_rounded, color: subTextCol, size: 20),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                color: subTextCol,
+                                size: 20,
+                              ),
+                              onPressed: () => setDialogState(() => obscureNew = !obscureNew),
+                            ),
+                            filled: true,
+                            fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderCol)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderCol)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+                          ),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return AppLanguage.tr('សូមបញ្ចូលពាក្យសម្ងាត់ថ្មី', 'New password is required');
+                            }
+                            if (val.trim().length < 6) {
+                              return AppLanguage.tr('ពាក្យសម្ងាត់ត្រូវមានយ៉ាងតិច ៦ ខ្ទង់', 'Password must be at least 6 characters');
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Confirm New Password
+                        Text(
+                          AppLanguage.tr('ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី', 'Confirm New Password'),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textCol),
+                        ),
+                        const SizedBox(height: 6),
+                        TextFormField(
+                          controller: confirmPasswordCtrl,
+                          obscureText: obscureConfirm,
+                          style: TextStyle(color: textCol, fontSize: 14),
+                          decoration: InputDecoration(
+                            hintText: AppLanguage.tr('វាយពាក្យសម្ងាត់ថ្មីម្តងទៀត', 'Re-enter new password'),
+                            hintStyle: TextStyle(color: subTextCol, fontSize: 13),
+                            prefixIcon: Icon(Icons.lock_outline_rounded, color: subTextCol, size: 20),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                                color: subTextCol,
+                                size: 20,
+                              ),
+                              onPressed: () => setDialogState(() => obscureConfirm = !obscureConfirm),
+                            ),
+                            filled: true,
+                            fillColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderCol)),
+                            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: borderCol)),
+                            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+                          ),
+                          validator: (val) {
+                            if (val == null || val.trim().isEmpty) {
+                              return AppLanguage.tr('សូមផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី', 'Please confirm new password');
+                            }
+                            if (val.trim() != newPasswordCtrl.text.trim()) {
+                              return AppLanguage.tr('ពាក្យសម្ងាត់ទាំងពីរមិនដូចគ្នាទេ!', 'Passwords do not match');
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              actions: [
+                TextButton(
+                  onPressed: isLoading ? null : () => Navigator.pop(dialogCtx),
+                  child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
+                ),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF59E0B),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  ),
+                  onPressed: isLoading ? null : handleSubmit,
+                  icon: isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.check_rounded, size: 18),
+                  label: Text(
+                    isLoading
+                        ? AppLanguage.tr('កំពុងរក្សាទុក...', 'Saving...')
+                        : AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    currentPasswordCtrl.dispose();
+    newPasswordCtrl.dispose();
+    confirmPasswordCtrl.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -283,6 +579,12 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                             ),
                             const SizedBox(height: 8),
                             IconButton(
+                              tooltip: AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
+                              icon: const Icon(Icons.key_rounded, color: Color(0xFFF59E0B), size: 18),
+                              onPressed: _showChangePasswordDialog,
+                            ),
+                            const SizedBox(height: 4),
+                            IconButton(
                               tooltip: AppLanguage.tr('ចាកចេញ (Sign Out)', 'Sign Out'),
                               icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 18),
                               onPressed: _handleLogout,
@@ -331,6 +633,11 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                   ),
                                 ],
                               ),
+                            ),
+                            IconButton(
+                              tooltip: AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
+                              icon: const Icon(Icons.key_rounded, color: Color(0xFFF59E0B), size: 19),
+                              onPressed: _showChangePasswordDialog,
                             ),
                             IconButton(
                               tooltip: AppLanguage.tr('ចាកចេញ (Sign Out)', 'Sign Out'),

@@ -173,9 +173,9 @@
 
 ## ៦. ស្ថានភាពត្រួតពិនិត្យសុខភាពកូដ & ឯកសារ (Code & Folder Health Check — 13/11/2026)
 
-* **Git Status:** Clean working tree, On branch `main`, Up to date with `origin/main` (Commit `b2b0994`).
-* **Stray/Unused Files:** គ្មានឯកសារខូច, គ្មានឯកសារលើស, គ្មាន temp file ឥតប្រយោជន៍ឡើយ។
-* **Laravel API Backend (`scan_in_backend`):** `php artisan test` ទទួលបាន **18 passed (141 assertions)** ដំណើរការលឿនរលូន (Duration: 3.24s)។
+* **Git Status:** Clean working tree, On branch `main`.
+* **Stray/Unused Files:** គ្មានឯកសារខូច, គ្មានឯកសារលើស, គ្មាន temp file ឥតប្រយោជន៍ឡើយ (បានជួសជុល 0-byte vendor files រួចរាល់)។
+* **Laravel API Backend (`scan_in_backend`):** `php artisan test` ទទួលបាន **19 passed (145 assertions)** ដំណើរការលឿនរលូន (Duration: 1.82s)។
 * **Web Admin Portal (`scan_in_admin`):** `flutter analyze` ទទួលបាន **No issues found!** (0 errors, 0 warnings)។
 * **Mobile App (`scan_in`):** `flutter analyze` ទទួលបាន **No issues found!** (0 errors, 0 warnings)។
 * **Database (MySQL):** Database `scan_in` ដំណើរការល្អធម្មតាលើ port 3306។
@@ -183,33 +183,34 @@
 
 ---
 
-## 🚀 ៧. ផែនការងារជាក់លាក់សម្រាប់ថ្ងៃស្អែក (Next Day Action Plan — Step-by-Step)
+## 🚀 ៧. ផែនការងារជាក់លាក់ និងស្ថានភាពបច្ចុប្បន្ន (Production Roadmap)
 
-ពេលត្រឡប់មកធ្វើការបន្តនៅថ្ងៃស្អែក យើងនឹងបន្តធ្វើ **ជំហានទី ២** នៃ Production Roadmap ៖
+### ✅ ជំហានទី ១ (Step 1 — រួចរាល់) ៖ បង្កើត Artisan CLI Command `php artisan make:admin`
+* បានបង្កើតគណនី Master Admin ដំបូងដោយជោគជ័យ៖ `masteradmin@scanin.edu.kh` (`NEANG BUNTHANDY`)។
 
-### 📌 ជំហានទី ២ (Step 2 — អាទិភាពទី ១ សម្រាប់ថ្ងៃស្អែក)៖
+### ✅ ជំហានទី ២ (Step 2 — រួចរាល់) ៖ បន្ថែមប៊ូតុង "ប្តូរ Password" លើ Web Admin និងកែសម្រួល AuthApiTest
 1. **Web Admin — បន្ថែមប៊ូតុង និង Dialog "ប្តូរពាក្យសម្ងាត់ (Change Password)"៖**
-   * **ទីតាំង៖** ក្នុង [admin_scaffold.dart](file:///d:/Flutter_Project/Scan_In_App/scan_in_admin/lib/screens/admin_scaffold.dart) នៅជាប់ប៊ូតុង Logout (ទាំង Compact និង Expanded Sidebar)។
-   * **ផ្ទាំង Dialog៖** បញ្ចូល Current Password, New Password, Confirm New Password ជាមួយប៊ូតុង Show/Hide Password។
-   * **API Connection៖** ហៅ `AuthService.changePassword(currentPassword, newPassword)` ដែលភ្ជាប់ទៅ `POST /api/user/change-password`។
-2. **Backend — កែសម្រួល [AuthApiTest.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/tests/Feature/AuthApiTest.php) ឱ្យប្រើ Factory៖**
-   * បន្ថែម `use DatabaseTransactions;`។
-   * ប្តូរពីការហៅ hardcoded email `dara@scanin.app` និង `student@scanin.app` មកជា `User::factory()->create(...)` ក្នុង Memory។
-   * ធានាថា `php artisan test` នៅតែ Pass 18/18 ពេញលេញ ១០០% ទោះបីជាគ្មាន Demo Seeder ក៏ដោយ។
+   * **ទីតាំង៖** ក្នុង [admin_scaffold.dart](file:///d:/Flutter_Project/Scan_In_App/scan_in_admin/lib/screens/admin_scaffold.dart) នៅជាប់ប៊ូតុង Sign Out (ទាំង Compact និង Expanded Sidebar) ជាមួយ icon សោពណ៌ទឹកក្រូច `Icons.key_rounded`។
+   * **ផ្ទាំង Dialog៖** បញ្ចូល Current Password, New Password, Confirm New Password ជាមួយប៊ូតុង Show/Hide Password និង Form Validation ត្រឹមត្រូវ។
+   * **API Connection៖** ហៅ `AuthService.changePassword(currentPassword, newPassword)` ភ្ជាប់ទៅ `POST /api/user/change-password`។
+2. **Backend — កែសម្រួល [AuthApiTest.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/tests/Feature/AuthApiTest.php) ឱ្យប្រើ Factory & Transactions៖**
+   * បន្ថែម `use DatabaseTransactions;` និងប្តូរពី email រឹង `dara@scanin.app` / `student@scanin.app` មកជា Dynamic User ក្នុង Transactions។
+   * បន្ថែមតេស្ត `test_user_can_change_password_successfully` ផ្ទៀងផ្ទាត់ការប្តូរពាក្យសម្ងាត់តាម API។
+   * លទ្ធផលតេស្ត៖ **19 passed (145 assertions)** ឆ្លងកាត់ ១០០% ដោយមិនពឹងផ្អែកលើ Demo Seeder ទៀតឡើយ។
 
 ---
 
-### 📌 ជំហានទី ៣ (Step 3 — សម្អាត Demo Seed Data ទៅកាន់ Clean Production DB)៖
-1. ដកទិន្នន័យគំរូ (`dara@scanin.app`, `student@scanin.app`) ចេញពី [DatabaseSeeder.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/database/seeders/DatabaseSeeder.php)។
-2. សម្អាត Record ចាស់ៗដែលជា Demo Data ចេញពីតារាង `users`, `classes`, និង `attendances` ក្នុង MySQL។
+### 📌 ជំហានទី ៣ (Step 3 — កិច្ចការបន្ទាប់ភ្លាមៗ) ៖ សម្អាត Demo Seed Data ទៅកាន់ Clean Production DB
+1. **ដកទិន្នន័យគំរូចេញពី Seeder៖** ដកគណនីគ្រូ `dara@scanin.app` និងសិស្ស `student@scanin.app` ចេញពី [DatabaseSeeder.php](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/database/seeders/DatabaseSeeder.php) (ទុកតែ Seeder ស្អាតស្អំ)។
+2. **សម្អាត Demo Records ក្នុង MySQL៖** សម្អាត Record ចាស់ៗដែលជា Demo Data ចេញពីតារាង `users`, `classes`, និង `attendances` ក្នុង MySQL ដើម្បីឱ្យ DB នៅសល់តែទិន្នន័យស្អាតសុទ្ធ។
 
 ---
 
-### 📌 ជំហានទី ៤ (Step 4 — Master Admin បង្កើត Real Data)៖
-1. Master Admin ចូល Login តាម Web Admin ដោយប្រើ `masteradmin@scanin.edu.kh`។
+### 📌 ជំហានទី ៤ (Step 4) ៖ Master Admin Login ចូល Web Admin បង្កើត Real Data
+1. Master Admin Login ចូល Web Admin ដោយប្រើ `masteradmin@scanin.edu.kh`។
 2. ចាប់ផ្តើមបង្កើតគណនីគ្រូពិតប្រាកដ និង Import បញ្ជីឈ្មោះសិស្ស Real Data ពី Excel/CSV។
 
 ---
 
-### 📌 ជំហានទី ៥ (Step 5 — ប្រព័ន្ធគ្រប់គ្រង Sub-Admin ការិយាល័យសិក្សា)៖
+### 📌 ជំហានទី ៥ (Step 5) ៖ ប្រព័ន្ធគ្រប់គ្រង Sub-Admin (បុគ្គលិកការិយាល័យសិក្សា)
 1. បង្កើតផ្ទាំងគ្រប់គ្រង Sub-Admin (Academic Affairs) លើ Web Admin សម្រាប់ឱ្យ Master Admin បង្កើតគណនីបុគ្គលិកការិយាល័យជួយគ្រប់គ្រងសិស្ស/ថ្នាក់រៀន ដោយមាន Role Isolation ច្បាស់លាស់។
