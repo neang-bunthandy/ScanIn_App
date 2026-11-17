@@ -68,8 +68,8 @@ Route::get('/lecturers', function (Request $request) {
         ], 403);
     }
     $lecturers = \App\Models\User::where('role', 'lecturer')
-        ->withCount('classes')
         ->select('id', 'name', 'latin_name', 'email', 'department', 'phone', 'staff_id')
+        ->withCount('classes')
         ->orderBy('id', 'desc')
         ->get();
     return response()->json(['status' => true, 'data' => $lecturers]);

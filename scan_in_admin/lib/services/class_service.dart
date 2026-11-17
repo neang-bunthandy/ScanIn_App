@@ -307,6 +307,8 @@ class ClassService {
         ).timeout(const Duration(seconds: 5));
 
         if (response.statusCode == 200 || response.statusCode == 201) {
+          _cachedClasses = null;
+          _cachedLecturers = null;
           final data = jsonDecode(response.body);
           if (data['data'] != null) {
             return ClassModel.fromJson(data['data'] as Map<String, dynamic>);
@@ -869,6 +871,7 @@ class ClassService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         _cachedClasses = null;
+        _cachedLecturers = null;
         return true;
       }
     } catch (_) {}
@@ -922,6 +925,7 @@ class ClassService {
 
       if (response.statusCode == 200) {
         _cachedClasses = null;
+        _cachedLecturers = null;
         return true;
       }
       return false;
@@ -943,6 +947,7 @@ class ClassService {
 
       if (response.statusCode == 200) {
         _cachedClasses = null;
+        _cachedLecturers = null;
         return true;
       }
       return false;

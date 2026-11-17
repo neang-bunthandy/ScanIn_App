@@ -35,12 +35,22 @@ class DualNameUsersTest extends TestCase
             'email' => 'vibol.dual@scanin.app',
         ])->assertStatus(200);
 
+        ClassModel::create([
+            'user_id' => $createRes['id'],
+            'subject_name' => 'Data Structures',
+            'subject_code' => 'CS102',
+            'room' => 'R101',
+            'qr_token' => 'TOKEN-TEST-1',
+            'is_qr_active' => false,
+        ]);
+
         $lecturers = $this->actingAs($admin)->getJson('/api/lecturers')
             ->assertStatus(200)
             ->json('data');
         $found = collect($lecturers)->firstWhere('id', $createRes['id']);
         $this->assertEquals('សាស្ត្រាចារ្យ សុខ វិបុល', $found['name']);
         $this->assertEquals('Prof. Sok Vibol', $found['latin_name']);
+        $this->assertEquals(1, $found['classes_count']);
 
         // Auth me/login includes latin_name
         $loginRes = $this->postJson('/api/login', [
