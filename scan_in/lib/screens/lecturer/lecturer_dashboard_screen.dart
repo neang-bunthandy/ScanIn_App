@@ -5,13 +5,15 @@ import '../../core/app_datetime.dart';
 import '../../models/class_model.dart';
 import '../../models/user_model.dart';
 import '../../models/attendance_model.dart';
+import '../../widgets/week_day_strip.dart';
 import 'class_detail_screen.dart';
 import 'show_qr_screen.dart';
 import 'attendance_list_screen.dart';
 
 /// អេក្រង់ទំព័រដើមរបស់គ្រូ (Tab 1: ដើម)
 /// គាំទ្រទាំង Light Mode និង Dark Mode យ៉ាងពេញលេញ
-class LecturerDashboardScreen extends StatelessWidget {
+/// បំពាក់ WeekDayStrip (ជម្រើសទី ២) សម្រាប់រើសថ្ងៃ និងមើលកាលវិភាគបង្រៀនជាក់ស្តែង
+class LecturerDashboardScreen extends StatefulWidget {
   final UserModel lecturer;
   final List<ClassModel> classes;
   final List<AttendanceModel> attendances;
@@ -34,7 +36,28 @@ class LecturerDashboardScreen extends StatelessWidget {
   });
 
   @override
+  State<LecturerDashboardScreen> createState() => _LecturerDashboardScreenState();
+}
+
+class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
+  late DateTime _selectedDate;
+  bool _showAllClasses = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime.now();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final lecturer = widget.lecturer;
+    final classes = widget.classes;
+    final attendances = widget.attendances;
+    final classQrActive = widget.classQrActive;
+    final onShowQr = widget.onShowQr;
+    final onGoToAttendanceTab = widget.onGoToAttendanceTab;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final borderCol = isDark ? const Color(0xFF334155) : AppColors.border;
@@ -282,67 +305,219 @@ class LecturerDashboardScreen extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
 
-          // --- 4. Teaching Classes Section Header ---
-          Text(
-            '${AppLanguage.tr('ថ្នាក់បង្រៀនរបស់ខ្ញុំ', 'My Teaching Classes')} (${classes.length})',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: textCol,
-            ),
+          // --- 3.5. របាររើសថ្ងៃ Week Day Strip (ជម្រើសទី ២ ទំនើប) ---
+          WeekDayStrip(
+            selectedDate: _selectedDate,
+            classes: classes,
+            onSelectDate: (d) {
+              setState(() {
+                _selectedDate = d;
+                _showAllClasses = false;
+              });
+            },
+            onResetToToday: () {
+              setState(() {
+                _selectedDate = DateTime.now();
+                _showAllClasses = false;
+              });
+            },
           ),
-          const SizedBox(height: 12),
 
-          // --- 5. Class Cards List ---
-          if (classes.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 36.0),
-                child: Column(
+          const SizedBox(height: 24),
+
+          // ច្រោះយកថ្នាក់បង្រៀនតាមថ្ងៃដែលបានជ្រើសរើស
+          () {
+            final dayClasses = classes.where((c) {
+              return AppDateTime.matchesClassSchedule(c.dayOfWeek, c.classDate, _selectedDate);
+            }).toList();
+            final displayClasses = _showAllClasses ? classes : dayClasses;
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- 4. Teaching Classes Section Header ---
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(Icons.school_outlined, size: 54, color: isDark ? const Color(0xFF475569) : Colors.grey.shade400),
-                    const SizedBox(height: 12),
-                    Text(
-                      AppLanguage.tr(
-                        'សាលាមិនទាន់បានចាត់តាំងថ្នាក់បង្រៀនជូនលោកគ្រូនៅឡើយទេ',
-                        'No teaching classes have been assigned by Admin yet',
-                      ),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: subTextCol, fontSize: 14),
+                    Row(
+                      children: [
+                        Text(
+                          _showAllClasses
+                              ? AppLanguage.tr('ថ្នាក់បង្រៀនទាំងអស់', 'All Teaching Classes')
+                              : AppLanguage.tr('ថ្នាក់បង្រៀនតាមថ្ងៃ', 'Teaching Classes by Day'),
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
+                            color: textCol,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${displayClasses.length}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    if (classes.isNotEmpty)
+                      InkWell(
+                        onTap: () => setState(() => _showAllClasses = !_showAllClasses),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: _showAllClasses
+                                ? AppColors.primary.withValues(alpha: 0.15)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _showAllClasses
+                                  ? AppColors.primary
+                                  : subTextCol.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _showAllClasses ? Icons.calendar_today_rounded : Icons.list_alt_rounded,
+                                size: 13,
+                                color: _showAllClasses ? AppColors.primary : subTextCol,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                _showAllClasses
+                                    ? AppLanguage.tr('មើលតាមថ្ងៃ', 'Filter by Day')
+                                    : AppLanguage.tr('មើលទាំងអស់ (${classes.length})', 'View All (${classes.length})'),
+                                style: TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: _showAllClasses ? AppColors.primary : subTextCol,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-              ),
-            )
-          else
-            ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: classes.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 14),
-              itemBuilder: (context, index) {
-                final c = classes[index];
-                return _buildClassCard(
-                  context,
-                  c,
-                  cardBg: cardBg,
-                  borderCol: borderCol,
-                  textCol: textCol,
-                  subTextCol: subTextCol,
-                  isDark: isDark,
-                );
-              },
-            ),
+                const SizedBox(height: 12),
+
+                // --- 5. Class Cards List ---
+                if (classes.isEmpty)
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 36.0),
+                      child: Column(
+                        children: [
+                          Icon(Icons.school_outlined, size: 54, color: isDark ? const Color(0xFF475569) : Colors.grey.shade400),
+                          const SizedBox(height: 12),
+                          Text(
+                            AppLanguage.tr(
+                              'សាលាមិនទាន់បានចាត់តាំងថ្នាក់បង្រៀនជូនលោកគ្រូនៅឡើយទេ',
+                              'No teaching classes have been assigned by Admin yet',
+                            ),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: subTextCol, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (displayClasses.isEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: cardBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: borderCol),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(Icons.event_busy_rounded, size: 26, color: subTextCol),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          AppLanguage.tr(
+                            'គ្មានថ្នាក់បង្រៀនសម្រាប់ ${AppDateTime.formatTimetableDate(_selectedDate)} ទេ',
+                            'No teaching classes scheduled for ${AppDateTime.formatTimetableDate(_selectedDate)}',
+                          ),
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 13.5, color: textCol, fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 10),
+                        TextButton.icon(
+                          onPressed: () {
+                            for (int i = 0; i < 14; i++) {
+                              final checkDate = DateTime.now().add(Duration(days: i));
+                              if (classes.any((c) => AppDateTime.matchesClassSchedule(c.dayOfWeek, c.classDate, checkDate))) {
+                                setState(() {
+                                  _selectedDate = checkDate;
+                                  _showAllClasses = false;
+                                });
+                                break;
+                              }
+                            }
+                          },
+                          icon: const Icon(Icons.arrow_forward_rounded, size: 14),
+                          label: Text(
+                            AppLanguage.tr('មើលថ្នាក់បង្រៀនបន្ទាប់ ➔', 'View upcoming class ➔'),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: displayClasses.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 14),
+                    itemBuilder: (context, index) {
+                      final c = displayClasses[index];
+                      return _buildClassCard(
+                        context,
+                        c,
+                        cardBg: cardBg,
+                        borderCol: borderCol,
+                        textCol: textCol,
+                        subTextCol: subTextCol,
+                        isDark: isDark,
+                      );
+                    },
+                  ),
+              ],
+            );
+          }(),
         ],
       ),
     );
 
-    if (onRefresh != null) {
+    if (widget.onRefresh != null) {
       return RefreshIndicator(
         color: AppColors.primary,
-        onRefresh: onRefresh!,
+        onRefresh: widget.onRefresh!,
         child: content,
       );
     }
@@ -398,9 +573,12 @@ class LecturerDashboardScreen extends StatelessWidget {
     required Color subTextCol,
     required bool isDark,
   }) {
-    final isQrActive = classQrActive[c.id] ?? false;
+    final isQrActive = widget.classQrActive[c.id] ?? false;
     final progress = c.completedSessions / (c.totalSessions > 0 ? c.totalSessions : 1);
     final badgeCodeBg = isDark ? const Color(0xFF334155) : AppColors.primaryLight.withValues(alpha: 0.35);
+    final String sessionDateText = c.classDate != null && c.classDate!.isNotEmpty
+        ? AppDateTime.formatSessionDate(DateTime.tryParse(c.classDate!) ?? _selectedDate)
+        : (c.dayOfWeek.isNotEmpty ? c.dayOfWeek : AppDateTime.dayOfWeek(_selectedDate));
 
     return Container(
       decoration: BoxDecoration(
@@ -456,7 +634,7 @@ class LecturerDashboardScreen extends StatelessWidget {
 
                 // QR Status Chip (ចុចដើម្បីបើក/បិទភ្លាមៗ)
                 InkWell(
-                  onTap: () => onToggleQr(c),
+                  onTap: () => widget.onToggleQr(c),
                   borderRadius: BorderRadius.circular(20),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
@@ -508,7 +686,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                         ),
                       ).then((result) {
                         if (result != null && result != isQrActive) {
-                          onToggleQr(c);
+                          widget.onToggleQr(c);
                         }
                       });
                     } else if (val == 'attendance_list') {
@@ -557,12 +735,36 @@ class LecturerDashboardScreen extends StatelessWidget {
                   c.room,
                   style: TextStyle(fontSize: 13, color: subTextCol),
                 ),
-                const SizedBox(width: 14),
-                Icon(Icons.access_time_rounded, size: 16, color: subTextCol),
-                const SizedBox(width: 4),
-                Text(
-                  '${c.dayOfWeek} ${c.time}',
-                  style: TextStyle(fontSize: 13, color: subTextCol),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF16A34A).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.access_time_rounded, size: 11, color: Color(0xFF16A34A)),
+                      const SizedBox(width: 4),
+                      Text(
+                        c.time,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF16A34A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    sessionDateText,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: subTextCol),
+                  ),
                 ),
               ],
             ),
@@ -618,7 +820,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                 // Button 1: បង្ហាញ QR Code
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => onShowQr(c),
+                    onPressed: () => widget.onShowQr(c),
                     icon: const Icon(Icons.qr_code_2_rounded, size: 18),
                     label: Text(AppLanguage.tr('បង្ហាញ QR', 'Show QR')),
                     style: ElevatedButton.styleFrom(

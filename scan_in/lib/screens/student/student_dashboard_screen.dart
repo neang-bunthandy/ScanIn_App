@@ -5,11 +5,13 @@ import '../../core/app_datetime.dart';
 import '../../models/user_model.dart';
 import '../../models/class_model.dart';
 import '../../models/attendance_model.dart';
+import '../../widgets/week_day_strip.dart';
 import '../lecturer/class_detail_screen.dart';
 
 /// អេក្រង់ទំព័រដើមសិស្ស (Tab 1: ដើម)
 /// គាំទ្រទាំង Light Mode និង Dark Mode យ៉ាងពេញលេញ
-class StudentDashboardScreen extends StatelessWidget {
+/// បំពាក់ WeekDayStrip (ជម្រើសទី ២) សម្រាប់រើសថ្ងៃ និងមើលកាលវិភាគជាក់ស្តែង
+class StudentDashboardScreen extends StatefulWidget {
   final UserModel student;
   final List<ClassModel> classes;
   final List<AttendanceModel> attendances;
@@ -28,7 +30,26 @@ class StudentDashboardScreen extends StatelessWidget {
   });
 
   @override
+  State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
+}
+
+class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
+  late DateTime _selectedDate;
+  bool _showAllClasses = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime.now();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final student = widget.student;
+    final classes = widget.classes;
+    final attendances = widget.attendances;
+    final isLoading = widget.isLoading;
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final borderCol = isDark ? const Color(0xFF334155) : AppColors.border;
@@ -40,6 +61,12 @@ class StudentDashboardScreen extends StatelessWidget {
     final presentCount = attendances.where((a) => a.isPresent).length;
     final lateCount = attendances.where((a) => a.isLate).length;
     final absentCount = attendances.where((a) => a.isAbsent).length;
+
+    // ច្រោះយកថ្នាក់រៀនតាមថ្ងៃដែលបានជ្រើសរើស (Filter by Selected Day)
+    final dayClasses = classes.where((c) {
+      return AppDateTime.matchesClassSchedule(c.dayOfWeek, c.classDate, _selectedDate);
+    }).toList();
+    final displayClasses = _showAllClasses ? classes : dayClasses;
 
     final content = SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -109,7 +136,7 @@ class StudentDashboardScreen extends StatelessWidget {
             width: double.infinity,
             height: 64,
             child: ElevatedButton(
-              onPressed: onScanQr,
+              onPressed: widget.onScanQr,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -118,16 +145,17 @@ class StudentDashboardScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.camera_alt_rounded, size: 26, color: Colors.white),
+                  const Icon(Icons.camera_alt_rounded, size: 28),
                   const SizedBox(width: 12),
                   Text(
                     AppLanguage.tr('ស្កេនវត្តមាន', 'Scan Attendance'),
                     style: const TextStyle(
-                      fontSize: 19,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.3,
                     ),
@@ -139,11 +167,11 @@ class StudentDashboardScreen extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // --- 3. Monthly Attendance Summary (វត្តមានខែនេះ) ---
+          // --- 3. Quick Stats (វត្តមានខែនេះ) ---
           Text(
-            AppLanguage.tr('វត្តមានខែនេះ', 'Monthly Attendance'),
+            AppLanguage.tr('វត្តមានខែនេះ៖', 'This Month\'s Attendance:'),
             style: TextStyle(
-              fontSize: 17,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: textCol,
             ),
@@ -152,7 +180,7 @@ class StudentDashboardScreen extends StatelessWidget {
 
           Row(
             children: [
-              // មក (Present)
+              // វត្តមាន (Present)
               Expanded(
                 child: _buildStatCard(
                   count: '$presentCount',
@@ -189,33 +217,99 @@ class StudentDashboardScreen extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 28),
+          const SizedBox(height: 24),
+
+          // --- 3.5. របាររើសថ្ងៃ Week Day Strip (ជម្រើសទី ២ ទំនើប) ---
+          WeekDayStrip(
+            selectedDate: _selectedDate,
+            classes: classes,
+            onSelectDate: (d) {
+              setState(() {
+                _selectedDate = d;
+                _showAllClasses = false;
+              });
+            },
+            onResetToToday: () {
+              setState(() {
+                _selectedDate = DateTime.now();
+                _showAllClasses = false;
+              });
+            },
+          ),
+
+          const SizedBox(height: 24),
 
           // --- 4. My Classes (ថ្នាក់របស់ខ្ញុំ) ---
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                AppLanguage.tr('ថ្នាក់របស់ខ្ញុំ', 'My Classes'),
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: textCol,
-                ),
-              ),
-              if (student.department != null && student.department!.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+              Row(
+                children: [
+                  Text(
+                    _showAllClasses
+                        ? AppLanguage.tr('ថ្នាក់ទាំងអស់', 'All Classes')
+                        : AppLanguage.tr('ថ្នាក់រៀនតាមថ្ងៃ', 'Classes by Day'),
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: textCol,
+                    ),
                   ),
-                  child: Text(
-                    student.department!,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '${displayClasses.length}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (classes.isNotEmpty)
+                InkWell(
+                  onTap: () => setState(() => _showAllClasses = !_showAllClasses),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _showAllClasses
+                          ? AppColors.primary.withValues(alpha: 0.15)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: _showAllClasses
+                            ? AppColors.primary
+                            : subTextCol.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _showAllClasses ? Icons.calendar_today_rounded : Icons.list_alt_rounded,
+                          size: 13,
+                          color: _showAllClasses ? AppColors.primary : subTextCol,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          _showAllClasses
+                              ? AppLanguage.tr('មើលតាមថ្ងៃ', 'Filter by Day')
+                              : AppLanguage.tr('មើលទាំងអស់ (${classes.length})', 'View All (${classes.length})'),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: _showAllClasses ? AppColors.primary : subTextCol,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -226,7 +320,7 @@ class StudentDashboardScreen extends StatelessWidget {
           if (isLoading && classes.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 32),
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
             )
           else if (classes.isEmpty)
             Container(
@@ -252,14 +346,67 @@ class StudentDashboardScreen extends StatelessWidget {
                 ],
               ),
             )
+          else if (displayClasses.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: borderCol),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.event_busy_rounded, size: 26, color: subTextCol),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    AppLanguage.tr(
+                      'គ្មានថ្នាក់រៀនសម្រាប់ ${AppDateTime.formatTimetableDate(_selectedDate)} ទេ',
+                      'No classes scheduled for ${AppDateTime.formatTimetableDate(_selectedDate)}',
+                    ),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13.5, color: textCol, fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton.icon(
+                    onPressed: () {
+                      // រកមើលថ្នាក់បន្ទាប់ដែលជិតបំផុត
+                      for (int i = 0; i < 14; i++) {
+                        final checkDate = DateTime.now().add(Duration(days: i));
+                        if (classes.any((c) => AppDateTime.matchesClassSchedule(c.dayOfWeek, c.classDate, checkDate))) {
+                          setState(() {
+                            _selectedDate = checkDate;
+                            _showAllClasses = false;
+                          });
+                          break;
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 14),
+                    label: Text(
+                      AppLanguage.tr('មើលថ្នាក់រៀនបន្ទាប់ ➔', 'View upcoming class ➔'),
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            )
           else
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: classes.length,
+              itemCount: displayClasses.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final c = classes[index];
+                final c = displayClasses[index];
                 return _buildClassCard(
                   context,
                   c,
@@ -275,10 +422,10 @@ class StudentDashboardScreen extends StatelessWidget {
       ),
     );
 
-    if (onRefresh != null) {
+    if (widget.onRefresh != null) {
       return RefreshIndicator(
         color: AppColors.primary,
-        onRefresh: onRefresh!,
+        onRefresh: widget.onRefresh!,
         child: content,
       );
     }
@@ -324,7 +471,7 @@ class StudentDashboardScreen extends StatelessWidget {
     );
   }
 
-  // Card ថ្នាក់រៀន
+  // Card ថ្នាក់រៀនទំនើប (មានកាលបរិច្ឆេទ Session និង Smart Status Badge)
   Widget _buildClassCard(
     BuildContext context,
     ClassModel c, {
@@ -335,7 +482,52 @@ class StudentDashboardScreen extends StatelessWidget {
     required bool isDark,
   }) {
     final iconBg = isDark ? const Color(0xFF334155) : AppColors.primaryLight.withValues(alpha: 0.35);
-    final badgeBg = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+
+    // គណនាកាលបរិច្ឆេទ Session ជាក់លាក់
+    final String sessionDateText = c.classDate != null && c.classDate!.isNotEmpty
+        ? AppDateTime.formatSessionDate(DateTime.tryParse(c.classDate!) ?? _selectedDate)
+        : (c.dayOfWeek.isNotEmpty ? c.dayOfWeek : AppDateTime.dayOfWeek(_selectedDate));
+
+    // Smart Status Badge
+    final att = widget.attendances.where((a) => a.classId == c.id).firstOrNull;
+    final now = DateTime.now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final targetDate = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+    final isFuture = targetDate.isAfter(todayDate);
+    final isPast = targetDate.isBefore(todayDate);
+
+    Widget statusBadge;
+    if (att != null && att.isPresent) {
+      statusBadge = _buildBadge(
+        label: AppLanguage.tr('វត្តមាន', 'Present'),
+        color: const Color(0xFF16A34A),
+        bgColor: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.15) : const Color(0xFFDCFCE7),
+      );
+    } else if (att != null && att.isLate) {
+      statusBadge = _buildBadge(
+        label: AppLanguage.tr('យឺត', 'Late'),
+        color: const Color(0xFFD97706),
+        bgColor: isDark ? const Color(0xFFD97706).withValues(alpha: 0.15) : const Color(0xFFFEF3C7),
+      );
+    } else if (isFuture) {
+      statusBadge = _buildBadge(
+        label: AppLanguage.tr('មិនទាន់ដល់ថ្ងៃ', 'Upcoming'),
+        color: const Color(0xFF0284C7),
+        bgColor: isDark ? const Color(0xFF0284C7).withValues(alpha: 0.15) : const Color(0xFFE0F2FE),
+      );
+    } else if (isPast) {
+      statusBadge = _buildBadge(
+        label: AppLanguage.tr('អវត្តមាន', 'Absent'),
+        color: const Color(0xFFDC2626),
+        bgColor: isDark ? const Color(0xFFDC2626).withValues(alpha: 0.15) : const Color(0xFFFEE2E2),
+      );
+    } else {
+      statusBadge = _buildBadge(
+        label: AppLanguage.tr('មិនទាន់ស្កេន', 'Not Scanned'),
+        color: const Color(0xFF7C3AED),
+        bgColor: isDark ? const Color(0xFF7C3AED).withValues(alpha: 0.15) : const Color(0xFFEDE9FE),
+      );
+    }
 
     return InkWell(
       onTap: () {
@@ -362,6 +554,7 @@ class StudentDashboardScreen extends StatelessWidget {
           ],
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               width: 48,
@@ -381,48 +574,121 @@ class StudentDashboardScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // ឈ្មោះមុខវិជ្ជា
                   Text(
                     c.subjectName,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15.5,
                       fontWeight: FontWeight.bold,
                       color: textCol,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${c.lecturerName ?? AppLanguage.tr('គ្រូបង្រៀន', 'Lecturer')} · ${c.dayOfWeek} ${c.time}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: subTextCol,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  const SizedBox(height: 6),
+
+                  // ម៉ោង និងកាលបរិច្ឆេទ Session
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF16A34A).withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.access_time_rounded, size: 11, color: Color(0xFF16A34A)),
+                            const SizedBox(width: 4),
+                            Text(
+                              c.time,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF16A34A),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          sessionDateText,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: subTextCol,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+
+                  // គ្រូបង្រៀន, បន្ទប់ & Status Badge
+                  Row(
+                    children: [
+                      Icon(Icons.person_outline_rounded, size: 13, color: subTextCol),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          c.lecturerName ?? AppLanguage.tr('គ្រូបង្រៀន', 'Lecturer'),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 11.5, color: subTextCol),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          c.room.isNotEmpty ? c.room : '-',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: subTextCol,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      statusBadge,
+                    ],
                   ),
                 ],
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: badgeBg,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                c.room.isNotEmpty ? c.room : '-',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: subTextCol,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              size: 14,
+              size: 13,
               color: isDark ? const Color(0xFF64748B) : const Color(0xFFCBD5E1),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge({
+    required String label,
+    required Color color,
+    required Color bgColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10.5,
+          fontWeight: FontWeight.bold,
+          color: color,
         ),
       ),
     );
