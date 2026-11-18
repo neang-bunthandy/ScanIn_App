@@ -274,22 +274,30 @@
 
 ---
 
-### 🚀 លំដាប់កិច្ចការត្រូវអនុវត្តថ្ងៃនេះ (Execution Order)៖
+### 🚀 វឌ្ឍនភាពការងារជាក់ស្តែងថ្ងៃនេះ (Today's Execution Progress — ១៨ វិច្ឆិកា ២០២៦)៖
 
-1. **កិច្ចការទី ១ (Task 1) — បោសសម្អាត Mock Data ទាំងអស់ និងលុប Fake Paste Data ៖**
-   - លុបឈ្មោះសិស្សក្លែងក្លាយ (`STU101... STU103`) ចេញពី Batch CSV Template ក្នុង `admin_students_screen.dart`។
-   - បង្កើត Helper Dynamic Real-time Date `AppDateTime.formatKhmerDate(DateTime.now())` ជំនួស `15 តុលា 2026` លើ Web & Mobile (ទាំងគ្រូ និងសិស្ស)។
-   - កែសម្រួលស្ថិតិវត្តមានលើ Profile សិស្ស និងគ្រូ ឱ្យទាញ Dynamic ពី Database ពិតប្រាកដ (សិស្សថ្មីបង្ហាញ 0/0/0/0%)។
-2. **កិច្ចការទី ២ (Task 2) — អភិវឌ្ឍអេក្រង់ «កាលវិភាគសិក្សា (Study Timetable)» លើ Mobile App ៖**
-   - អនុវត្តតាមគំរូ NUBB UI ជាក់ស្តែង៖
-     - របារប្តូរថ្ងៃ `[ < ] ថ្ងៃ..., ខែ... DD, YYYY [ 🔄 ] [ > ]` ជាមួយ Calendar Popup។
-     - Empty State `🕒 គ្មានថ្នាក់រៀនសម្រាប់ថ្ងៃនេះ` សម្រាប់ថ្ងៃដែលគ្មានម៉ោងរៀន (ច័ន្ទ-សុក្រ សម្រាប់សិស្ស SS)។
-     - កាតម៉ោងរៀនតាម Session (មុខវិជ្ជា, ម៉ោងរៀន Green Chip, បន្ទប់, ឈ្មោះគ្រូ, ប៊ូតុង Call ទូរស័ព្ទគ្រូ)។
-     - Smart Status Badges: Upcoming (មិនទាន់ដល់ថ្ងៃរៀន), Not Scanned (មិនទាន់ស្កេន), Present (វត្តមាន), Absent (អវត្តមាន)។
-3. **កិច្ចការទី ៣ (Task 3) — ចុះឈ្មោះនិស្សិតពិតប្រាកដ ៥ នាក់ដំបូងចូល Class 88 ៖**
-   - បញ្ចូលគណនីនិស្សិត ៥ នាក់ដំបូង (IT20-001 ដល់ IT20-005) ទៅក្នុង Class 88 (*Data Mining With Python*)។
-4. **កិច្ចការទី ៤ (Task 4) — តេស្ត End-to-End Live ៖**
-   - គ្រូបើក QR Code -> សិស្ស Login ស្កេនវត្តមាន -> ផ្ទៀងផ្ទាត់វត្តមានក្នុង DB និង UI ស្ថិតិ។
-5. **កិច្ចការទី ៥ (Task 5) — មុខងារ Upload Profile Photo (Camera/Gallery) ៖**
-   - ដំឡើង `image_picker` លើ Mobile + បង្កើត API `POST /api/profile/avatar` លើ Backend។
+1. **កិច្ចការទី ១ (Task 1 — រួចរាល់ ១០០% ✅) ៖ បោសសម្អាត Mock Data និង Fake Paste Data**
+   - លុបគំរូឈ្មោះសិស្សក្លែងក្លាយ (`STU101... STU103`) ចេញពី `admin_students_screen.dart`។
+   - បង្កើត `AppDateTime` Helper លើ Mobile និង Web Admin ជំនួសថ្ងៃទីរឹង `15 តុលា 2026` ដោយ Real-time Date `DateTime.now()` គ្រប់ទីកន្លែង។
+   - គណនាស្ថិតិវត្តមានលើ Profile សិស្ស និងគ្រូ ឱ្យទាញ Dynamic ពិតៗពី Database (សិស្សថ្មីបង្ហាញ 0/0/0/0%)។
+
+2. **កិច្ចការទី ២ (Task 2 — រួចរាល់ ១០០% ✅) ៖ អភិវឌ្ឍ WeekDayStrip (ជម្រើសទី ២) លើ Mobile App**
+   - បង្កើត Widget [week_day_strip.dart](file:///C:/Flutter_Project/Scan_In_App/scan_in/lib/widgets/week_day_strip.dart) បែប Modern Dark Mode រមូរបាន ១៤ ថ្ងៃ (២ សប្តាហ៍)។
+   - បំពាក់លើ [StudentDashboardScreen](file:///C:/Flutter_Project/Scan_In_App/scan_in/lib/screens/student/student_dashboard_screen.dart) និង [LecturerDashboardScreen](file:///C:/Flutter_Project/Scan_In_App/scan_in/lib/screens/lecturer/lecturer_dashboard_screen.dart)។
+   - មាន Dot Indicator សម្គាល់ថ្ងៃណាមានម៉ោងរៀន, ប៊ូតុង «ថ្ងៃនេះ» ត្រឡប់មកថ្ងៃបច្ចុប្បន្នភ្លាមៗ, ប៊ូតុងប្តូររវាង «មើលតាមថ្ងៃ» និង «មើលទាំងអស់»។
+   - បង្ហាញកាលបរិច្ឆេទ Session ជាក់លាក់លើកាតថ្នាក់ (ឧ. `📅 សៅរ៍ ទី២១ វិច្ឆិកា 2026 • 07:00 - 08:30`)។
+   - Empty State ឆ្លាតវៃជាមួយប៊ូតុងផ្លូវកាត់ «មើលថ្នាក់រៀនបន្ទាប់ ➔» រំលងទៅថ្ងៃបន្ទាប់ដែលមានម៉ោងរៀនភ្លាមៗ។
+
+3. **កិច្ចការទី ៣ (Task 3 — រួចរាល់ ១០០% ✅) ៖ ចុះឈ្មោះនិស្សិតពិត ៥ នាក់ដំបូង & ដោះស្រាយ Generation Resilient Matching**
+   - និស្សិតពិត ៥ នាក់ត្រូវបានចុះឈ្មោះក្នុង DB៖ `IT20-001` ដល់ `IT20-005` (IT Gen 20)។
+   - ដោះស្រាយបញ្ហាលេខខ្មែរ vs អារ៉ាប់ (`ជំនាន់ទី 20` vs `ជំនាន់ទី ២០`) តាមរយៈ `ClassModel::extractGenNumber` និង `ClassModel::matchesGeneration` ធ្វើឱ្យគ្រប់ទម្រង់ជំនាន់ត្រូវគ្នា ១០០% ដោយគ្មានភាពរអាក់រអួល។
+
+4. **កិច្ចការទី ៤ (Task 4 — រួចរាល់ ១០០% ✅) ៖ តេស្ត End-to-End Live QR Scan**
+   - គ្រូបើក QR Class 88 -> សិស្ស `IT20-001` (កាទិក វីរ៉ាច) ស្កេនជោគជ័យ -> Record វត្តមាន `present` ចូល MySQL DB ត្រឹមត្រូវ។
+   - ស្ថិតិវត្តមានរបស់សិស្សឆ្លុះបញ្ចាំង Dynamic ភ្លាមៗ (1 វត្តមាន / 100%)។
+
+5. **កិច្ចការទី ៥ (Task 5 — បន្ទាប់ ⏳) ៖ មុខងារ Upload Profile Photo (Camera / Gallery)**
+   - ដំឡើង package `image_picker` លើ Mobile App `scan_in`។
+   - បង្កើត API `POST /api/profile/avatar` ក្នុង Laravel សម្រាប់ Upload និងរក្សាទុករូបភាព។
+   - ភ្ជាប់ Modal Sheet (ថតរូបថ្មី / ជ្រើសពីវិចិត្រសាល) លើ Student Profile និង Lecturer Profile។
 
