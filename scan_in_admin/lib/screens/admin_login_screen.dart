@@ -130,6 +130,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.account_balance_rounded,
@@ -137,12 +138,16 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                   color: isAdminMode ? Colors.white : subTextCol,
                                 ),
                                 const SizedBox(width: 6),
-                                Text(
-                                  AppLanguage.tr('សាកលវិទ្យាធិការ (Rector)', 'Rector'),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: isAdminMode ? Colors.white : subTextCol,
+                                Flexible(
+                                  child: Text(
+                                    AppLanguage.tr('សាកលវិទ្យាធិការ', 'Rector'),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: isAdminMode ? Colors.white : subTextCol,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -162,6 +167,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.school_rounded,
@@ -169,12 +175,16 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                   color: !isAdminMode ? Colors.white : subTextCol,
                                 ),
                                 const SizedBox(width: 6),
-                                Text(
-                                  AppLanguage.tr('គ្រូ / បុគ្គលិក (Staff / Lecturer)', 'Staff / Lecturer'),
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: !isAdminMode ? Colors.white : subTextCol,
+                                Flexible(
+                                  child: Text(
+                                    AppLanguage.tr('គ្រូ / បុគ្គលិក', 'Staff / Lecturer'),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: !isAdminMode ? Colors.white : subTextCol,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -211,29 +221,24 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  isAdminMode ? 'ScanIn Rector / Admin' : 'ScanIn Staff / Lecturer Web',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                    color: textCol,
-                  ),
-                ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 18),
                 Text(
                   isAdminMode
                       ? AppLanguage.tr(
-                          'ផ្ទាំងគ្រប់គ្រងសម្រាប់សាកលវិទ្យាធិការ និងរដ្ឋបាល (Management Only)',
-                          'Administrative Management Panel for Rector & Leadership',
+                          'ផ្ទាំងគ្រប់គ្រងសម្រាប់សាកលវិទ្យាធិការ និងរដ្ឋបាល',
+                          'Administrative Management Panel',
                         )
                       : AppLanguage.tr(
-                          'ផ្ទាំងបញ្ចាំង Projector និងកាលវិភាគសម្រាប់គ្រូ និងបុគ្គលិក (Laptop Web)',
+                          'ផ្ទាំងបញ្ចាំង Projector និងកាលវិភាគសម្រាប់គ្រូ និងបុគ្គលិក',
                           'Classroom Projector & Workspace for Staff & Lecturers',
                         ),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, color: subTextCol),
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: textCol,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
@@ -261,8 +266,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   style: TextStyle(color: textCol, fontSize: 14),
                   decoration: InputDecoration(
                     labelText: isAdminMode
-                        ? AppLanguage.tr('អ៊ីមែលសាកលវិទ្យាធិការ (Rector Email)', 'Rector / Admin Email')
-                        : AppLanguage.tr('អ៊ីមែលគ្រូ / បុគ្គលិក (Staff / Lecturer Email)', 'Staff / Lecturer Email'),
+                        ? AppLanguage.tr('អ៊ីមែលសាកលវិទ្យាធិការ', 'Rector Email')
+                        : AppLanguage.tr('អ៊ីមែលគ្រូ / បុគ្គលិក', 'Staff / Lecturer Email'),
                     prefixIcon: const Icon(Icons.email_outlined, size: 20),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -276,7 +281,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   obscureText: _obscurePassword,
                   style: TextStyle(color: textCol, fontSize: 14),
                   decoration: InputDecoration(
-                    labelText: AppLanguage.tr('ពាក្យសម្ងាត់ (Password)', 'Password'),
+                    labelText: AppLanguage.tr('ពាក្យសម្ងាត់', 'Password'),
                     prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -317,9 +322,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                           child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                         )
                       : Text(
-                          isAdminMode
-                              ? AppLanguage.tr('ចូលគ្រប់គ្រង (Sign In)', 'Sign In as Rector/Admin')
-                              : AppLanguage.tr('ចូលផ្ទាំងគ្រូ / បុគ្គលិក (Sign In)', 'Sign In as Staff / Lecturer'),
+                          AppLanguage.tr('ចូលប្រព័ន្ធ', 'Sign In'),
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
                 ),
