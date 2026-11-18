@@ -38,8 +38,26 @@ class AuthController extends Controller
                 $expectedRole = 'lecturer';
             }
 
-            if ($user->role !== $expectedRole && $user->role !== 'admin') {
-                $roleLabelKh = ($expectedRole === 'student') ? 'សិស្ស/និស្សិត' : 'គ្រូបង្រៀន';
+            // Admin និង Sub-Admin អាចចូលបានក្នុងទម្រង់គ្រប់គ្រង ឬបុគ្គលិក
+            $isStaffOrAdmin = in_array($user->role, ['admin', 'sub_admin']);
+            $isExpectedAdmin = in_array($expectedRole, ['admin', 'sub_admin', 'rector']);
+
+            if ($isExpectedAdmin) {
+                if (!$isStaffOrAdmin) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'គណនីនេះមិនមានសិទ្ធិចូលជាអ្នកគ្រប់គ្រង ឬសាកលវិទ្យាធិការឡើយ។',
+                    ], 403);
+                }
+            } elseif ($expectedRole === 'lecturer' || $expectedRole === 'staff') {
+                if ($user->role !== 'lecturer' && !$isStaffOrAdmin) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'គណនីនេះមិនមែនជាគណនីគ្រូ ឬបុគ្គលិកឡើយ។',
+                    ], 403);
+                }
+            } elseif ($user->role !== $expectedRole && !$isStaffOrAdmin) {
+                $roleLabelKh = ($expectedRole === 'student') ? 'សិស្ស/និស្សិត' : 'គ្រូ / បុគ្គលិក';
                 return response()->json([
                     'status' => false,
                     'message' => "គណនីនេះមិនមែនជាគណនី{$roleLabelKh}ឡើយ។",

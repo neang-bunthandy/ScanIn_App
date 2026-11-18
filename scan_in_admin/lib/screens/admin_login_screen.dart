@@ -14,8 +14,9 @@ class AdminLoginScreen extends StatefulWidget {
 
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
   String _selectedRole = 'admin'; // 'admin' or 'lecturer'
-  final _emailController = TextEditingController(text: 'admin@scanin.app');
-  final _passwordController = TextEditingController(text: 'password123');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -23,12 +24,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     setState(() {
       _selectedRole = role;
       _errorMessage = null;
-      if (role == 'admin') {
-        _emailController.text = 'admin@scanin.app';
-      } else {
-        _emailController.text = 'lecturer@scanin.app';
-      }
-      _passwordController.text = 'password123';
     });
   }
 
@@ -52,19 +47,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     if (result.success) {
       final userRole = result.user?.role;
 
-      // ញែកសិទ្ធិដាច់ដោយឡែក៖ គ្រូមិនអាចចូលជា Admin បានដាច់ខាត!
-      if (_selectedRole == 'admin' && userRole != 'admin') {
-        await AuthService.logout();
-        setState(() {
-          _isLoading = false;
-          _errorMessage = AppLanguage.tr(
-            'គណនីនេះជាគណនីគ្រូបង្រៀន! គ្រូមិនអាចចូលជាអ្នកគ្រប់គ្រង (Admin) បានឡើយ។ សូមជ្រើសរើសផ្ទាំង "គ្រូបង្រៀន"។',
-            'This is a Lecturer account! Lecturers cannot access the Admin Panel. Please select the "Lecturer" tab.',
-          );
-        });
-        return;
-      }
-
       // សិស្សមិនអាចចូលប្រើប្រាស់ Web បានឡើយ
       if (userRole == 'student') {
         await AuthService.logout();
@@ -84,7 +66,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       if (userRole == 'lecturer') {
         Navigator.pushReplacementNamed(context, AppRoutes.classes);
       } else {
-        // ប្រសិនបើជា Admin បញ្ជូនទៅកាន់ Admin Dashboard
+        // ប្រសិនបើជា សាកលវិទ្យាធិការ ឬ Sub-Admin បញ្ជូនទៅកាន់ Admin Dashboard
         Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
       }
     } else {
@@ -150,13 +132,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  Icons.admin_panel_settings_rounded,
+                                  Icons.account_balance_rounded,
                                   size: 16,
                                   color: isAdminMode ? Colors.white : subTextCol,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  AppLanguage.tr('Admin (រដ្ឋបាល)', 'Admin'),
+                                  AppLanguage.tr('សាកលវិទ្យាធិការ (Rector)', 'Rector'),
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -188,7 +170,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  AppLanguage.tr('គ្រូបង្រៀន (Lecturer)', 'Lecturer'),
+                                  AppLanguage.tr('គ្រូ / បុគ្គលិក (Staff / Lecturer)', 'Staff / Lecturer'),
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -231,7 +213,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  isAdminMode ? 'ScanIn Admin Panel' : 'ScanIn Lecturer Web',
+                  isAdminMode ? 'ScanIn Rector / Admin' : 'ScanIn Staff / Lecturer Web',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 21,
@@ -243,12 +225,12 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 Text(
                   isAdminMode
                       ? AppLanguage.tr(
-                          'ផ្ទាំងគ្រប់គ្រងសម្រាប់អ្នកគ្រប់គ្រងសាលា (Admin Only)',
-                          'Administrative Management Panel for School Admins',
+                          'ផ្ទាំងគ្រប់គ្រងសម្រាប់សាកលវិទ្យាធិការ និងរដ្ឋបាល (Management Only)',
+                          'Administrative Management Panel for Rector & Leadership',
                         )
                       : AppLanguage.tr(
-                          'ផ្ទាំងបញ្ចាំង Projector និងស្រង់វត្តមានសម្រាប់គ្រូ (Laptop Web)',
-                          'Classroom Projector & Attendance Workspace for Lecturers',
+                          'ផ្ទាំងបញ្ចាំង Projector និងកាលវិភាគសម្រាប់គ្រូ និងបុគ្គលិក (Laptop Web)',
+                          'Classroom Projector & Workspace for Staff & Lecturers',
                         ),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 12, color: subTextCol),
@@ -279,8 +261,8 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   style: TextStyle(color: textCol, fontSize: 14),
                   decoration: InputDecoration(
                     labelText: isAdminMode
-                        ? AppLanguage.tr('អ៊ីមែលអ្នកគ្រប់គ្រង (Admin Email)', 'Admin Email')
-                        : AppLanguage.tr('អ៊ីមែលគ្រូបង្រៀន (Lecturer Email)', 'Lecturer Email'),
+                        ? AppLanguage.tr('អ៊ីមែលសាកលវិទ្យាធិការ (Rector Email)', 'Rector / Admin Email')
+                        : AppLanguage.tr('អ៊ីមែលគ្រូ / បុគ្គលិក (Staff / Lecturer Email)', 'Staff / Lecturer Email'),
                     prefixIcon: const Icon(Icons.email_outlined, size: 20),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -288,14 +270,29 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Password
+                // Password (ជាមួយ True/False Toggle បើក/បិទមើល Password)
                 TextField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obscurePassword,
                   style: TextStyle(color: textCol, fontSize: 14),
                   decoration: InputDecoration(
                     labelText: AppLanguage.tr('ពាក្យសម្ងាត់ (Password)', 'Password'),
                     prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        size: 20,
+                        color: subTextCol,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                      tooltip: _obscurePassword
+                          ? AppLanguage.tr('បង្ហាញពាក្យសម្ងាត់', 'Show Password')
+                          : AppLanguage.tr('លាក់ពាក្យសម្ងាត់', 'Hide Password'),
+                    ),
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                   ),
@@ -321,34 +318,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                         )
                       : Text(
                           isAdminMode
-                              ? AppLanguage.tr('ចូលគ្រប់គ្រង Admin (Sign In)', 'Sign In as Admin')
-                              : AppLanguage.tr('ចូលផ្ទាំងគ្រូបង្រៀន (Sign In)', 'Sign In as Lecturer'),
+                              ? AppLanguage.tr('ចូលគ្រប់គ្រង (Sign In)', 'Sign In as Rector/Admin')
+                              : AppLanguage.tr('ចូលផ្ទាំងគ្រូ / បុគ្គលិក (Sign In)', 'Sign In as Staff / Lecturer'),
                           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
-                ),
-                const SizedBox(height: 18),
-
-                // Notice
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
-                  ),
-                  child: Text(
-                    isAdminMode
-                        ? AppLanguage.tr(
-                            '⚠️ គ្រូមិនអាចចូលជា Admin បានឡើយ។ Admin ជាអ្នកបង្កើតថ្នាក់ និងចាត់តាំងគ្រូ។',
-                            '⚠️ Lecturers cannot access Admin. Admins create classes and assign staff.',
-                          )
-                        : AppLanguage.tr(
-                            '💡 គ្រូអាចបញ្ចាំង QR លើ Projector និងកែប្រែវត្តមានជាក់ស្តែងរបស់សិស្សក្នុងថ្នាក់។',
-                            '💡 Lecturers can project QR codes and edit classroom attendances.',
-                          ),
-                    style: TextStyle(fontSize: 11, color: subTextCol),
-                    textAlign: TextAlign.center,
-                  ),
                 ),
               ],
             ),
