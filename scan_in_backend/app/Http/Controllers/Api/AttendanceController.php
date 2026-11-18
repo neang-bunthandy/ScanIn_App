@@ -67,8 +67,8 @@ class AttendanceController extends Controller
             ], 403);
         }
 
-        // ពិនិត្យជំនាន់ (Generation) ប្រសិនបើថ្នាក់បានកំណត់
-        if (!empty($class->generation) && trim((string)($user->generation ?? '')) !== trim((string)$class->generation)) {
+        // ពិនិត្យជំនាន់ (Generation) ប្រសិនបើថ្នាក់បានកំណត់ (គាំទ្រទាំងលេខខ្មែរ និងអារ៉ាប់)
+        if (!empty($class->generation) && !\App\Models\ClassModel::matchesGeneration($user->generation, $class->generation)) {
             return response()->json([
                 'status' => false,
                 'message' => 'ថ្នាក់រៀននេះសម្រាប់តែនិស្សិតជំនាន់ "' . $class->generation . '" ប៉ុណ្ណោះ!',

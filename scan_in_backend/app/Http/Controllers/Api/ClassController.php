@@ -38,10 +38,20 @@ class ClassController extends Controller
 
                 $studentGen = trim((string)($user->generation ?? ''));
                 if ($studentGen !== '') {
-                    $query->where(function ($q) use ($studentGen) {
+                    $genNum = \App\Models\ClassModel::extractGenNumber($studentGen);
+                    $query->where(function ($q) use ($studentGen, $genNum) {
                         $q->whereNull('generation')
                           ->orWhere('generation', '')
                           ->orWhere('generation', $studentGen);
+                        if ($genNum !== null) {
+                            $khmerNum = str_replace(
+                                ['0','1','2','3','4','5','6','7','8','9'],
+                                ['០','១','២','៣','៤','៥','៦','៧','៨','៩'],
+                                (string)$genNum
+                            );
+                            $q->orWhere('generation', 'like', "%{$genNum}%")
+                              ->orWhere('generation', 'like', "%{$khmerNum}%");
+                        }
                     });
                 } else {
                     $query->where(function ($q) {
@@ -84,7 +94,7 @@ class ClassController extends Controller
                 $realStudentCount = $allStudents->filter(function ($s) use ($classDept, $classYear, $classGen) {
                     if (trim((string)$s->department) !== $classDept) return false;
                     if ($classYear !== null && (int)($s->year_level ?? 0) !== $classYear) return false;
-                    if ($classGen !== '' && trim((string)($s->generation ?? '')) !== $classGen) return false;
+                    if ($classGen !== '' && !\App\Models\ClassModel::matchesGeneration($s->generation, $classGen)) return false;
                     return true;
                 })->count();
             }
@@ -416,7 +426,21 @@ class ClassController extends Controller
             $studentsQuery->where('year_level', (int)$class->year_level);
         }
         if (!empty($class->generation)) {
-            $studentsQuery->where('generation', trim((string)$class->generation));
+            $classGenNum = \App\Models\ClassModel::extractGenNumber($class->generation);
+            if ($classGenNum !== null) {
+                $khmerNum = str_replace(
+                    ['0','1','2','3','4','5','6','7','8','9'],
+                    ['០','១','២','៣','៤','៥','៦','៧','៨','៩'],
+                    (string)$classGenNum
+                );
+                $studentsQuery->where(function ($q) use ($class, $classGenNum, $khmerNum) {
+                    $q->where('generation', trim((string)$class->generation))
+                      ->orWhere('generation', 'like', "%{$classGenNum}%")
+                      ->orWhere('generation', 'like', "%{$khmerNum}%");
+                });
+            } else {
+                $studentsQuery->where('generation', trim((string)$class->generation));
+            }
         }
 
         $students = $studentsQuery
