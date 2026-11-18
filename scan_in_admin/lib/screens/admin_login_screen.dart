@@ -47,6 +47,36 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     if (result.success) {
       final userRole = result.user?.role;
 
+      // ញែកសិទ្ធិដាច់ដោយឡែក៖ សាកលវិទ្យាធិការ (Master Admin) vs គ្រូ / បុគ្គលិក
+      if (_selectedRole == 'admin' && userRole != 'admin') {
+        await AuthService.logout();
+        setState(() {
+          _isLoading = false;
+          _errorMessage = userRole == 'sub_admin'
+              ? AppLanguage.tr(
+                  'គណនីនេះជាគណនីបុគ្គលិក (Sub-Admin) មិនអាចចូលជាសាកលវិទ្យាធិការបានឡើយ។ សូមជ្រើសរើសផ្ទាំង "គ្រូ / បុគ្គលិក"។',
+                  'This is a Sub-Admin account! Please select the "Staff / Lecturer" tab to sign in.',
+                )
+              : AppLanguage.tr(
+                  'គណនីនេះជាគណនីគ្រូបង្រៀន! មិនអាចចូលជាសាកលវិទ្យាធិការបានឡើយ។ សូមជ្រើសរើសផ្ទាំង "គ្រូ / បុគ្គលិក"។',
+                  'This is a Lecturer account! Please select the "Staff / Lecturer" tab to sign in.',
+                );
+        });
+        return;
+      }
+
+      if ((_selectedRole == 'staff' || _selectedRole == 'lecturer') && userRole == 'admin') {
+        await AuthService.logout();
+        setState(() {
+          _isLoading = false;
+          _errorMessage = AppLanguage.tr(
+            'គណនីនេះជាគណនីសាកលវិទ្យាធិការ (Master Admin)។ សូមជ្រើសរើសផ្ទាំង "សាកលវិទ្យាធិការ" ដើម្បីចូលគ្រប់គ្រង។',
+            'This is a Rector/Master Admin account! Please select the "Rector" tab to sign in.',
+          );
+        });
+        return;
+      }
+
       // សិស្សមិនអាចចូលប្រើប្រាស់ Web បានឡើយ
       if (userRole == 'student') {
         await AuthService.logout();
@@ -140,7 +170,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
-                                    AppLanguage.tr('សាកលវិទ្យាធិការ', 'Rector'),
+                                    AppLanguage.tr('សាកលវិទ្យាធិការ', "Rector"),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                     style: TextStyle(
@@ -177,7 +207,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
-                                    AppLanguage.tr('គ្រូ / បុគ្គលិក', 'Staff / Lecturer'),
+                                    AppLanguage.tr('គ្រូ / បុគ្គលិក', 'Lecturer / Staff'),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,
                                     style: TextStyle(
@@ -225,12 +255,12 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 Text(
                   isAdminMode
                       ? AppLanguage.tr(
-                          'ផ្ទាំងគ្រប់គ្រងសម្រាប់សាកលវិទ្យាធិការ និងរដ្ឋបាល',
-                          'Administrative Management Panel',
+                          'ផ្ទាំងគ្រប់គ្រងសម្រាប់សាកលវិទ្យាធិការ និងរដ្ឋបាល', 
+                          'Admin Panel for Rector and Administration'
                         )
                       : AppLanguage.tr(
                           'ផ្ទាំងបញ្ចាំង Projector និងកាលវិភាគសម្រាប់គ្រូ និងបុគ្គលិក',
-                          'Classroom Projector & Workspace for Staff & Lecturers',
+                          'Projector and Schedule Panel for Lecturers and Staff'
                         ),
                   textAlign: TextAlign.center,
                   style: TextStyle(

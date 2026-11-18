@@ -33,35 +33,49 @@ class AuthController extends Controller
 
         // ផ្ទៀងផ្ទាត់តួនាទី (Role) ប្រសិនបើ Frontend ផ្ញើមក
         if ($request->filled('role')) {
-            $expectedRole = strtolower($request->role);
+            $expectedRole = strtolower(trim($request->role));
             if ($expectedRole === 'teacher') {
                 $expectedRole = 'lecturer';
             }
 
-            // Admin និង Sub-Admin អាចចូលបានក្នុងទម្រង់គ្រប់គ្រង ឬបុគ្គលិក
-            $isStaffOrAdmin = in_array($user->role, ['admin', 'sub_admin']);
-            $isExpectedAdmin = in_array($expectedRole, ['admin', 'sub_admin', 'rector']);
+            // ១. ផ្ទាំង «សាកលវិទ្យាធិការ» (Rector / Master Admin) - ផ្តាច់មុខសម្រាប់តែ Admin កំពូល CLI តែមួយគត់!
+            if (in_array($expectedRole, ['rector', 'admin', 'master_admin'])) {
+                if ($user->role !== 'admin') {
+                    $msg = $user->role === 'sub_admin'
+                        ? 'គណនីនេះជាគណនីបុគ្គលិក (Sub-Admin) មិនអាចចូលជាសាកលវិទ្យាធិការបានឡើយ។ សូមជ្រើសរើសផ្ទាំង "គ្រូ / បុគ្គលិក"។'
+                        : ($user->role === 'lecturer'
+                            ? 'គណនីនេះជាគណនីគ្រូបង្រៀន មិនអាចចូលជាសាកលវិទ្យាធិការបានឡើយ។ សូមជ្រើសរើសផ្ទាំង "គ្រូ / បុគ្គលិក"។'
+                            : 'គណនីសិស្សមិនអាចចូលប្រើប្រាស់ Web បានឡើយ។');
 
-            if ($isExpectedAdmin) {
-                if (!$isStaffOrAdmin) {
                     return response()->json([
                         'status' => false,
-                        'message' => 'គណនីនេះមិនមានសិទ្ធិចូលជាអ្នកគ្រប់គ្រង ឬសាកលវិទ្យាធិការឡើយ។',
+                        'message' => $msg,
                     ], 403);
                 }
-            } elseif ($expectedRole === 'lecturer' || $expectedRole === 'staff') {
-                if ($user->role !== 'lecturer' && !$isStaffOrAdmin) {
+            }
+
+            // ២. ផ្ទាំង «គ្រូ / បុគ្គលិក» (Staff & Lecturers) - សម្រាប់តែ Sub-Admin និង គ្រូបង្រៀន
+            if (in_array($expectedRole, ['staff', 'lecturer'])) {
+                if (!in_array($user->role, ['sub_admin', 'lecturer'])) {
+                    $msg = $user->role === 'admin'
+                        ? 'គណនីនេះជាគណនីសាកលវិទ្យាធិការ (Master Admin)។ សូមជ្រើសរើសផ្ទាំង "សាកលវិទ្យាធិការ" ដើម្បីចូលគ្រប់គ្រង។'
+                        : 'គណនីសិស្សមិនអាចចូលប្រើប្រាស់ Web បានឡើយ។';
+
                     return response()->json([
                         'status' => false,
-                        'message' => 'គណនីនេះមិនមែនជាគណនីគ្រូ ឬបុគ្គលិកឡើយ។',
+                        'message' => $msg,
                     ], 403);
                 }
-            } elseif ($user->role !== $expectedRole && !$isStaffOrAdmin) {
-                $roleLabelKh = ($expectedRole === 'student') ? 'សិស្ស/និស្សិត' : 'គ្រូ / បុគ្គលិក';
-                return response()->json([
-                    'status' => false,
-                    'message' => "គណនីនេះមិនមែនជាគណនី{$roleLabelKh}ឡើយ។",
-                ], 403);
+            }
+
+            // ៣. ករណី Mobile App Login (student)
+            if ($expectedRole === 'student') {
+                if ($user->role !== 'student') {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'គណនីនេះមិនមែនជាគណនីសិស្ស/និស្សិតឡើយ។',
+                    ], 403);
+                }
             }
         }
 

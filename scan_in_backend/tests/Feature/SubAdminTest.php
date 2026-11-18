@@ -175,4 +175,53 @@ class SubAdminTest extends TestCase
         $deleteClassResponse = $this->actingAs($sub)->deleteJson("/api/classes/{$classId}");
         $deleteClassResponse->assertStatus(200);
     }
+
+    public function test_sub_admin_can_create_and_manage_lecturers(): void
+    {
+        $sub = $this->createSubAdmin();
+        $email = strtolower('lecturer_' . Str::random(6) . '@scanin.test');
+
+        // 1. Sub-Admin creates lecturer
+        $createResponse = $this->actingAs($sub)->postJson('/api/lecturers', [
+            'name' => 'លោកគ្រូ តេស្ត សាប់អាដមីន',
+            'latin_name' => 'Test Lecturer SubAdmin',
+            'email' => $email,
+            'password' => 'password123',
+            'department' => 'ព័ត៌មានវិទ្យា (IT)',
+            'staff_id' => 'LEC-999',
+            'phone' => '012 333 444',
+        ]);
+
+        $createResponse->assertStatus(201)
+            ->assertJson([
+                'status' => true,
+                'data' => [
+                    'name' => 'លោកគ្រូ តេស្ត សាប់អាដមីន',
+                    'email' => $email,
+                    'role' => 'lecturer',
+                ],
+            ]);
+
+        $lecturerId = $createResponse->json('data.id');
+        $this->assertDatabaseHas('users', ['id' => $lecturerId, 'role' => 'lecturer']);
+
+        // 2. Sub-Admin can list lecturers
+        $listResponse = $this->actingAs($sub)->getJson('/api/lecturers');
+        $listResponse->assertStatus(200);
+        $ids = collect($listResponse->json('data'))->pluck('id')->all();
+        $this->assertContains($lecturerId, $ids);
+
+        // 3. Sub-Admin can update lecturer
+        $updateResponse = $this->actingAs($sub)->putJson("/api/lecturers/{$lecturerId}", [
+            'name' => 'លោកគ្រូ តេស្ត កែប្រែ',
+            'phone' => '099 888 777',
+        ]);
+        $updateResponse->assertStatus(200);
+        $this->assertDatabaseHas('users', ['id' => $lecturerId, 'name' => 'លោកគ្រូ តេស្ត កែប្រែ']);
+
+        // 4. Sub-Admin can delete lecturer
+        $deleteResponse = $this->actingAs($sub)->deleteJson("/api/lecturers/{$lecturerId}");
+        $deleteResponse->assertStatus(200);
+        $this->assertDatabaseMissing('users', ['id' => $lecturerId]);
+    }
 }

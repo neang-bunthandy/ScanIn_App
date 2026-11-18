@@ -613,7 +613,7 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
     final borderCol = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
     final textCol = isDark ? Colors.white : AppColors.textPrimary;
     final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
-    final isAdmin = _currentUser?.role == 'admin';
+    final isAdmin = _currentUser?.isAdmin == true;
 
     if (!isAdmin && !_isLoading) {
       return AdminScaffold(

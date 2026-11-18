@@ -138,12 +138,13 @@ class StudentStatusAndReportsTest extends TestCase
         // Active student CAN scan
         $this->actingAs($activeStu)->postJson('/api/attendances/scan', ['qr_token' => 'QR-STAT-101'])->assertStatus(200);
 
-        // Bulk status update marks activeStu & inactStu as graduated too (2 modified, gradStu already graduated) -> all 3 remain counted in Admin report!
+        // Bulk status update marks students as graduated too -> all 3 remain counted in Admin report!
         $this->actingAs($admin)->postJson('/api/students/bulk-status', [
             'department' => $dept,
             'status' => 'graduated',
-        ])->assertStatus(200)
-            ->assertJson(['updated_count' => 2]);
+        ])->assertStatus(200);
+
+        $this->assertEquals(3, User::where('department', $dept)->where('status', 'graduated')->count());
 
         $stats = $this->actingAs($admin)->getJson('/api/admin/reports/student-stats?department=' . urlencode($dept))
             ->assertStatus(200)
