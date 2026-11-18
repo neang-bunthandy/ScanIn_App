@@ -8,6 +8,7 @@ import '../models/class_model.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/class_service.dart';
+import '../services/attendance_service.dart';
 import '../widgets/editable_combo_field.dart';
 import 'admin_scaffold.dart';
 
@@ -1233,8 +1234,10 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                   );
                 }
 
-                return Column(
-                  children: [
+                return StatefulBuilder(
+                  builder: (sCtx, setDlgState) {
+                    return Column(
+                      children: [
                     // Summary bar
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1289,22 +1292,29 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
 
                                 final bool isPresent = todayStatus == 'present';
                                 final bool isLate = todayStatus == 'late';
+                                final bool isAbsent = todayStatus == 'absent';
 
                                 final Color badgeBg = isPresent
                                     ? const Color(0xFF16A34A).withValues(alpha: 0.15)
                                     : isLate
                                         ? const Color(0xFFF59E0B).withValues(alpha: 0.15)
-                                        : (isDark ? const Color(0xFF334155).withValues(alpha: 0.3) : const Color(0xFFE2E8F0));
+                                        : isAbsent
+                                            ? const Color(0xFFDC2626).withValues(alpha: 0.15)
+                                            : (isDark ? const Color(0xFF334155).withValues(alpha: 0.3) : const Color(0xFFE2E8F0));
                                 final Color badgeText = isPresent
                                     ? const Color(0xFF16A34A)
                                     : isLate
                                         ? const Color(0xFFD97706)
-                                        : subTextCol;
+                                        : isAbsent
+                                            ? const Color(0xFFDC2626)
+                                            : subTextCol;
                                 final String statusLabel = isPresent
                                     ? AppLanguage.tr('✓ វត្តមាន', '✓ Present')
                                     : isLate
                                         ? AppLanguage.tr('⏰ យឺត', '⏰ Late')
-                                        : AppLanguage.tr('○ មិនទាន់ស្កេន', '○ Not Scanned');
+                                        : isAbsent
+                                            ? AppLanguage.tr('✗ អវត្តមាន', '✗ Absent')
+                                            : AppLanguage.tr('○ មិនទាន់ស្កេន', '○ Not Scanned');
 
                                 return DataRow(
                                   cells: [
@@ -1324,15 +1334,96 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                     DataCell(Text(gender, style: TextStyle(color: textCol, fontSize: 12))),
                                     DataCell(Text(phone, style: TextStyle(color: textCol, fontSize: 12))),
                                     DataCell(
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: badgeBg,
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          statusLabel,
-                                          style: TextStyle(color: badgeText, fontSize: 11, fontWeight: FontWeight.bold),
+                                      InkWell(
+                                        onTap: () async {
+                                          final studentId = s['id'] as int;
+                                          final selected = await showDialog<String>(
+                                            context: context,
+                                            builder: (dCtx) => SimpleDialog(
+                                              backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                                              title: Text(
+                                                AppLanguage.tr('កែសម្រួលវត្តមាន៖ $name', 'Change Attendance: $name'),
+                                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: textCol),
+                                              ),
+                                              children: [
+                                                SimpleDialogOption(
+                                                  onPressed: () => Navigator.pop(dCtx, 'present'),
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 18),
+                                                      const SizedBox(width: 10),
+                                                      Text(AppLanguage.tr('មករៀន (Present)', 'Present'), style: TextStyle(color: textCol)),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SimpleDialogOption(
+                                                  onPressed: () => Navigator.pop(dCtx, 'late'),
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(Icons.access_time_filled_rounded, color: Color(0xFFD97706), size: 18),
+                                                      const SizedBox(width: 10),
+                                                      Text(AppLanguage.tr('មកយឺត (Late)', 'Late'), style: TextStyle(color: textCol)),
+                                                    ],
+                                                  ),
+                                                ),
+                                                SimpleDialogOption(
+                                                  onPressed: () => Navigator.pop(dCtx, 'absent'),
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(Icons.cancel_rounded, color: Color(0xFFDC2626), size: 18),
+                                                      const SizedBox(width: 10),
+                                                      Text(AppLanguage.tr('អវត្តមាន (Absent)', 'Absent'), style: TextStyle(color: textCol)),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const Divider(),
+                                                SimpleDialogOption(
+                                                  onPressed: () => Navigator.pop(dCtx, 'reset'),
+                                                  child: Row(
+                                                    children: [
+                                                      const Icon(Icons.restart_alt_rounded, color: Color(0xFF64748B), size: 18),
+                                                      const SizedBox(width: 10),
+                                                      Text(AppLanguage.tr('កំណត់ឡើងវិញ (មិនទាន់ស្កេន)', 'Reset (Not Scanned)'), style: TextStyle(color: textCol)),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+
+                                          if (selected != null) {
+                                            final res = await AttendanceService.recordManualAttendance(
+                                              classId: c.id,
+                                              studentId: studentId,
+                                              status: selected,
+                                            );
+                                            if (res['success'] == true) {
+                                              setDlgState(() {
+                                                s['today_status'] = selected == 'reset' ? null : selected;
+                                              });
+                                            }
+                                          }
+                                        },
+                                        borderRadius: BorderRadius.circular(6),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: badgeBg,
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(color: badgeText.withValues(alpha: 0.3)),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                statusLabel,
+                                                style: TextStyle(color: badgeText, fontSize: 11, fontWeight: FontWeight.bold),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Icon(Icons.arrow_drop_down_rounded, size: 14, color: badgeText),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -1347,8 +1438,10 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                   ],
                 );
               },
-            ),
-          ),
+            );
+          },
+        ),
+      ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),

@@ -77,18 +77,35 @@ class AttendanceController extends Controller
 
         $today = Carbon::today()->toDateString();
         $now = Carbon::now();
+        $recordDate = $class->class_date ?: $today;
+
+        // ពិនិត្យម៉ោងចាប់ផ្តើមថ្នាក់រៀន ដើម្បីកំណត់ថាមកទាន់ពេល ឬមកយឺត (> 15 នាទី)
+        $status = 'present';
+        $note = 'បានស្កេនតាម QR Code';
+
+        if (!empty($class->time) && preg_match('/(\d{1,2}:\d{2})/', $class->time, $m)) {
+            try {
+                $startTime = Carbon::createFromFormat('Y-m-d H:i', $today . ' ' . $m[1]);
+                if ($now->greaterThan($startTime->copy()->addMinutes(15))) {
+                    $status = 'late';
+                    $note = 'ស្កេនយឺត (ម៉ោង ' . $now->format('H:i') . ' លើស ១៥ នាទី)';
+                }
+            } catch (\Exception $e) {
+                // រក្សា status = present ប្រសិនបើ parse ម៉ោងមិនចេញ
+            }
+        }
 
         // ពិនិត្យមើលថាតើសិស្សបានស្កេនរួចហើយឬនៅសម្រាប់ថ្ងៃនេះ
         $attendance = Attendance::updateOrCreate(
             [
                 'class_id' => $class->id,
                 'user_id' => $user->id,
-                'date' => $today,
+                'date' => $recordDate,
             ],
             [
-                'status' => 'present',
+                'status' => $status,
                 'scanned_at' => $now,
-                'note' => 'បានស្កេនតាម QR Code',
+                'note' => $note,
             ]
         );
 
@@ -242,6 +259,99 @@ class AttendanceController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'បានកែប្រែវត្តមានដោយជោគជ័យ',
+            'data' => [
+                'id' => $attendance->id,
+                'class_id' => $attendance->class_id,
+                'student_id' => $attendance->user_id,
+                'status' => $attendance->status,
+                'date' => (string)$attendance->date,
+                'scanned_at' => $attendance->scanned_at?->toIso8601String(),
+                'note' => $attendance->note,
+            ],
+        ], 200);
+    }
+
+    /**
+     * គ្រូ ឬ Admin កែសម្រួលវត្តមានសិស្សដោយផ្ទាល់ (Manual Attendance Override)
+     * គាំទ្រ៖ present, late, absent, reset (លុបកំណត់ត្រាដើម្បីឱ្យសិស្សស្កេនឡើងវិញ)
+     */
+    public function manual(Request $request)
+    {
+        $request->validate([
+            'class_id' => 'required|exists:classes,id',
+            'student_id' => 'required|exists:users,id',
+            'status' => 'required|in:present,late,absent,reset',
+            'date' => 'nullable|date',
+            'note' => 'nullable|string',
+        ]);
+
+        $class = ClassModel::find($request->class_id);
+        if (!$class) {
+            return response()->json([
+                'status' => false,
+                'message' => 'រកមិនឃើញថ្នាក់រៀននេះឡើយ!',
+            ], 404);
+        }
+
+        $user = $request->user();
+        // សិទ្ធិ៖ មានតែគ្រូបង្រៀនប្រចាំថ្នាក់នេះ ឬ Admin/Sub-Admin ប៉ុណ្ណោះដែលអាចកែប្រែវត្តមានបាន
+        $isClassTeacher = ($user && $user->role === 'lecturer' && (int)$class->user_id === (int)$user->id);
+        $isAdmin = ($user && $user->isAcademicAdmin());
+
+        if (!$isClassTeacher && !$isAdmin) {
+            return response()->json([
+                'status' => false,
+                'message' => 'លោកអ្នកមិនមានសិទ្ធិកែប្រែវត្តមានសម្រាប់ថ្នាក់រៀននេះឡើយ!',
+            ], 403);
+        }
+
+        $date = $request->filled('date') ? $request->date : ($class->class_date ?: Carbon::today()->toDateString());
+        $studentId = $request->student_id;
+        $targetStatus = strtolower($request->status);
+
+        // ករណី reset៖ លុបកំណត់ត្រាវត្តមានចោល ដើម្បីឱ្យសិស្សត្រឡប់ទៅសភាពដើម "មិនទាន់ស្កេន" ឬអាចស្កេនម្តងទៀត
+        if ($targetStatus === 'reset') {
+            Attendance::where('class_id', $class->id)
+                ->where('user_id', $studentId)
+                ->where('date', $date)
+                ->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'បានកំណត់វត្តមានសិស្សឡើងវិញ (មិនទាន់ស្កេន) ដោយជោគជ័យ!',
+                'data' => [
+                    'class_id' => $class->id,
+                    'student_id' => (int)$studentId,
+                    'status' => null,
+                    'date' => (string)$date,
+                    'scanned_at' => null,
+                ],
+            ], 200);
+        }
+
+        // ករណី present, late, absent
+        $note = $request->filled('note')
+            ? $request->note
+            : ($targetStatus === 'present' ? 'កែសម្រួលដោយគ្រូ (មករៀន)' : ($targetStatus === 'late' ? 'កែសម្រួលដោយគ្រូ (មកយឺត)' : 'កែសម្រួលដោយគ្រូ (អវត្តមាន)'));
+
+        $scannedAt = ($targetStatus === 'absent') ? null : Carbon::now();
+
+        $attendance = Attendance::updateOrCreate(
+            [
+                'class_id' => $class->id,
+                'user_id' => $studentId,
+                'date' => $date,
+            ],
+            [
+                'status' => $targetStatus,
+                'scanned_at' => $scannedAt,
+                'note' => $note,
+            ]
+        );
+
+        return response()->json([
+            'status' => true,
+            'message' => 'បានកែប្រែវត្តមានសិស្សដោយជោគជ័យ!',
             'data' => [
                 'id' => $attendance->id,
                 'class_id' => $attendance->class_id,

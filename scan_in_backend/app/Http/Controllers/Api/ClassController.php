@@ -464,6 +464,7 @@ class ClassController extends Controller
                     'gender' => $s->gender,
                     'date_of_birth' => $s->date_of_birth,
                     'avatar_url' => $s->avatar_url,
+                    'today_attendance_id' => $att?->id,
                     'today_status' => $att?->status,
                     'today_scanned_at' => $att?->scanned_at?->toIso8601String(),
                 ];

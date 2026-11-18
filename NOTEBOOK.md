@@ -296,8 +296,56 @@
    - គ្រូបើក QR Class 88 -> សិស្ស `IT20-001` (កាទិក វីរ៉ាច) ស្កេនជោគជ័យ -> Record វត្តមាន `present` ចូល MySQL DB ត្រឹមត្រូវ។
    - ស្ថិតិវត្តមានរបស់សិស្សឆ្លុះបញ្ចាំង Dynamic ភ្លាមៗ (1 វត្តមាន / 100%)។
 
-5. **កិច្ចការទី ៥ (Task 5 — បន្ទាប់ ⏳) ៖ មុខងារ Upload Profile Photo (Camera / Gallery)**
+5. **កិច្ចការទី ៥ (Task 5 — រួចរាល់ ១០០% ✅) ៖ ញែកសិទ្ធិ Web Login ដាច់ស្រឡះ (Rector vs Staff/Lecturer) & UI Clean**
+   - ផ្ទាំង «សាកលវិទ្យាធិការ» ផ្តាច់មុខសម្រាប់តែ Admin កំពូល CLI តែមួយគត់ (`role === 'admin'`)។ បុគ្គលិក Sub-Admin និងគ្រូ ត្រូវបានទប់ស្កាត់ជាមួយសារជូនដំណឹងជាភាសាខ្មែរច្បាស់លាស់។
+   - ផ្ទាំង «គ្រូ / បុគ្គលិក» សម្រាប់តែ Sub-Admin (`sub_admin`) និង គ្រូបង្រៀន (`lecturer`)។ បើ Sub-Admin ចូល នឹងនាំផ្លូវទៅកាន់ Admin Dashboard រីឯគ្រូនាំផ្លូវទៅកាន់ Projector Workspace។
+   - លុបអក្សរអង់គ្លេស subtitle និងការព្រមានបាតក្រោមទាំងអស់ ប្តូរមកជាភាសាខ្មែរសុទ្ធ (`ពាក្យតែ KH`) ការពារ Text Overflow ១០០%។
+   - បន្ថែមប៊ូតុងបើក/បិទពាក្យសម្ងាត់ (Eye Toggle) និងសម្អាត Form ឱ្យនៅទទេលំនាំដើម។
+
+6. **កិច្ចការទី ៦ (Task 6 — រួចរាល់ ១០០% ✅) ៖ សិទ្ធិពេញលេញសម្រាប់ Sub-Admin គ្រប់គ្រង និងបង្កើតគណនីគ្រូ**
+   - កែសម្រួលលក្ខខណ្ឌសិទ្ធិលើ `AdminLecturersScreen`, `AdminStudentsScreen`, និង `AdminClassesScreen` មកប្រើ `_currentUser?.isAdmin == true` (អនុញ្ញាតទាំង Master Admin និង Sub-Admin)។
+   - ឥឡូវ Sub-Admin អាចមើលបញ្ជីគ្រូ, បង្កើតគ្រូថ្មី (`POST /api/lecturers`), កែប្រែ, និងលុបបានពេញលេញ ព្រមទាំងគ្រប់គ្រងសិស្ស និងថ្នាក់រៀន។
+   - រក្សាសុវត្ថិភាព Master Admin៖ Sub-Admin មិនអាចមើល ឬកែប្រែបញ្ជី Sub-Admin ផ្សេងទៀតឡើយ (`isMasterAdmin == true` ផ្តាច់មុខ)។
+   - សរសេរ Feature Test `test_sub_admin_can_create_and_manage_lecturers` ក្នុង `SubAdminTest.php` ដំណើរការជោគជ័យ ១០០%។
+
+7. **កិច្ចការទី ៧ (Task 7 — រួចរាល់ ១០០% ✅) ៖ យន្តការស្កេនលើស ១៥ នាទី រាប់ថាមក «យឺត» (Auto-Late QR Scan)**
+   - ក្នុង `AttendanceController::scan` ប្រព័ន្ធស្រង់ម៉ោងចាប់ផ្តើមរបស់ថ្នាក់រៀន (ឧ. `07:00`)។
+   - ប្រសិនបើសិស្សស្កេនលើស ១៥ នាទីបន្ទាប់ពីម៉ោងចាប់ផ្តើម (`> 07:15`) ប្រព័ន្ធកត់ត្រាស្វ័យប្រវត្តិនូវ status `late` (មកយឺត) ព្រមទាំង note បញ្ជាក់ម៉ោងជាក់ស្តែង (ឧ. `ស្កេនយឺត (ម៉ោង 07:25 លើស ១៥ នាទី)`)។
+   - បើស្កេនទាន់ពេលក្នុងរង្វង់ ១៥ នាទី កត់ត្រាថា `present` (មករៀន)។
+
+8. **កិច្ចការទី ៨ (Task 8 — រួចរាល់ ១០០% ✅) ៖ គ្រូ និង Admin អាចកែប្រែវត្តមានសិស្សដោយផ្ទាល់ (Direct Attendance Override)**
+   - បង្កើត API `POST /api/attendances/manual` គាំទ្រ ៤ ស្ថានភាព៖
+     1. `present` (មករៀន)
+     2. `late` (មកយឺត)
+     3. `absent` (អវត្តមាន)
+     4. `reset` (លុបកំណត់ត្រាដើម្បីឱ្យសិស្សត្រឡប់ទៅសភាពដើម "មិនទាន់ស្កេន" ឬអាចស្កេនម្តងទៀត)
+   - អនុញ្ញាតសម្រាប់តែគ្រូប្រចាំថ្នាក់នោះ ឬ Academic Admin (Admin/Sub-Admin)។ គ្រូដទៃមិនអាចកែប្រែបានឡើយ។
+   - បំពាក់លើ Laptop Web Admin (`admin_classes_screen.dart`)៖ ក្នុងផ្ទាំងបញ្ជីឈ្មោះសិស្ស គ្រូអាចចុចលើស្លាកវត្តមានដើម្បីបើក Dialog ប្តូរស្ថានភាពភ្លាមៗ។
+   - បំពាក់លើ Mobile App (`class_detail_screen.dart`)៖ ស្លាកវត្តមានសិស្សនីមួយៗអាចចុចបាន (Interactive Chip) ដើម្បីបើក Modal Bottom Sheet ប្តូរស្ថានភាពភ្លាមៗ។
+
+---
+
+### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code)
+- **លុបចោលឯកសារបណ្ដោះអាសន្នទាំងអស់៖**
+  - បានលុប `flutter_01.log`, `flutter_02.log`, `flutter_03.log`, `flutter_04.log`, `flutter_05.log`, `flutter_06.log` ពី `scan_in` និង `scan_in_admin`។
+  - បានលុប Kotlin build error logs ចាស់ៗចេញពី `scan_in/android/.kotlin/errors/`។
+  - គ្មានឯកសារ Scratch/Test (`test_*.php`, `check_*.php`) នៅក្នុង Directory គម្រោងឡើយ។
+- **សុពលភាព Test Suite & Code Quality៖**
+  - Laravel Feature Tests: **៣០ passed, ១៩៣ assertions (១០០% PASS)**។
+  - `flutter analyze` លើ `scan_in_admin`: **No issues found! (0 warnings, 0 errors)**។
+  - `flutter analyze` លើ `scan_in`: **No issues found! (0 warnings, 0 errors)**។
+
+---
+
+### 📋 ផែនការការងារដែលត្រូវធ្វើបន្តនៅថ្ងៃស្អែក (Tomorrow's Roadmap)
+1. **ចុះឈ្មោះនិស្សិតពិត ១៦ នាក់ដែលនៅសល់ (Total 21 Students of IT Gen 20)៖**
+   - បញ្ចូលឈ្មោះនិស្សិត ១៦ នាក់ទៀតពីបញ្ជីផ្លូវការរបស់សាកលវិទ្យាល័យ ឱ្យគ្រប់ចំនួន ២១ នាក់នៃថ្នាក់ IT ជំនាន់ទី ២០។
+2. **មុខងារ Upload Profile Photo (Camera / Gallery)៖**
    - ដំឡើង package `image_picker` លើ Mobile App `scan_in`។
-   - បង្កើត API `POST /api/profile/avatar` ក្នុង Laravel សម្រាប់ Upload និងរក្សាទុករូបភាព។
-   - ភ្ជាប់ Modal Sheet (ថតរូបថ្មី / ជ្រើសពីវិចិត្រសាល) លើ Student Profile និង Lecturer Profile។
+   - បង្កើត API `POST /api/profile/avatar` ក្នុង Laravel សម្រាប់ Upload និងរក្សាទុករូបភាព Profile សិស្ស និងគ្រូ។
+3. **មុខងារ Export របាយការណ៍វត្តមាន (Excel / PDF)៖**
+   - គាំទ្រការទាញទិន្នន័យវត្តមានតាមមុខវិជ្ជា និងតាមដេប៉ាតឺម៉ង់សម្រាប់គ្រូ និងរដ្ឋបាលយកទៅប្រើប្រាស់ផ្លូវការ។
+4. **WebSocket / Auto-Refresh សម្រាប់ Projector Mode៖**
+   - ពេលសិស្សស្កេនលើទូរស័ព្ទ បញ្ជីឈ្មោះលើផ្ទាំង Projector កុំព្យូទ័រគ្រូ update ឡើងមកភ្លាមៗដោយស្វ័យប្រវត្តិ។
+
 

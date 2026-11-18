@@ -131,4 +131,50 @@ class AttendanceService {
       return false;
     }
   }
+
+  /// គ្រូ ឬ Admin កែប្រែវត្តមានសិស្សដោយផ្ទាល់ (Manual Attendance Override)
+  /// គាំទ្រ៖ 'present', 'late', 'absent', 'reset'
+  static Future<Map<String, dynamic>> recordManualAttendance({
+    required int classId,
+    required int studentId,
+    required String status,
+    String? date,
+    String? note,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+      if (token != null) {
+        headers['Authorization'] = 'Bearer $token';
+      }
+
+      final body = <String, dynamic>{
+        'class_id': classId,
+        'student_id': studentId,
+        'status': status,
+      };
+      if (date != null) body['date'] = date;
+      if (note != null) body['note'] = note;
+
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/attendances/manual'),
+            headers: headers,
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 6));
+
+      final data = jsonDecode(response.body);
+      return {
+        'success': response.statusCode == 200 && data['status'] == true,
+        'message': data['message'] ?? 'បានកែប្រែវត្តមានជោគជ័យ',
+        'data': data['data'],
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'បញ្ហាការតភ្ជាប់៖ $e'};
+    }
+  }
 }

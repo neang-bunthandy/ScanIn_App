@@ -3,6 +3,7 @@ import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
 import '../../models/class_model.dart';
 import '../../services/class_service.dart';
+import '../../services/attendance_service.dart';
 
 class ClassDetailScreen extends StatefulWidget {
   final ClassModel? classModel;
@@ -48,6 +49,89 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
         _students = list;
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _showChangeAttendanceSheet(Map<String, dynamic> s, int classId) async {
+    final name = (s['name'] ?? '').toString();
+    final studentId = s['id'] as int;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textCol = isDark ? Colors.white : AppColors.textPrimary;
+
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                AppLanguage.tr('កែសម្រួលវត្តមាន៖ $name', 'Change Attendance: $name'),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textCol),
+              ),
+              const SizedBox(height: 14),
+              ListTile(
+                leading: const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A)),
+                title: Text(AppLanguage.tr('មករៀន (Present)', 'Present'), style: TextStyle(color: textCol)),
+                onTap: () => Navigator.pop(bCtx, 'present'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.access_time_filled_rounded, color: Color(0xFFD97706)),
+                title: Text(AppLanguage.tr('មកយឺត (Late)', 'Late'), style: TextStyle(color: textCol)),
+                onTap: () => Navigator.pop(bCtx, 'late'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.cancel_rounded, color: Color(0xFFDC2626)),
+                title: Text(AppLanguage.tr('អវត្តមាន (Absent)', 'Absent'), style: TextStyle(color: textCol)),
+                onTap: () => Navigator.pop(bCtx, 'absent'),
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.restart_alt_rounded, color: Color(0xFF64748B)),
+                title: Text(AppLanguage.tr('កំណត់ឡើងវិញ (មិនទាន់ស្កេន)', 'Reset (Not Scanned)'), style: TextStyle(color: textCol)),
+                onTap: () => Navigator.pop(bCtx, 'reset'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (selected != null) {
+      final res = await AttendanceService.recordManualAttendance(
+        classId: classId,
+        studentId: studentId,
+        status: selected,
+      );
+      if (res['success'] == true && mounted) {
+        setState(() {
+          s['today_status'] = selected == 'reset' ? null : selected;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res['message'] as String),
+            backgroundColor: AppColors.success,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -407,21 +491,28 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
 
                   final bool isPresent = todayStatus == 'present';
                   final bool isLate = todayStatus == 'late';
+                  final bool isAbsent = todayStatus == 'absent';
                   final Color badgeColor = isPresent
                       ? (isDark ? const Color(0xFF4ADE80) : const Color(0xFF16A34A))
                       : isLate
                           ? (isDark ? const Color(0xFFFBBF24) : const Color(0xFFD97706))
-                          : subTextCol;
+                          : isAbsent
+                              ? const Color(0xFFDC2626)
+                              : subTextCol;
                   final Color badgeBg = isPresent
                       ? (isDark ? const Color(0xFF16A34A).withValues(alpha: 0.2) : const Color(0xFFF0FDF4))
                       : isLate
                           ? (isDark ? const Color(0xFFF59E0B).withValues(alpha: 0.2) : const Color(0xFFFFFBEB))
-                          : (isDark ? const Color(0xFF334155).withValues(alpha: 0.4) : const Color(0xFFF1F5F9));
+                          : isAbsent
+                              ? const Color(0xFFDC2626).withValues(alpha: 0.15)
+                              : (isDark ? const Color(0xFF334155).withValues(alpha: 0.4) : const Color(0xFFF1F5F9));
                   final String statusLabel = isPresent
                       ? AppLanguage.tr('មករៀន', 'Present')
                       : isLate
                           ? AppLanguage.tr('យឺត', 'Late')
-                          : AppLanguage.tr('មិនទាន់ស្កេន', 'Not scanned');
+                          : isAbsent
+                              ? AppLanguage.tr('អវត្តមាន', 'Absent')
+                              : AppLanguage.tr('មិនទាន់ស្កេន', 'Not scanned');
 
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -470,19 +561,32 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
                             ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: badgeBg,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: badgeColor.withValues(alpha: 0.35)),
-                          ),
-                          child: Text(
-                            statusLabel,
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: badgeColor,
+                        InkWell(
+                          onTap: widget.isStudentView ? null : () => _showChangeAttendanceSheet(s, c.id),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: badgeBg,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: badgeColor.withValues(alpha: 0.35)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  statusLabel,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: badgeColor,
+                                  ),
+                                ),
+                                if (!widget.isStudentView) ...[
+                                  const SizedBox(width: 3),
+                                  Icon(Icons.arrow_drop_down_rounded, size: 14, color: badgeColor),
+                                ],
+                              ],
                             ),
                           ),
                         ),

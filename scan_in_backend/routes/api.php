@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/classes/{id}/students', [ClassController::class, 'students']);
     Route::get('/classes/{id}/attendances', [AttendanceController::class, 'classAttendances']);
     Route::put('/attendances/{id}', [AttendanceController::class, 'update']);
+    Route::post('/attendances/manual', [AttendanceController::class, 'manual']);
 
 // Lecturers API (Admin provisions lecturer accounts)
 Route::get('/lecturers', function (Request $request) {
