@@ -58,7 +58,7 @@ class ReportController extends Controller
             if ($request->filled('department') && trim((string)$s->department) !== trim((string)$request->department)) {
                 return false;
             }
-            if ($request->filled('generation') && trim((string)$s->generation) !== trim((string)$request->generation)) {
+            if ($request->filled('generation') && !\App\Models\ClassModel::matchesGeneration($s->generation, $request->generation)) {
                 return false;
             }
             if ($request->filled('status')) {
