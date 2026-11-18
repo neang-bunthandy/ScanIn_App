@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
+import '../../core/app_datetime.dart';
 import '../../models/class_model.dart';
 import '../../models/user_model.dart';
+import '../../models/attendance_model.dart';
 import 'class_detail_screen.dart';
 import 'show_qr_screen.dart';
 import 'attendance_list_screen.dart';
@@ -12,6 +14,7 @@ import 'attendance_list_screen.dart';
 class LecturerDashboardScreen extends StatelessWidget {
   final UserModel lecturer;
   final List<ClassModel> classes;
+  final List<AttendanceModel> attendances;
   final Map<int, bool> classQrActive;
   final Function(ClassModel) onShowQr;
   final Function(ClassModel) onToggleQr;
@@ -22,6 +25,7 @@ class LecturerDashboardScreen extends StatelessWidget {
     super.key,
     required this.lecturer,
     required this.classes,
+    this.attendances = const [],
     required this.classQrActive,
     required this.onShowQr,
     required this.onToggleQr,
@@ -57,6 +61,12 @@ class LecturerDashboardScreen extends StatelessWidget {
       if (active) activeQrCount++;
     }
 
+    final int totalAttendances = attendances.length;
+    final int presentAttendances = attendances.where((a) => a.isPresent || a.isLate).length;
+    final String avgRateString = totalAttendances > 0
+        ? '${((presentAttendances / totalAttendances) * 100).round()}%'
+        : '0%';
+
     final content = SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
@@ -91,7 +101,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${AppLanguage.tr('ថ្ងៃព្រហស្បតិ៍ 15 តុលា 2026', 'Thursday, Oct 15, 2026')} • ${lecturer.department ?? AppLanguage.tr('ដេប៉ាតឺម៉ង់ IT', 'IT Department')}',
+                      '${AppDateTime.formatHeaderDate(DateTime.now())} • ${lecturer.department ?? AppLanguage.tr('ដេប៉ាតឺម៉ង់ IT', 'IT Department')}',
                       style: TextStyle(
                         fontSize: 13,
                         color: subTextCol,
@@ -260,7 +270,7 @@ class LecturerDashboardScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                     onTap: onGoToAttendanceTab,
                     child: _buildStatCard(
-                      count: '94%',
+                      count: avgRateString,
                       label: AppLanguage.tr('វត្តមានមធ្យម', 'Avg Attendance'),
                       bgColor: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.15) : const Color(0xFFF0FDF4),
                       borderColor: isDark ? const Color(0xFF16A34A).withValues(alpha: 0.35) : const Color(0xFFBBF7D0),

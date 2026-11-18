@@ -609,6 +609,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 // Tab 3: ខ្ញុំ (Profile)
                 StudentProfileScreen(
                   student: student,
+                  attendances: _attendances,
                   notificationsEnabled: _notificationsEnabled,
                   selectedLanguage: _selectedLanguage,
                   onToggleNotifications: (val) {

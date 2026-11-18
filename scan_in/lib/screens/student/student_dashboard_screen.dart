@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
+import '../../core/app_datetime.dart';
 import '../../models/user_model.dart';
 import '../../models/class_model.dart';
 import '../../models/attendance_model.dart';
@@ -76,7 +77,7 @@ class StudentDashboardScreen extends StatelessWidget {
                               if (student.yearLevel != null) 'ឆ្នាំទី ${student.yearLevel}',
                               if (student.generation != null && student.generation!.isNotEmpty) student.generation!,
                             ].join(' · ')
-                          : AppLanguage.tr('ថ្ងៃព្រហស្បតិ៍ 15 តុលា 2026', 'Thursday, Oct 15, 2026'),
+                          : AppDateTime.formatHeaderDate(DateTime.now()),
                       style: TextStyle(
                         fontSize: 13.5,
                         color: subTextCol,

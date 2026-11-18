@@ -413,6 +413,17 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
       totalStudents += c.studentCount;
     }
 
+    // គណនាភាគរយសកម្មភាពបង្រៀនជាក់ស្តែងពី Database (MySQL)
+    final int totalRecords = widget.attendanceRecords.length;
+    final int presentRecords = widget.attendanceRecords.where((a) => a.isPresent || a.isLate).length;
+    final int activityPercent = totalRecords > 0
+        ? ((presentRecords / totalRecords) * 100).round()
+        : 0;
+    final String activityLabel = AppLanguage.tr(
+      'សកម្មភាព $activityPercent%',
+      'Activity $activityPercent%',
+    );
+
     final content = SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
@@ -531,27 +542,27 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.analytics_outlined, size: 18, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      Text(
-                        AppLanguage.tr('ស្ថិតិការបង្រៀន (ឆមាសនេះ)', 'Teaching Statistics (This Semester)'),
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
-                      ),
-                      const Spacer(),
-                      Text(
-                        AppLanguage.tr('សកម្មភាព ៩៤%', 'Activity 94%'),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.success,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.analytics_outlined, size: 18, color: AppColors.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          AppLanguage.tr('ស្ថិតិការបង្រៀន (ឆមាសនេះ)', 'Teaching Statistics (This Semester)'),
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: textCol),
                         ),
-                      ),
-                    ],
-                  ),
+                        const Spacer(),
+                        Text(
+                          activityLabel,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.success,
+                          ),
+                        ),
+                      ],
+                    ),
                   const SizedBox(height: 16),
                   Row(
                     children: [

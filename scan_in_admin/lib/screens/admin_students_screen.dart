@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_routes.dart';
@@ -1101,14 +1102,23 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                 ),
                                 TextButton.icon(
                                   icon: const Icon(Icons.copy_rounded, size: 14),
-                                  label: Text(AppLanguage.tr('ចម្លងទម្រង់គំរូពេញលេញ', 'Copy Full Template'), style: const TextStyle(fontSize: 12)),
-                                  onPressed: () {
-                                    const template = 'Student Code,Full Name,Latin Name,Gender,Date of Birth,Email,Department,Generation,Intake Year,Year Level,Phone\n'
-                                        'STU101,សុខ ចាន់ដារ៉ា,Sok Chandara,ប្រុស,2004-05-15,dara@student.scanin.app,វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS),ជំនាន់ទី ១៦ (Gen 16),2024,2,012345678\n'
-                                        'STU102,គង់ ស្រីមុំ,Kong Sreymom,ស្រី,2005-02-20,sreymom@student.scanin.app,វិទ្យាសាស្ត្រកុំព្យូទ័រ (CS),ជំនាន់ទី ១៦ (Gen 16),2024,2,098765432\n'
-                                        'STU103,ហេង វិបុល,Heng Vibol,ប្រុស,2004-11-08,vibol@student.scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ១៧ (Gen 17),2025,1,011223344';
-                                    csvTextCtrl.text = template;
-                                    parseCsv(template, setDlgState);
+                                  label: Text(AppLanguage.tr('ចម្លងទម្រង់ Header CSV', 'Copy CSV Header'), style: const TextStyle(fontSize: 12)),
+                                  onPressed: () async {
+                                    const headerTemplate = 'Student Code,Full Name,Latin Name,Gender,Date of Birth,Email,Department,Generation,Intake Year,Year Level,Phone\n'
+                                        'IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,viraj.kathik@student.scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ២០ (Gen 20),2023,4,012345001';
+                                    await Clipboard.setData(const ClipboardData(text: headerTemplate));
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(AppLanguage.tr(
+                                            'បានចម្លងទម្រង់គំរូ CSV ទៅក្នុង Clipboard រួចរាល់!',
+                                            'Copied CSV template to Clipboard!',
+                                          )),
+                                          backgroundColor: const Color(0xFF10B981),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
                                   },
                                 ),
                               ],
@@ -1135,7 +1145,10 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                         maxLines: 7,
                         onChanged: (val) => parseCsv(val, setDlgState),
                         decoration: InputDecoration(
-                          hintText: 'STU101,សុខ ចាន់ដារ៉ា,Sok Chandara,ប្រុស,2004-05-15,dara@student.scanin.app,CS,Gen 16,2024,2,012345678',
+                          hintText: AppLanguage.tr(
+                            'បិទភ្ជាប់ (Paste) ទិន្នន័យ CSV ឬ Excel នៅទីនេះ...\nឧ. IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,viraj.kathik@student.scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ២០ (Gen 20),2023,4,012345001',
+                            'Paste CSV or Excel rows here...\ne.g. IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,viraj.kathik@student.scanin.app,IT,Gen 20,2023,4,012345001',
+                          ),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                           contentPadding: const EdgeInsets.all(12),
                         ),

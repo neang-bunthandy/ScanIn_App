@@ -3,6 +3,7 @@ import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 import '../../core/app_language.dart';
 import '../../models/user_model.dart';
+import '../../models/attendance_model.dart';
 import '../../services/auth_service.dart';
 import '../login_screen.dart';
 
@@ -10,6 +11,7 @@ import '../login_screen.dart';
 /// គាំទ្រទាំង Light Mode និង Dark Mode យ៉ាងពេញលេញ
 class StudentProfileScreen extends StatefulWidget {
   final UserModel student;
+  final List<AttendanceModel> attendances;
   final bool notificationsEnabled;
   final String selectedLanguage;
   final ValueChanged<bool> onToggleNotifications;
@@ -19,6 +21,7 @@ class StudentProfileScreen extends StatefulWidget {
   const StudentProfileScreen({
     super.key,
     required this.student,
+    this.attendances = const [],
     required this.notificationsEnabled,
     required this.selectedLanguage,
     required this.onToggleNotifications,
@@ -398,8 +401,21 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final borderCol = isDark ? const Color(0xFF334155) : AppColors.border;
     final textCol = isDark ? Colors.white : AppColors.textPrimary;
+    final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
     final dividerCol = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
     final avatarBg = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
+
+    // គណនាស្ថិតិវត្តមានជាក់ស្តែងពី Database (MySQL)
+    final int presentCount = widget.attendances.where((a) => a.isPresent).length;
+    final int lateCount = widget.attendances.where((a) => a.isLate).length;
+    final int absentCount = widget.attendances.where((a) => a.isAbsent).length;
+    final int totalRecorded = presentCount + lateCount + absentCount;
+    final int attendanceRate = totalRecorded > 0
+        ? (((presentCount + lateCount) / totalRecorded) * 100).round()
+        : 0;
+    final String rateLabel = totalRecorded > 0
+        ? AppLanguage.tr('អត្រាវត្តមាន $attendanceRate%', 'Attendance Rate $attendanceRate%')
+        : AppLanguage.tr('អត្រាវត្តមាន ០%', 'Attendance Rate 0%');
 
     final content = SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -530,11 +546,11 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        AppLanguage.tr('អត្រាវត្តមាន ៩០%', 'Attendance Rate 90%'),
-                        style: const TextStyle(
+                        rateLabel,
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.success,
+                          color: attendanceRate >= 80 ? AppColors.success : (totalRecorded == 0 ? subTextCol : AppColors.warning),
                         ),
                       ),
                     ],
@@ -545,7 +561,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       Expanded(
                         child: _buildMiniStatBox(
                           title: AppLanguage.tr('វត្តមាន', 'Present'),
-                          count: '18',
+                          count: '$presentCount',
                           color: AppColors.success,
                           icon: Icons.check_circle_rounded,
                         ),
@@ -554,7 +570,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       Expanded(
                         child: _buildMiniStatBox(
                           title: AppLanguage.tr('យឺត', 'Late'),
-                          count: '2',
+                          count: '$lateCount',
                           color: AppColors.warning,
                           icon: Icons.access_time_filled_rounded,
                         ),
@@ -563,7 +579,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                       Expanded(
                         child: _buildMiniStatBox(
                           title: AppLanguage.tr('អវត្តមាន', 'Absent'),
-                          count: '1',
+                          count: '$absentCount',
                           color: AppColors.error,
                           icon: Icons.cancel_rounded,
                         ),

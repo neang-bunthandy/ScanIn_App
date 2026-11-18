@@ -565,6 +565,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                 LecturerDashboardScreen(
                   lecturer: lecturer,
                   classes: _classes,
+                  attendances: _attendanceRecords,
                   classQrActive: _classQrActive,
                   onShowQr: _showQrBottomSheet,
                   onToggleQr: _toggleQrForClass,
