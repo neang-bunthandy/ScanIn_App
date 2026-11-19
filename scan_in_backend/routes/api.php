@@ -359,7 +359,12 @@ Route::post('/students/import', function (Request $request) {
         }
 
         if (empty($email)) {
-            $email = strtolower($studentCode) . '@student.scanin.app';
+            if (!empty($latinName)) {
+                $cleanLatin = strtolower(trim($latinName));
+                $email = str_replace(' ', '.', $cleanLatin) . '@scanin.app';
+            } else {
+                $email = strtolower(str_replace('-', '', $studentCode)) . '@scanin.app';
+            }
         }
 
         $exists = \App\Models\User::where('email', $email)

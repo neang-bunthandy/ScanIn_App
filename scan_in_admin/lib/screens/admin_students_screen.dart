@@ -186,6 +186,15 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                       Expanded(
                         child: TextField(
                           controller: latinNameCtrl,
+                          onChanged: (val) {
+                            if (emailCtrl.text.isEmpty || emailCtrl.text.endsWith('@scanin.app')) {
+                              if (val.trim().isNotEmpty) {
+                                emailCtrl.text = '${val.trim().toLowerCase().replaceAll(' ', '.')}@scanin.app';
+                              } else {
+                                emailCtrl.text = '';
+                              }
+                            }
+                          },
                           decoration: InputDecoration(
                             labelText: AppLanguage.tr('ឈ្មោះជាអក្សរឡាតាំង', 'Latin Name'),
                             hintText: 'e.g. Sokha Meng',
@@ -580,6 +589,15 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                       Expanded(
                         child: TextField(
                           controller: latinNameCtrl,
+                          onChanged: (val) {
+                            if (emailCtrl.text.isEmpty || emailCtrl.text.endsWith('@scanin.app')) {
+                              if (val.trim().isNotEmpty) {
+                                emailCtrl.text = '${val.trim().toLowerCase().replaceAll(' ', '.')}@scanin.app';
+                              } else {
+                                emailCtrl.text = '';
+                              }
+                            }
+                          },
                           decoration: InputDecoration(
                             labelText: AppLanguage.tr('ឈ្មោះជាអក្សរឡាតាំង', 'Latin Name'),
                             hintText: 'e.g. Sokha Meng',
@@ -884,6 +902,16 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
       _students.map((s) => (s['intake_year'] ?? '').toString()),
     );
 
+    String generateStudentEmail(String latinName, String code) {
+      if (latinName.trim().isNotEmpty) {
+        String name = latinName.trim().toLowerCase();
+        String emailName = name.replaceAll(' ', '.');
+        return '$emailName@scanin.app';
+      }
+      String cleanCode = code.trim().toLowerCase().replaceAll('-', '');
+      return '$cleanCode@scanin.app';
+    }
+
     void parseCsv(String text, void Function(void Function()) setDlgState) {
       final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
       final list = <Map<String, dynamic>>[];
@@ -919,7 +947,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
             latinName = parts.length > 2 ? parts[2] : '';
             gender = parts.length > 3 && parts[3].isNotEmpty ? parts[3] : 'ប្រុស';
             dob = parts.length > 4 ? parts[4] : '';
-            email = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : '@student.scanin.app';
+            email = parts.length > 5 ? parts[5] : '';
             dept = parts.length > 6 && parts[6].isNotEmpty ? parts[6] : (batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first);
             if (parts.length > 7 && parts[7].isNotEmpty) gen = parts[7];
             if (parts.length > 8 && parts[8].isNotEmpty) intake = parts[8];
@@ -930,15 +958,15 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           } else {
             gender = parts.length > 2 && parts[2].isNotEmpty ? parts[2] : 'ប្រុស';
             dob = parts.length > 3 ? parts[3] : '';
-            email = parts.length > 4 && parts[4].isNotEmpty ? parts[4] : '@student.scanin.app';
+            email = parts.length > 4 ? parts[4] : '';
             dept = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : (batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first);
             phone = parts.length > 6 ? parts[6] : '';
             if (parts.length > 7) latinName = parts[7];
           }
 
           dept = ClassService.normalizeDepartment(dept);
-          if (email.isEmpty) {
-            email = '@student.scanin.app';
+          if (email.isEmpty || !email.contains('@')) {
+            email = generateStudentEmail(latinName, code);
           }
 
           list.add({
@@ -1105,7 +1133,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                   label: Text(AppLanguage.tr('ចម្លងទម្រង់ Header CSV', 'Copy CSV Header'), style: const TextStyle(fontSize: 12)),
                                   onPressed: () async {
                                     const headerTemplate = 'Student Code,Full Name,Latin Name,Gender,Date of Birth,Email,Department,Generation,Intake Year,Year Level,Phone\n'
-                                        'IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,viraj.kathik@student.scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ២០ (Gen 20),2023,4,012345001';
+                                        'IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,kathik.viraj@scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ២០ (Gen 20),2023,4,012345001';
                                     await Clipboard.setData(const ClipboardData(text: headerTemplate));
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1146,8 +1174,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                         onChanged: (val) => parseCsv(val, setDlgState),
                         decoration: InputDecoration(
                           hintText: AppLanguage.tr(
-                            'បិទភ្ជាប់ (Paste) ទិន្នន័យ CSV ឬ Excel នៅទីនេះ...\nឧ. IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,viraj.kathik@student.scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ២០ (Gen 20),2023,4,012345001',
-                            'Paste CSV or Excel rows here...\ne.g. IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,viraj.kathik@student.scanin.app,IT,Gen 20,2023,4,012345001',
+                            'បិទភ្ជាប់ (Paste) ទិន្នន័យ CSV ឬ Excel នៅទីនេះ...\nឧ. IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,kathik.viraj@scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ២០ (Gen 20),2023,4,012345001',
+                            'Paste CSV or Excel rows here...\ne.g. IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,kathik.viraj@scanin.app,IT,Gen 20,2023,4,012345001',
                           ),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                           contentPadding: const EdgeInsets.all(12),
