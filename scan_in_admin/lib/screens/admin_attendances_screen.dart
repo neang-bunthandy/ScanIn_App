@@ -442,7 +442,7 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
                           items: _classes.map((c) {
                             return DropdownMenuItem<int>(
                               value: c.id,
-                              child: Text('${c.subjectCode} - ${c.subjectName}', overflow: TextOverflow.ellipsis),
+                              child: Text('${c.subjectCode} - ${c.subjectName}${c.classDate != null && c.classDate!.isNotEmpty ? ' (${c.classDate})' : (c.dayOfWeek.isNotEmpty ? ' (${c.dayOfWeek})' : '')}', overflow: TextOverflow.ellipsis),
                             );
                           }).toList(),
                           onChanged: (val) {
@@ -471,7 +471,7 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
                           items: _classes.map((c) {
                             return DropdownMenuItem<int>(
                               value: c.id,
-                              child: Text('${c.subjectCode} - ${c.subjectName}', overflow: TextOverflow.ellipsis),
+                              child: Text('${c.subjectCode} - ${c.subjectName}${c.classDate != null && c.classDate!.isNotEmpty ? ' (${c.classDate})' : (c.dayOfWeek.isNotEmpty ? ' (${c.dayOfWeek})' : '')}', overflow: TextOverflow.ellipsis),
                             );
                           }).toList(),
                           onChanged: (val) {

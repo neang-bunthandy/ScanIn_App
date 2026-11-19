@@ -60,6 +60,38 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     return allClasses;
   }
 
+  /// ច្របាច់បញ្ចូលគ្នានូវកាលវិភាគទាំងអស់ដែលមានកូដមុខវិជ្ជាដដែល (Group classes by Subject Code)
+  List<_GroupedClass> get _groupedClasses {
+    final Map<String, List<ClassModel>> map = {};
+    for (final c in _filteredClasses) {
+      final codeKey = c.subjectCode.trim().toUpperCase();
+      final key = codeKey.isNotEmpty
+          ? '${codeKey}_${c.department ?? ''}_${c.generation ?? ''}'
+          : 'ID_${c.id}';
+      map.putIfAbsent(key, () => []).add(c);
+    }
+    return map.entries.map((entry) {
+      final list = entry.value;
+      list.sort((a, b) => (a.classDate ?? '').compareTo(b.classDate ?? ''));
+      final first = list.first;
+      return _GroupedClass(
+        key: entry.key,
+        subjectCode: first.subjectCode,
+        subjectName: first.subjectName,
+        department: first.department,
+        generation: first.generation,
+        yearLevel: first.yearLevel,
+        room: first.room,
+        time: first.time,
+        dayOfWeek: first.dayOfWeek,
+        semester: first.semester,
+        academicYear: first.academicYear,
+        totalSessions: first.totalSessions,
+        sessions: list,
+      );
+    }).toList();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1138,6 +1170,268 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
   }
 
   /// បើកផ្ទាំង Projector Fullscreen QR Code សម្រាប់គ្រូ ឬ Admin បញ្ចាំងក្នុងថ្នាក់
+  /// បង្ហាញផ្ទាំងបញ្ជីកាលបរិច្ឆេទថ្ងៃបង្រៀនទាំងអស់សម្រាប់មុខវិជ្ជានេះ
+  void _showSessionsDialog(_GroupedClass grouped) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final borderCol = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final textCol = isDark ? Colors.white : AppColors.textPrimary;
+    final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
+    final isAdmin = _currentUser?.isAdmin ?? false;
+
+    showDialog(
+      context: context,
+      builder: (dCtx) => AlertDialog(
+        backgroundColor: cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: (isDark ? const Color(0xFF0284C7) : AppColors.primary).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(Icons.date_range_rounded, color: isDark ? const Color(0xFF38BDF8) : AppColors.primary, size: 24),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${grouped.subjectCode} - ${grouped.subjectName}',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textCol),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    AppLanguage.tr(
+                      'កាលវិភាគបង្រៀនទាំងអស់ (${grouped.sessions.length} កាលបរិច្ឆេទ)',
+                      'All Scheduled Dates (${grouped.sessions.length} Sessions)',
+                    ),
+                    style: TextStyle(fontSize: 12, color: subTextCol),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: 520,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: grouped.sessions.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 8),
+                  itemBuilder: (context, index) {
+                    final session = grouped.sessions[index];
+                    final dateLabel = (session.classDate != null && session.classDate!.isNotEmpty)
+                        ? session.classDate!
+                        : (session.dayOfWeek.isNotEmpty ? session.dayOfWeek : '-');
+
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: borderCol),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '#${index + 1}',
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary, fontSize: 12),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.calendar_today_rounded, size: 13, color: textCol),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      dateLabel,
+                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: textCol),
+                                    ),
+                                    if (session.dayOfWeek.isNotEmpty) ...[
+                                      const SizedBox(width: 6),
+                                      Text('(${session.dayOfWeek})', style: TextStyle(fontSize: 11, color: subTextCol)),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Row(
+                                  children: [
+                                    Icon(Icons.access_time_rounded, size: 12, color: subTextCol),
+                                    const SizedBox(width: 4),
+                                    Text(session.time, style: TextStyle(fontSize: 11, color: subTextCol)),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                      decoration: BoxDecoration(
+                                        color: session.isQrActive
+                                            ? const Color(0xFF16A34A).withValues(alpha: 0.15)
+                                            : const Color(0xFFDC2626).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        session.isQrActive
+                                            ? AppLanguage.tr('● QR បើក', '● Active')
+                                            : AppLanguage.tr('○ QR បិទ', '○ Closed'),
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          color: session.isQrActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          // ប៊ូតុងបញ្ចាំង QR
+                          IconButton(
+                            tooltip: AppLanguage.tr('បញ្ចាំង QR', 'Project QR'),
+                            icon: const Icon(Icons.tv_rounded, size: 20, color: Color(0xFF0284C7)),
+                            onPressed: () {
+                              Navigator.pop(dCtx);
+                              _openProjectorModal(session);
+                            },
+                          ),
+                          // ប៊ូតុងមើលវត្តមាន
+                          IconButton(
+                            tooltip: AppLanguage.tr('វត្តមាន', 'Attendance'),
+                            icon: const Icon(Icons.fact_check_outlined, size: 20, color: Color(0xFF10B981)),
+                            onPressed: () {
+                              Navigator.pop(dCtx);
+                              Navigator.pushReplacementNamed(context, AppRoutes.attendances, arguments: session.id);
+                            },
+                          ),
+                          if (isAdmin)
+                            IconButton(
+                              tooltip: AppLanguage.tr('លុបកាលបរិច្ឆេទនេះ', 'Delete this date'),
+                              icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                              onPressed: () async {
+                                Navigator.pop(dCtx);
+                                await _confirmDeleteClass(session);
+                              },
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dCtx),
+            child: Text(AppLanguage.tr('បិទ', 'Close')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// ដំណើរការបញ្ចាំង QR (បើមានច្រើនកាលបរិច្ឆេទ ឱ្យជ្រើសរើស ឬបើក Active ស្វ័យប្រវត្តិ)
+  void _handleProjectQr(_GroupedClass grouped) {
+    if (grouped.sessions.length == 1) {
+      _openProjectorModal(grouped.sessions.first);
+      return;
+    }
+    final active = grouped.sessions.where((s) => s.isQrActive).firstOrNull;
+    if (active != null) {
+      _openProjectorModal(active);
+      return;
+    }
+    _showSessionsDialog(grouped);
+  }
+
+  /// ដំណើរការមើលវត្តមាន
+  void _handleViewAttendance(_GroupedClass grouped) {
+    if (grouped.sessions.length == 1) {
+      Navigator.pushReplacementNamed(context, AppRoutes.attendances, arguments: grouped.sessions.first.id);
+      return;
+    }
+    _showSessionsDialog(grouped);
+  }
+
+  /// ដំណើរការលុបមុខវិជ្ជាជាក្រុម
+  Future<void> _handleDeleteGroupedClass(_GroupedClass grouped) async {
+    if (grouped.sessions.length == 1) {
+      await _confirmDeleteClass(grouped.sessions.first);
+      return;
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final textCol = isDark ? Colors.white : AppColors.textPrimary;
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: cardBg,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: AppColors.error, size: 28),
+            const SizedBox(width: 10),
+            Text(
+              AppLanguage.tr('ជម្រើសនៃការលុបថ្នាក់រៀន', 'Delete Class Options'),
+              style: TextStyle(fontWeight: FontWeight.bold, color: textCol),
+            ),
+          ],
+        ),
+        content: Text(
+          AppLanguage.tr(
+            'មុខវិជ្ជា "${grouped.subjectName} (${grouped.subjectCode})" មានកាលបរិច្ឆេទបង្រៀនចំនួន ${grouped.sessions.length} ក្នុងប្រព័ន្ធ។\n\nតើលោកអ្នកចង់លុបមុខវិជ្ជានេះទាំងមូល (គ្រប់កាលបរិច្ឆេទ) ឬចង់លុបតែកាលបរិច្ឆេទជាក់លាក់ណាមួយ?',
+            'Course "${grouped.subjectName} (${grouped.subjectCode})" has ${grouped.sessions.length} scheduled dates.\n\nDo you want to delete all dates for this course, or choose a specific date?',
+          ),
+          style: TextStyle(color: textCol),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'cancel'),
+            child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
+          ),
+          OutlinedButton(
+            onPressed: () => Navigator.pop(ctx, 'single'),
+            child: Text(AppLanguage.tr('ជ្រើសរើសថ្ងៃលុប...', 'Select date to delete...')),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
+            onPressed: () => Navigator.pop(ctx, 'all'),
+            child: Text(AppLanguage.tr('លុបទាំងអស់ (${grouped.sessions.length} ថ្ងៃ)', 'Delete All (${grouped.sessions.length} dates)')),
+          ),
+        ],
+      ),
+    );
+
+    if (result == 'single') {
+      _showSessionsDialog(grouped);
+    } else if (result == 'all') {
+      for (final s in grouped.sessions) {
+        await ClassService.deleteClassAdmin(s.id);
+      }
+      _loadClasses();
+    }
+  }
+
   void _openProjectorModal(ClassModel c) {
     showDialog(
       context: context,
@@ -1695,7 +1989,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                         ),
                         const Divider(height: 1),
 
-                        if (_filteredClasses.isEmpty)
+                        if (_groupedClasses.isEmpty)
                           Padding(
                             padding: const EdgeInsets.all(40),
                             child: Center(
@@ -1748,216 +2042,253 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                       DataColumn(label: Text(AppLanguage.tr('ស្ថានភាព QR', 'QR Status'))),
                                       DataColumn(label: Text(AppLanguage.tr('សកម្មភាព (Actions)', 'Actions'))),
                                     ],
-                              rows: _filteredClasses.map((c) {
-                                return DataRow(
-                                  cells: [
-                                    DataCell(
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.primary.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          c.subjectCode,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Text(
-                                        c.subjectName,
-                                        style: TextStyle(fontWeight: FontWeight.w600, color: textCol),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                            decoration: BoxDecoration(
-                                              color: (c.department != null && c.department!.isNotEmpty)
-                                                  ? const Color(0xFF0284C7).withValues(alpha: 0.1)
-                                                  : const Color(0xFFF59E0B).withValues(alpha: 0.12),
-                                              borderRadius: BorderRadius.circular(6),
-                                            ),
-                                            child: Text(
-                                              (c.department != null && c.department!.isNotEmpty)
-                                                  ? c.department!
-                                                  : AppLanguage.tr('មិនទាន់កំណត់', 'Unassigned'),
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w500,
-                                                color: (c.department != null && c.department!.isNotEmpty)
-                                                    ? const Color(0xFF0284C7)
-                                                    : const Color(0xFFD97706),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            [
-                                              c.yearLevel != null ? 'ឆ្នាំទី ${c.yearLevel}' : 'មិនទាន់កំណត់ឆ្នាំទី',
-                                              if (c.generation != null && c.generation!.isNotEmpty) c.generation!,
-                                            ].join(' · '),
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: c.yearLevel != null ? subTextCol : const Color(0xFFD97706),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    DataCell(Text(c.room.isNotEmpty ? c.room : '-')),
-                                    DataCell(
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(Icons.calendar_today_rounded, size: 12, color: isDark ? const Color(0xFF38BDF8) : AppColors.primary),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                (c.classDate != null && c.classDate!.isNotEmpty)
-                                                    ? c.classDate!
-                                                    : (c.dayOfWeek.isNotEmpty ? c.dayOfWeek : '-'),
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
-                                                  color: textCol,
-                                                ),
-                                              ),
-                                              if (c.classDate != null && c.classDate!.isNotEmpty && c.dayOfWeek.isNotEmpty) ...[
-                                                const SizedBox(width: 5),
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                                  decoration: BoxDecoration(
-                                                    color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
-                                                    borderRadius: BorderRadius.circular(4),
-                                                  ),
-                                                  child: Text(
-                                                    c.dayOfWeek.split(' ').first,
-                                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: subTextCol),
-                                                  ),
-                                                ),
-                                              ],
-                                            ],
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(Icons.access_time_rounded, size: 12, color: subTextCol),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                c.time.isNotEmpty ? c.time : '-',
-                                                style: TextStyle(fontSize: 11, color: subTextCol, fontWeight: FontWeight.w500),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text('ឆមាស ${c.semester} (${c.academicYear})'),
-                                          Text(
-                                            '${c.completedSessions}/${c.totalSessions} ${AppLanguage.tr('សប្តាហ៍', 'weeks')}',
-                                            style: TextStyle(fontSize: 11, color: subTextCol),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: c.isQrActive
-                                              ? const Color(0xFF16A34A).withValues(alpha: 0.15)
-                                              : const Color(0xFFDC2626).withValues(alpha: 0.15),
-                                          borderRadius: BorderRadius.circular(6),
-                                        ),
-                                        child: Text(
-                                          c.isQrActive
-                                              ? AppLanguage.tr('● កំពុងបើក', '● Active')
-                                              : AppLanguage.tr('○ បានបិទ', '○ Closed'),
-                                          style: TextStyle(
-                                            color: c.isQrActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    DataCell(
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          // ប៊ូតុងបញ្ចាំងលើ Projector ពេញអេក្រង់
-                                          ElevatedButton.icon(
-                                            icon: const Icon(Icons.tv_rounded, size: 16),
-                                            label: Text(AppLanguage.tr('បញ្ចាំង QR', 'Project QR')),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: const Color(0xFF0284C7),
-                                              foregroundColor: Colors.white,
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                              elevation: 0,
-                                            ),
-                                            onPressed: () => _openProjectorModal(c),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          // ប៊ូតុងមើលបញ្ជីសិស្សក្នុងថ្នាក់ (Class Roster)
-                                          OutlinedButton.icon(
-                                            icon: const Icon(Icons.people_alt_outlined, size: 16),
-                                            label: Text(AppLanguage.tr('បញ្ជីសិស្ស', 'Roster')),
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor: const Color(0xFF10B981),
-                                              side: const BorderSide(color: Color(0xFF10B981)),
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                            ),
-                                            onPressed: () => _openClassRosterDialog(c),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          // ប៊ូតុងមើលវត្តមាន
-                                          OutlinedButton.icon(
-                                            icon: const Icon(Icons.fact_check_outlined, size: 16),
-                                            label: Text(AppLanguage.tr('វត្តមាន', 'Attendance')),
-                                            style: OutlinedButton.styleFrom(
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                            ),
-                                            onPressed: () {
-                                              Navigator.pushReplacementNamed(context, AppRoutes.attendances, arguments: c.id);
-                                            },
-                                          ),
-                                          if (isAdmin) ...[
-                                            const SizedBox(width: 4),
-                                            IconButton(
-                                              tooltip: AppLanguage.tr('កែប្រែថ្នាក់រៀន', 'Edit Class'),
-                                              icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
-                                              onPressed: () => _openEditClassDialog(c),
-                                            ),
-                                            IconButton(
-                                              tooltip: AppLanguage.tr('លុបថ្នាក់រៀន', 'Delete Class'),
-                                              icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
-                                              onPressed: () => _confirmDeleteClass(c),
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }).toList(),
+                              rows: _groupedClasses.map((grouped) {
+                                 final c = grouped.primarySession;
+                                 final hasMultipleSessions = grouped.sessions.length > 1;
+
+                                 return DataRow(
+                                   cells: [
+                                     DataCell(
+                                       Container(
+                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                         decoration: BoxDecoration(
+                                           color: AppColors.primary.withValues(alpha: 0.1),
+                                           borderRadius: BorderRadius.circular(6),
+                                         ),
+                                         child: Text(
+                                           grouped.subjectCode,
+                                           style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                                         ),
+                                       ),
+                                     ),
+                                     DataCell(
+                                       Text(
+                                         grouped.subjectName,
+                                         style: TextStyle(fontWeight: FontWeight.w600, color: textCol),
+                                       ),
+                                     ),
+                                     DataCell(
+                                       Column(
+                                         mainAxisAlignment: MainAxisAlignment.center,
+                                         crossAxisAlignment: CrossAxisAlignment.start,
+                                         children: [
+                                           Container(
+                                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                             decoration: BoxDecoration(
+                                               color: (grouped.department != null && grouped.department!.isNotEmpty)
+                                                   ? const Color(0xFF0284C7).withValues(alpha: 0.1)
+                                                   : const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                                               borderRadius: BorderRadius.circular(6),
+                                             ),
+                                             child: Text(
+                                               (grouped.department != null && grouped.department!.isNotEmpty)
+                                                   ? grouped.department!
+                                                   : AppLanguage.tr('មិនទាន់កំណត់', 'Unassigned'),
+                                               style: TextStyle(
+                                                 fontSize: 12,
+                                                 fontWeight: FontWeight.w500,
+                                                 color: (grouped.department != null && grouped.department!.isNotEmpty)
+                                                     ? const Color(0xFF0284C7)
+                                                     : const Color(0xFFD97706),
+                                               ),
+                                             ),
+                                           ),
+                                           const SizedBox(height: 3),
+                                           Row(
+                                             mainAxisSize: MainAxisSize.min,
+                                             children: [
+                                               Text(
+                                                 grouped.yearLevel != null
+                                                     ? '${AppLanguage.tr('ឆ្នាំទី', 'Year')} ${grouped.yearLevel}'
+                                                     : AppLanguage.tr('គ្រប់ឆ្នាំ', 'All Years'),
+                                                 style: TextStyle(fontSize: 11, color: subTextCol),
+                                               ),
+                                               if (grouped.generation != null && grouped.generation!.isNotEmpty) ...[
+                                                 Text(' • ', style: TextStyle(fontSize: 11, color: subTextCol)),
+                                                 Text(
+                                                   grouped.generation!,
+                                                   style: TextStyle(fontSize: 11, color: subTextCol, fontWeight: FontWeight.w500),
+                                                 ),
+                                               ],
+                                             ],
+                                           ),
+                                         ],
+                                       ),
+                                     ),
+                                     DataCell(
+                                       Text(
+                                         grouped.room.isNotEmpty ? grouped.room : '-',
+                                         style: TextStyle(color: textCol),
+                                       ),
+                                     ),
+                                     DataCell(
+                                       Column(
+                                         mainAxisAlignment: MainAxisAlignment.center,
+                                         crossAxisAlignment: CrossAxisAlignment.start,
+                                         children: [
+                                           Row(
+                                             mainAxisSize: MainAxisSize.min,
+                                             children: [
+                                               Icon(
+                                                 hasMultipleSessions ? Icons.calendar_month_rounded : Icons.calendar_today_rounded,
+                                                 size: 13,
+                                                 color: isDark ? const Color(0xFF38BDF8) : AppColors.primary,
+                                               ),
+                                               const SizedBox(width: 4),
+                                               Text(
+                                                 hasMultipleSessions
+                                                     ? grouped.dayOfWeek
+                                                     : ((c.classDate != null && c.classDate!.isNotEmpty) ? c.classDate! : (grouped.dayOfWeek.isNotEmpty ? grouped.dayOfWeek : '-')),
+                                                 style: TextStyle(
+                                                   fontWeight: FontWeight.bold,
+                                                   fontSize: 12,
+                                                   color: textCol,
+                                                 ),
+                                               ),
+                                             ],
+                                           ),
+                                           const SizedBox(height: 2),
+                                           Row(
+                                             mainAxisSize: MainAxisSize.min,
+                                             children: [
+                                               Icon(Icons.access_time_rounded, size: 12, color: subTextCol),
+                                               const SizedBox(width: 4),
+                                               Text(
+                                                 grouped.time.isNotEmpty ? grouped.time : '-',
+                                                 style: TextStyle(fontSize: 11, color: subTextCol, fontWeight: FontWeight.w500),
+                                               ),
+                                             ],
+                                           ),
+                                           if (hasMultipleSessions) ...[
+                                             const SizedBox(height: 3),
+                                             InkWell(
+                                               onTap: () => _showSessionsDialog(grouped),
+                                               borderRadius: BorderRadius.circular(4),
+                                               child: Container(
+                                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                 decoration: BoxDecoration(
+                                                   color: (isDark ? const Color(0xFF0284C7) : AppColors.primary).withValues(alpha: 0.15),
+                                                   borderRadius: BorderRadius.circular(4),
+                                                   border: Border.all(
+                                                     color: (isDark ? const Color(0xFF38BDF8) : AppColors.primary).withValues(alpha: 0.3),
+                                                     width: 0.8,
+                                                   ),
+                                                 ),
+                                                 child: Row(
+                                                   mainAxisSize: MainAxisSize.min,
+                                                   children: [
+                                                     Icon(Icons.date_range_rounded, size: 11, color: isDark ? const Color(0xFF38BDF8) : AppColors.primary),
+                                                     const SizedBox(width: 4),
+                                                     Text(
+                                                       '${grouped.sessions.length} កាលបរិច្ឆេទ (ចុចមើល)',
+                                                       style: TextStyle(
+                                                         fontSize: 10,
+                                                         fontWeight: FontWeight.bold,
+                                                         color: isDark ? const Color(0xFF38BDF8) : AppColors.primary,
+                                                       ),
+                                                     ),
+                                                   ],
+                                                 ),
+                                               ),
+                                             ),
+                                           ],
+                                         ],
+                                       ),
+                                     ),
+                                     DataCell(
+                                       Column(
+                                         mainAxisAlignment: MainAxisAlignment.center,
+                                         crossAxisAlignment: CrossAxisAlignment.start,
+                                         children: [
+                                           Text('ឆមាស ${grouped.semester} (${grouped.academicYear})'),
+                                           Text(
+                                             '${grouped.sessions.length}/${grouped.totalSessions} ${AppLanguage.tr('សប្តាហ៍', 'weeks')}',
+                                             style: TextStyle(fontSize: 11, color: subTextCol),
+                                           ),
+                                         ],
+                                       ),
+                                     ),
+                                     DataCell(
+                                       Container(
+                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                         decoration: BoxDecoration(
+                                           color: grouped.isQrActive
+                                               ? const Color(0xFF16A34A).withValues(alpha: 0.15)
+                                               : const Color(0xFFDC2626).withValues(alpha: 0.15),
+                                           borderRadius: BorderRadius.circular(6),
+                                         ),
+                                         child: Text(
+                                           grouped.isQrActive
+                                               ? AppLanguage.tr('● កំពុងបើក', '● Active')
+                                               : AppLanguage.tr('○ បានបិទ', '○ Closed'),
+                                           style: TextStyle(
+                                             color: grouped.isQrActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                                             fontSize: 12,
+                                             fontWeight: FontWeight.bold,
+                                           ),
+                                         ),
+                                       ),
+                                     ),
+                                     DataCell(
+                                       Row(
+                                         mainAxisSize: MainAxisSize.min,
+                                         children: [
+                                           // ប៊ូតុងបញ្ចាំងលើ Projector ពេញអេក្រង់
+                                           ElevatedButton.icon(
+                                             icon: const Icon(Icons.tv_rounded, size: 16),
+                                             label: Text(AppLanguage.tr('បញ្ចាំង QR', 'Project QR')),
+                                             style: ElevatedButton.styleFrom(
+                                               backgroundColor: const Color(0xFF0284C7),
+                                               foregroundColor: Colors.white,
+                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                               elevation: 0,
+                                             ),
+                                             onPressed: () => _handleProjectQr(grouped),
+                                           ),
+                                           const SizedBox(width: 8),
+                                           // ប៊ូតុងមើលបញ្ជីសិស្សក្នុងថ្នាក់ (Class Roster)
+                                           OutlinedButton.icon(
+                                             icon: const Icon(Icons.people_alt_outlined, size: 16),
+                                             label: Text(AppLanguage.tr('បញ្ជីសិស្ស', 'Roster')),
+                                             style: OutlinedButton.styleFrom(
+                                               foregroundColor: const Color(0xFF10B981),
+                                               side: const BorderSide(color: Color(0xFF10B981)),
+                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                             ),
+                                             onPressed: () => _openClassRosterDialog(grouped.primarySession),
+                                           ),
+                                           const SizedBox(width: 8),
+                                           // ប៊ូតុងមើលវត្តមាន
+                                           OutlinedButton.icon(
+                                             icon: const Icon(Icons.fact_check_outlined, size: 16),
+                                             label: Text(AppLanguage.tr('វត្តមាន', 'Attendance')),
+                                             style: OutlinedButton.styleFrom(
+                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                             ),
+                                             onPressed: () => _handleViewAttendance(grouped),
+                                           ),
+                                           if (isAdmin) ...[
+                                             const SizedBox(width: 4),
+                                             IconButton(
+                                               tooltip: AppLanguage.tr('កែប្រែថ្នាក់រៀន', 'Edit Class'),
+                                               icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
+                                               onPressed: () => _openEditClassDialog(grouped.primarySession),
+                                             ),
+                                             IconButton(
+                                               tooltip: AppLanguage.tr('លុបថ្នាក់រៀន', 'Delete Class'),
+                                               icon: const Icon(Icons.delete_outline, size: 18, color: AppColors.error),
+                                               onPressed: () => _handleDeleteGroupedClass(grouped),
+                                             ),
+                                           ],
+                                         ],
+                                       ),
+                                     ),
+                                   ],
+                                 );
+                               }).toList(),
                             ),
                           ),
                         ),
@@ -2281,3 +2612,47 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
 
 
 
+
+/// Model ជំនួយសម្រាប់ច្របាច់កាលវិភាគថ្នាក់រៀនជាក្រុមតាមកូដមុខវិជ្ជា
+class _GroupedClass {
+  final String key;
+  final String subjectCode;
+  final String subjectName;
+  final String? department;
+  final String? generation;
+  final int? yearLevel;
+  final String room;
+  final String time;
+  final String dayOfWeek;
+  final String semester;
+  final String academicYear;
+  final int totalSessions;
+  final List<ClassModel> sessions;
+
+  _GroupedClass({
+    required this.key,
+    required this.subjectCode,
+    required this.subjectName,
+    this.department,
+    this.generation,
+    this.yearLevel,
+    required this.room,
+    required this.time,
+    required this.dayOfWeek,
+    required this.semester,
+    required this.academicYear,
+    required this.totalSessions,
+    required this.sessions,
+  });
+
+  bool get isQrActive => sessions.any((s) => s.isQrActive);
+
+  ClassModel get primarySession {
+    final active = sessions.where((s) => s.isQrActive).firstOrNull;
+    if (active != null) return active;
+    final todayStr = DateTime.now().toIso8601String().split('T').first;
+    final today = sessions.where((s) => (s.classDate ?? '').startsWith(todayStr)).firstOrNull;
+    if (today != null) return today;
+    return sessions.first;
+  }
+}

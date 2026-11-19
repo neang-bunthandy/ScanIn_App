@@ -74,10 +74,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final isNarrow = constraints.maxWidth < 750;
+                      final uniqueClassCodes = _classes
+                          .map((c) => c.subjectCode.trim().toUpperCase())
+                          .where((code) => code.isNotEmpty)
+                          .toSet();
+                      final totalClassesCount = uniqueClassCodes.isNotEmpty ? uniqueClassCodes.length : _classes.length;
+
                       final card1 = _buildStatCard(
                         icon: Icons.class_outlined,
                         label: AppLanguage.tr('ថ្នាក់រៀនសរុប', 'Total Classes'),
-                        count: '${_classes.length}',
+                        count: '$totalClassesCount',
                         color: const Color(0xFF4F46E5),
                         bgColor: const Color(0xFFEEF2FF),
                       );
@@ -188,37 +194,66 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                       DataColumn(label: Text(AppLanguage.tr('កាលវិភាគ', 'Schedule'))),
                                       DataColumn(label: Text(AppLanguage.tr('ស្ថានភាព QR', 'QR Status'))),
                                     ],
-                                    rows: _classes.take(5).map((c) {
-                                      return DataRow(
-                                        cells: [
-                                          DataCell(Text(c.subjectCode, style: const TextStyle(fontWeight: FontWeight.bold))),
-                                          DataCell(Text(c.subjectName)),
-                                          DataCell(Text(c.room.isNotEmpty ? c.room : '-')),
-                                          DataCell(Text('${c.dayOfWeek} (${c.time})')),
-                                          DataCell(
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: c.isQrActive
-                                                    ? const Color(0xFF16A34A).withValues(alpha: 0.15)
-                                                    : const Color(0xFFDC2626).withValues(alpha: 0.15),
-                                                borderRadius: BorderRadius.circular(6),
-                                              ),
-                                              child: Text(
-                                                c.isQrActive
-                                                    ? AppLanguage.tr('● កំពុងបើក', '● Active')
-                                                    : AppLanguage.tr('○ បានបិទ', '○ Closed'),
-                                                style: TextStyle(
-                                                  color: c.isQrActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
+                                    rows: () {
+                                      final Map<String, List<ClassModel>> groupedDashboard = {};
+                                      for (final c in _classes) {
+                                        final codeKey = c.subjectCode.trim().toUpperCase();
+                                        final key = codeKey.isNotEmpty
+                                            ? '${codeKey}_${c.department ?? ''}_${c.generation ?? ''}'
+                                            : 'ID_${c.id}';
+                                        groupedDashboard.putIfAbsent(key, () => []).add(c);
+                                      }
+                                      final dashboardClasses = groupedDashboard.values.map((group) {
+                                        final first = group.first;
+                                        final bool anyActive = group.any((s) => s.isQrActive);
+                                        return {
+                                          'primary': first,
+                                          'sessionsCount': group.length,
+                                          'isQrActive': anyActive,
+                                        };
+                                      }).take(5).toList();
+
+                                      return dashboardClasses.map((item) {
+                                        final c = item['primary'] as ClassModel;
+                                        final sessionsCount = item['sessionsCount'] as int;
+                                        final isQrActive = item['isQrActive'] as bool;
+                                        final scheduleText = sessionsCount > 1
+                                            ? '${c.dayOfWeek} (${c.time}) • $sessionsCount ថ្ងៃ'
+                                            : (c.classDate != null && c.classDate!.isNotEmpty
+                                                ? '${c.classDate} (${c.time})'
+                                                : '${c.dayOfWeek} (${c.time})');
+
+                                        return DataRow(
+                                          cells: [
+                                            DataCell(Text(c.subjectCode, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                            DataCell(Text(c.subjectName)),
+                                            DataCell(Text(c.room.isNotEmpty ? c.room : '-')),
+                                            DataCell(Text(scheduleText)),
+                                            DataCell(
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: isQrActive
+                                                      ? const Color(0xFF16A34A).withValues(alpha: 0.15)
+                                                      : const Color(0xFFDC2626).withValues(alpha: 0.15),
+                                                  borderRadius: BorderRadius.circular(6),
+                                                ),
+                                                child: Text(
+                                                  isQrActive
+                                                      ? AppLanguage.tr('● កំពុងបើក', '● Active')
+                                                      : AppLanguage.tr('○ បានបិទ', '○ Closed'),
+                                                  style: TextStyle(
+                                                    color: isQrActive ? const Color(0xFF16A34A) : const Color(0xFFDC2626),
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      );
-                                    }).toList(),
+                                          ],
+                                        );
+                                      }).toList();
+                                    }(),
                                   ),
                                 ),
                               );
