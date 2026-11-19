@@ -335,17 +335,17 @@
    - លើ Backend Laravel (`routes/api.php`)៖ ធ្វើបច្ចុប្បន្នភាព Fallback Email ឱ្យត្រូវគ្នា ១០០%។
    - បានធ្វើបច្ចុប្បន្នភាពគណនីសិស្សពិតទាំង ៥ នាក់ក្នុង MySQL Database ទៅជា `@scanin.app` ត្រឹមត្រូវស្របគ្នាទាំងអស់។
 
-10. **កិច្ចការទី ១០ (Task 10 — រួចរាល់ ១០០% ✅) ៖ ច្របាច់បញ្ចូលគ្នានូវថ្នាក់រៀនជាក្រុមតាមកូដមុខវិជ្ជា (Group Classes by Subject Code)**
-   - ដោះស្រាយបញ្ហាថ្នាក់រៀនមុខវិជ្ជាតែមួយ តែខុសកាលបរិច្ឆេទថ្ងៃបង្រៀន (ឧ. `IT001 - Data Mining With Python` ៣ ថ្ងៃ) បង្ហាញជាន់គ្នា ៣ ជួរដេក និង Dashboard រាប់លេខ ៣៖
+10. **កិច្ចការទី ១០ (Task 10 — រួចរាល់ ១០០% ✅) ៖ ច្របាច់បញ្ចូលគ្នានូវថ្នាក់រៀនជាក្រុមតាមកូដមុខវិជ្ជា (Group Classes by Subject Code - Option 1)**
+   - ដោះស្រាយបញ្ហាថ្នាក់រៀនមុខវិជ្ជាតែមួយ តែខុសកាលបរិច្ឆេទថ្ងៃបង្រៀន (ឧ. `IT001 - Data Mining With Python` ៣ ថ្ងៃ ឬ `HMA-Y4` ២ ថ្ងៃ) បង្ហាញជាន់គ្នា ៣ ជួរដេក និង Dashboard រាប់លេខ ៣៖
    - **លើ Dashboard (`admin_dashboard_screen.dart`)៖**
-     - កាតស្ថិតិ «ថ្នាក់រៀនសរុប» រាប់តែ Unique Course Code $
-ightarrow$ បង្ហាញលេខ **១** យ៉ាងត្រឹមត្រូវ។
+     - កាតស្ថិតិ «ថ្នាក់រៀនសរុប» រាប់តែ Unique Course Code ➔ បង្ហាញលេខ **១** យ៉ាងត្រឹមត្រូវ។
      - តារាងទិដ្ឋភាពទូទៅនៃថ្នាក់រៀន បង្ហាញត្រឹម ១ ជួរដេក និងបញ្ជាក់កាលវិភាគ `សៅរ៍ (07:00 - 08:30) • 3 ថ្ងៃ`។
    - **លើតារាងគ្រប់គ្រងថ្នាក់រៀន (`admin_classes_screen.dart`)៖**
      - ច្របាច់កាលបរិច្ឆេទទាំងអស់ឱ្យមកនៅត្រឹម **១ ជួរដេកតែមួយគត់ (1 Row)** ស្អាតបាត។
-     - បន្ថែម Badge ឆ្លាតវៃ `🗓️ 3 កាលបរិច្ឆេទ (ចុចមើល)`៖ ចុចលើវាបង្ហាញបញ្ជីថ្ងៃរៀននីមួយៗ (`21/11`, `28/11`, `05/12`) ជាមួយប៊ូតុងបញ្ចាំង QR និងវត្តមានផ្ទាល់ខ្លួន។
-     - ប៊ូតុង «បញ្ចាំង QR»៖ បើក Session ដែលកំពុង Active ឬបើក Dialog ឱ្យរើសកាលបរិច្ឆេទ។
+     - បន្ថែម Badge ឆ្លាតវៃ `🗓️ N កាលបរិច្ឆេទ (ចុចមើល)`៖ ចុចលើវាបង្ហាញ Dialog បញ្ជីថ្ងៃរៀននីមួយៗ (ឧ. `21/11`, `28/11`, `05/12`) ជាមួយប៊ូតុងបញ្ចាំង QR និងវត្តមានផ្ទាល់ខ្លួន។
+     - ប៊ូតុង «បញ្ចាំង QR»៖ បើក Session ដែលកំពុង Active ឬបើក Dialog ឱ្យរើសកាលបរិច្ឆេទជាក់លាក់។
      - ប៊ូតុង «លុប»៖ មានជម្រើសឱ្យលុបមុខវិជ្ជានេះទាំងមូល ឬជ្រើសរើសលុបតែ ១ កាលបរិច្ឆេទ។
+     - ដោះស្រាយបញ្ហា `BOTTOM OVERFLOWED BY 12 PIXELS` ដោយកំណត់ `dataRowMinHeight: 68` និង `dataRowMaxHeight: 78`។
    - **លើផ្ទាំងវត្តមាន (`admin_attendances_screen.dart`)៖**
      - Dropdown បង្ហាញកាលបរិច្ឆេទថ្ងៃរៀនជាប់ជាមួយឈ្មោះមុខវិជ្ជា (ឧ. `IT001 - Data Mining With Python (2026-11-21)`) ជួយឱ្យងាយស្រួលរើសសប្តាហ៍។
 
@@ -366,31 +366,42 @@ ightarrow$ បង្ហាញលេខ **១** យ៉ាងត្រឹមត្
        * កាលបរិច្ឆេទបង្រៀនបន្ទាប់ (`Next Session Date = Latest Date + 7 ថ្ងៃ` ស្វ័យប្រវត្តិ)
      - រាល់ទិន្នន័យដែល Auto-fill មកទាំងអស់ គឺគ្រាន់តែជា Default ប៉ុណ្ណោះ ដោយ Admin នៅតែអាចចុចកែប្រែថ្ងៃ ខែ បន្ទប់ ឬទិន្នន័យផ្សេងៗបានតាមចិត្ត ១០០%។
      - បង្ហាញសារជូនដំណឹងពណ៌បៃតងស្អាត `✨ ទាញយកទិន្នន័យគំរូរួចរាល់!` នៅខាងក្រោមប្រអប់កូដ។
-   - ដោះស្រាយបញ្ហា RenderFlex Overflows លើ Sidebar ពេលទាញបង្រួម/ពង្រីកអេក្រង់ ឱ្យរលូនស្អាត Zero Error។
+
+12. **កិច្ចការទី ១២ (Task 12 — រួចរាល់ ១០០% ✅) ៖ ដោះស្រាយ RenderFlex Overflows លើ Sidebar ពេលទាញបង្រួមអេក្រង់ (Responsive Sidebar)**
+   - ដោះស្រាយបញ្ហា Console Log លោត Error `RenderFlex overflowed by 86/36/20/16 pixels on the right` ពេលអ្នកប្រើប្រាស់ពង្រីក/បង្រួមកញ្ចក់ Browser កាត់បន្ទាត់ 900px។
+   - ដកចេញ `AnimatedContainer` រយៈពេល 150ms ដែលបង្កើនការគៀបសង្កត់កូន Widget ក្នុងពេលផ្លាស់ប្តូរទំហំ។
+   - ប្រើប្រាស់ `FittedBox(fit: BoxFit.scaleDown)` លើ Header Logo និង Footer នៃ Sidebar ធ្វើឱ្យ Sidebar បង្រួម និងពង្រីកភ្លាមៗដោយគ្មាន Exception សូម្បីតែ ១ pixel។
+
+13. **កិច្ចការទី ១៣ (Task 13 — រួចរាល់ ១០០% ✅) ៖ ដោះស្រាយ Flutter Web Container Assertion Error**
+   - **បញ្ហា៖** អេក្រង់ក្រហម `Assertion failed: decoration != null || clipBehavior == Clip.none is not true` ក្នុង `admin_scaffold.dart`។
+   - **មូលហេតុបច្ចេកទេស៖** នៅក្នុង Flutter Web `Container` constructor មាន check `assert(decoration != null || clipBehavior == Clip.none)`។ ការដាក់ `color` ផ្ទាល់ជាមួយ `clipBehavior: Clip.hardEdge` ដោយគ្មាន `BoxDecoration` ធ្វើឱ្យ Throw Assertion Exception។
+   - **ដំណោះស្រាយ៖** ជំនួសមកប្រើ `ClipRect(child: Container(width: sidebarWidth, color: sidebarBg, child: ...))` ដែលជាវិធីសាស្ត្រស្តង់ដារ និងមានស្ថិរភាពបំផុតរបស់ Flutter (Commit `67d445e`)។
 
 ---
 
-### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code)
-- **លុបចោលឯកសារបណ្ដោះអាសន្នទាំងអស់៖**
-  - បានលុប `flutter_01.log`, `flutter_02.log`, `flutter_03.log`, `flutter_04.log`, `flutter_05.log`, `flutter_06.log` ពី `scan_in` និង `scan_in_admin`។
-  - បានលុប Kotlin build error logs ចាស់ៗចេញពី `scan_in/android/.kotlin/errors/`។
+### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code - FFC Audit)
+- **ការត្រួតពិនិត្យឯកសារ និងថត (Files & Folders) ៖**
+  - បានបោសសម្អាតឯកសារបណ្តោះអាសន្ន 0-byte (`name}`, `student_code}`) ចេញពី `scan_in_backend`។
   - គ្មានឯកសារ Scratch/Test (`test_*.php`, `check_*.php`) នៅក្នុង Directory គម្រោងឡើយ។
-- **សុពលភាព Test Suite & Code Quality៖**
-  - Laravel Feature Tests: **៣០ passed, ១៩៣ assertions (១០០% PASS)**។
-  - `flutter analyze` លើ `scan_in_admin`: **No issues found! (0 warnings, 0 errors)**។
-  - `flutter analyze` លើ `scan_in`: **No issues found! (0 warnings, 0 errors)**។
+  - គ្មាន log files ចាស់ៗ (`flutter_*.log`) នៅក្នុង Repository។
+- **សុពលភាពកូដ និងការធ្វើតេស្ត (Code Quality & Verification) ៖**
+  - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៣០ passed, ១៩៣ assertions (១០០% PASS)** រយៈពេលត្រឹមតែ **២.៧៨ វិនាទី**។
+  - **Flutter Web Admin (`scan_in_admin`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)** ក្នុងរយៈពេល **២.០ វិនាទី**។
+  - **Flutter Mobile App (`scan_in`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)** ក្នុងរយៈពេល **២.២ វិនាទី**។
+  - **Database Service ៖** MySQL / MariaDB ដំណើរការយ៉ាងរលូនលើ Port 3306។
+- **Git & Backup ៖**
+  - Git Working Tree ស្អាតបាត ១០០% (`nothing to commit, working tree clean`)។
+  - Commit ចុងក្រោយត្រូវបាន Push ទៅកាន់ `origin/main` (GitHub) និង Robocopy Sync ទៅកាន់ Backup Mirror `C:\Users\Jitsu Window\Scan_In_App_Backup\`។
 
 ---
 
 ### 📋 ផែនការការងារដែលត្រូវធ្វើបន្តនៅថ្ងៃស្អែក (Tomorrow's Roadmap)
-1. **ចុះឈ្មោះនិស្សិតពិត ១៦ នាក់ដែលនៅសល់ (Total 21 Students of IT Gen 20)៖**
+1. **ចុះឈ្មោះនិស្សិតពិត ១៦ នាក់ដែលនៅសល់ (Total 21 Students of IT Gen 20) ៖**
    - បញ្ចូលឈ្មោះនិស្សិត ១៦ នាក់ទៀតពីបញ្ជីផ្លូវការរបស់សាកលវិទ្យាល័យ ឱ្យគ្រប់ចំនួន ២១ នាក់នៃថ្នាក់ IT ជំនាន់ទី ២០។
-2. **មុខងារ Upload Profile Photo (Camera / Gallery)៖**
+2. **មុខងារ Upload Profile Photo (Camera / Gallery) ៖**
    - ដំឡើង package `image_picker` លើ Mobile App `scan_in`។
    - បង្កើត API `POST /api/profile/avatar` ក្នុង Laravel សម្រាប់ Upload និងរក្សាទុករូបភាព Profile សិស្ស និងគ្រូ។
-3. **មុខងារ Export របាយការណ៍វត្តមាន (Excel / PDF)៖**
+3. **មុខងារ Export របាយការណ៍វត្តមាន (Excel / PDF) ៖**
    - គាំទ្រការទាញទិន្នន័យវត្តមានតាមមុខវិជ្ជា និងតាមដេប៉ាតឺម៉ង់សម្រាប់គ្រូ និងរដ្ឋបាលយកទៅប្រើប្រាស់ផ្លូវការ។
-4. **WebSocket / Auto-Refresh សម្រាប់ Projector Mode៖**
+4. **WebSocket / Auto-Refresh សម្រាប់ Projector Mode ៖**
    - ពេលសិស្សស្កេនលើទូរស័ព្ទ បញ្ជីឈ្មោះលើផ្ទាំង Projector កុំព្យូទ័រគ្រូ update ឡើងមកភ្លាមៗដោយស្វ័យប្រវត្តិ។
-
-
