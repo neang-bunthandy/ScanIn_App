@@ -399,10 +399,10 @@ class _AdminScaffoldState extends State<AdminScaffold> {
       body: Row(
         children: [
           // Left Sidebar (Responsive: 72px on tablets/narrow, 260px on wide desktops)
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
+          Container(
             width: sidebarWidth,
             color: sidebarBg,
+            clipBehavior: Clip.hardEdge,
             child: Column(
               children: [
                 // Header Logo
@@ -444,69 +444,76 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                             ),
                           ),
                         )
-                      : Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: isLecturer
-                                      ? [const Color(0xFF0284C7), const Color(0xFF06B6D4)]
-                                      : [AppColors.primary, const Color(0xFF6366F1)],
-                                ),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  isLecturer ? Icons.laptop_chromebook_rounded : Icons.admin_panel_settings_rounded,
-                                  color: Colors.white,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    isLecturer
-                                        ? 'ScanIn Lecturer'
-                                        : (_currentUser?.isSubAdmin == true
-                                            ? 'ScanIn Academic'
-                                            : 'ScanIn Admin'),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
+                      : FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            width: 220,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: isLecturer
+                                          ? [const Color(0xFF0284C7), const Color(0xFF06B6D4)]
+                                          : [AppColors.primary, const Color(0xFF6366F1)],
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      isLecturer ? Icons.laptop_chromebook_rounded : Icons.admin_panel_settings_rounded,
                                       color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                      height: 1.2,
+                                      size: 20,
                                     ),
                                   ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    isLecturer
-                                        ? 'Laptop Workspace'
-                                        : (_currentUser?.isSubAdmin == true
-                                            ? 'Academic Affairs'
-                                            : 'System Administration'),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(
-                                      color: Color(0xFF94A3B8),
-                                      fontSize: 11,
-                                      height: 1.2,
-                                    ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        isLecturer
+                                            ? 'ScanIn Lecturer'
+                                            : (_currentUser?.isSubAdmin == true
+                                                ? 'ScanIn Academic'
+                                                : 'ScanIn Admin'),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        isLecturer
+                                            ? 'Laptop Workspace'
+                                            : (_currentUser?.isSubAdmin == true
+                                                ? 'Academic Affairs'
+                                                : 'System Administration'),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Color(0xFF94A3B8),
+                                          fontSize: 11,
+                                          height: 1.2,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                 ),
 
@@ -609,68 +616,82 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                             ),
                           ],
                         )
-                      : Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 18,
-                              backgroundColor: isLecturer ? const Color(0xFF0284C7) : AppColors.primary,
-                              child: Text(
-                                _currentUser?.name.isNotEmpty == true ? _currentUser!.name[0].toUpperCase() : 'A',
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    _currentUser?.name ?? (isLecturer ? 'សាស្រ្តាចារ្យ' : 'អ្នកគ្រប់គ្រង'),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                      : FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            width: 228,
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 18,
+                                  backgroundColor: isLecturer ? const Color(0xFF0284C7) : AppColors.primary,
+                                  child: Text(
+                                    _currentUser?.name.isNotEmpty == true ? _currentUser!.name[0].toUpperCase() : 'A',
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                                   ),
-                                  Container(
-                                    margin: const EdgeInsets.only(top: 2),
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      color: isLecturer
-                                          ? const Color(0xFF0284C7).withValues(alpha: 0.25)
-                                          : AppColors.primary.withValues(alpha: 0.25),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      isLecturer
-                                          ? 'គ្រូបង្រៀន (Lecturer)'
-                                          : (_currentUser?.isSubAdmin == true
-                                              ? 'ការិយាល័យសិក្សា (Sub-Admin)'
-                                              : 'អ្នកគ្រប់គ្រង (Admin)'),
-                                      style: TextStyle(
-                                        color: isLecturer
-                                            ? const Color(0xFF38BDF8)
-                                            : (_currentUser?.isSubAdmin == true
-                                                ? const Color(0xFF34D399)
-                                                : const Color(0xFF93C5FD)),
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        _currentUser?.name ?? (isLecturer ? 'សាស្រ្តាចារ្យ' : 'អ្នកគ្រប់គ្រង'),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                                       ),
-                                    ),
+                                      Container(
+                                        margin: const EdgeInsets.only(top: 2),
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                        decoration: BoxDecoration(
+                                          color: isLecturer
+                                              ? const Color(0xFF0284C7).withValues(alpha: 0.25)
+                                              : AppColors.primary.withValues(alpha: 0.25),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          isLecturer
+                                              ? 'គ្រូបង្រៀន (Lecturer)'
+                                              : (_currentUser?.isSubAdmin == true
+                                                  ? 'ការិយាល័យសិក្សា (Sub-Admin)'
+                                                  : 'អ្នកគ្រប់គ្រង (Admin)'),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: isLecturer
+                                                ? const Color(0xFF38BDF8)
+                                                : (_currentUser?.isSubAdmin == true
+                                                    ? const Color(0xFF34D399)
+                                                    : const Color(0xFF93C5FD)),
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                const SizedBox(width: 4),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                  tooltip: AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
+                                  icon: const Icon(Icons.key_rounded, color: Color(0xFFF59E0B), size: 18),
+                                  onPressed: _showChangePasswordDialog,
+                                ),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                  tooltip: AppLanguage.tr('ចាកចេញ (Sign Out)', 'Sign Out'),
+                                  icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 19),
+                                  onPressed: _handleLogout,
+                                ),
+                              ],
                             ),
-                            IconButton(
-                              tooltip: AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
-                              icon: const Icon(Icons.key_rounded, color: Color(0xFFF59E0B), size: 19),
-                              onPressed: _showChangePasswordDialog,
-                            ),
-                            IconButton(
-                              tooltip: AppLanguage.tr('ចាកចេញ (Sign Out)', 'Sign Out'),
-                              icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 20),
-                              onPressed: _handleLogout,
-                            ),
-                          ],
+                          ),
                         ),
                 ),
               ],
