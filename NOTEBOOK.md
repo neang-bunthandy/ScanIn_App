@@ -323,6 +323,18 @@
    - បំពាក់លើ Laptop Web Admin (`admin_classes_screen.dart`)៖ ក្នុងផ្ទាំងបញ្ជីឈ្មោះសិស្ស គ្រូអាចចុចលើស្លាកវត្តមានដើម្បីបើក Dialog ប្តូរស្ថានភាពភ្លាមៗ។
    - បំពាក់លើ Mobile App (`class_detail_screen.dart`)៖ ស្លាកវត្តមានសិស្សនីមួយៗអាចចុចបាន (Interactive Chip) ដើម្បីបើក Modal Bottom Sheet ប្តូរស្ថានភាពភ្លាមៗ។
 
+9. **កិច្ចការទី ៩ (Task 9 — រួចរាល់ ១០០% ✅) ៖ បង្កើតអ៊ីមែលនិស្សិតស្វ័យប្រវត្តិ (@scanin.app) តាមទម្រង់សាមញ្ញ (Beginner-Friendly)**
+   - ប្តូរពី `@student.scanin.app` មកជា `@scanin.app` គ្រប់ទីកន្លែង។
+   - សរសេរកូដជំនួយ `generateStudentEmail` បែប Basic/Beginner ដោយប្រើ String Methods ធម្មតា (`toLowerCase()`, `replaceAll(' ', '.')`) មិនប្រើ Regex ស្មុគស្មាញ៖
+     - ប្រសិនបើមានឈ្មោះឡាតាំង៖ បង្កើតទម្រង់ `ត្រកូល.នាមខ្លួន@scanin.app` (ឧ. `KATHIK VIRAJ` -> `kathik.viraj@scanin.app`)។
+     - ប្រសិនបើគ្មានឈ្មោះឡាតាំង៖ បង្កើតតាមអត្តលេខ `code@scanin.app` (ឧ. `IT20-001` -> `it20001@scanin.app`)។
+   - លើ Web Admin (`admin_students_screen.dart`)៖
+     - ក្នុង Dialog បង្កើតសិស្សទោល៖ ពេលវាយបញ្ចូលឈ្មោះឡាតាំង ប្រព័ន្ធបំពេញ Email ដោយស្វ័យប្រវត្តិតាម Real-time។
+     - ក្នុងផ្ទាំង Paste CSV/Excel៖ បើទុក Email នៅទទេ ឬគ្មានសញ្ញា `@` ប្រព័ន្ធបង្កើតអ៊ីមែលឱ្យស្វ័យប្រវត្តិតាមរូបមន្តខាងលើ។
+     - កែប្រែគំរូ Header CSV និង Textbox Hint ទៅជា `kathik.viraj@scanin.app`។
+   - លើ Backend Laravel (`routes/api.php`)៖ ធ្វើបច្ចុប្បន្នភាព Fallback Email ឱ្យត្រូវគ្នា ១០០%។
+   - បានធ្វើបច្ចុប្បន្នភាពគណនីសិស្សពិតទាំង ៥ នាក់ក្នុង MySQL Database ទៅជា `@scanin.app` ត្រឹមត្រូវស្របគ្នាទាំងអស់។
+
 ---
 
 ### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code)
