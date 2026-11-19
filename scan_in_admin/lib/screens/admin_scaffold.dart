@@ -399,11 +399,11 @@ class _AdminScaffoldState extends State<AdminScaffold> {
       body: Row(
         children: [
           // Left Sidebar (Responsive: 72px on tablets/narrow, 260px on wide desktops)
-          Container(
-            width: sidebarWidth,
-            color: sidebarBg,
-            clipBehavior: Clip.hardEdge,
-            child: Column(
+          ClipRect(
+            child: Container(
+              width: sidebarWidth,
+              color: sidebarBg,
+              child: Column(
               children: [
                 // Header Logo
                 Container(
@@ -697,6 +697,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
               ],
             ),
           ),
+        ),
 
           // Right Content Area
           Expanded(
