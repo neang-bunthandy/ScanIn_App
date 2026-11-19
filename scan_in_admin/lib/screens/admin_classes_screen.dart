@@ -208,6 +208,17 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     final deptOptions = ClassService.buildDepartmentOptions(
       _classes.map((c) => c.department ?? ''),
     );
+    final existingSubjectCodes = _classes
+        .map((c) => c.subjectCode.trim())
+        .where((code) => code.isNotEmpty)
+        .toSet()
+        .toList();
+    final existingSubjectNames = _classes
+        .map((c) => c.subjectName.trim())
+        .where((name) => name.isNotEmpty)
+        .toSet()
+        .toList();
+
     int selectedYearLevel = 1;
     int? selectedLecturerId;
 
@@ -226,6 +237,133 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
           builder: (context, setDlgState) {
             final isDark = Theme.of(context).brightness == Brightness.dark;
             final textCol = isDark ? Colors.white : AppColors.textPrimary;
+
+            String? autoFilledFromCode;
+
+            void autoFillByCode(String code) {
+              final clean = code.trim().toLowerCase();
+              if (clean.isEmpty) return;
+
+              final matches = _classes
+                  .where((c) => c.subjectCode.trim().toLowerCase() == clean)
+                  .toList();
+
+              if (matches.isNotEmpty) {
+                matches.sort((a, b) => (a.classDate ?? '').compareTo(b.classDate ?? ''));
+                final latest = matches.last;
+
+                setDlgState(() {
+                  autoFilledFromCode = latest.subjectCode;
+                  if (latest.subjectName.isNotEmpty) {
+                    nameCtrl.text = latest.subjectName;
+                  }
+                  if (latest.room.isNotEmpty) {
+                    roomCtrl.text = latest.room;
+                  }
+                  if (latest.time.isNotEmpty) {
+                    timeCtrl.text = latest.time;
+                  }
+                  if (latest.department != null && latest.department!.isNotEmpty) {
+                    deptCtrl.text = latest.department!;
+                  }
+                  if (latest.generation != null && latest.generation!.isNotEmpty) {
+                    generationCtrl.text = latest.generation!;
+                  }
+                  if (latest.yearLevel != null) {
+                    selectedYearLevel = latest.yearLevel!;
+                  }
+                  if (latest.lecturerId > 0) {
+                    selectedLecturerId = latest.lecturerId;
+                  }
+                  if (latest.dayOfWeek.isNotEmpty) {
+                    selectedDay = latest.dayOfWeek;
+                  }
+                  if (latest.semester.isNotEmpty) {
+                    selectedSemester = latest.semester;
+                  }
+                  if (latest.academicYear.isNotEmpty) {
+                    academicYearCtrl.text = latest.academicYear;
+                  }
+                  if (latest.totalSessions > 0) {
+                    totalSessionsCtrl.text = '${latest.totalSessions}';
+                  }
+
+                  // គណនាថ្ងៃបង្រៀនបន្ទាប់ (+៧ ថ្ងៃពីកាលបរិច្ឆេទចុងក្រោយបង្អស់ក្នុងប្រព័ន្ធ)
+                  if (latest.classDate != null && latest.classDate!.isNotEmpty) {
+                    final parsed = DateTime.tryParse(latest.classDate!);
+                    if (parsed != null) {
+                      final nextDate = parsed.add(const Duration(days: 7));
+                      selectedDate = nextDate;
+                      if (nextDate.weekday >= 1 && nextDate.weekday <= 7) {
+                        selectedDay = weekDaysKhmer[nextDate.weekday - 1];
+                      }
+                    }
+                  }
+                });
+              }
+            }
+
+            void autoFillByName(String name) {
+              final clean = name.trim().toLowerCase();
+              if (clean.isEmpty) return;
+
+              final matches = _classes
+                  .where((c) => c.subjectName.trim().toLowerCase() == clean)
+                  .toList();
+
+              if (matches.isNotEmpty) {
+                matches.sort((a, b) => (a.classDate ?? '').compareTo(b.classDate ?? ''));
+                final latest = matches.last;
+
+                setDlgState(() {
+                  autoFilledFromCode = latest.subjectCode;
+                  if (latest.subjectCode.isNotEmpty && codeCtrl.text.isEmpty) {
+                    codeCtrl.text = latest.subjectCode;
+                  }
+                  if (latest.room.isNotEmpty) {
+                    roomCtrl.text = latest.room;
+                  }
+                  if (latest.time.isNotEmpty) {
+                    timeCtrl.text = latest.time;
+                  }
+                  if (latest.department != null && latest.department!.isNotEmpty) {
+                    deptCtrl.text = latest.department!;
+                  }
+                  if (latest.generation != null && latest.generation!.isNotEmpty) {
+                    generationCtrl.text = latest.generation!;
+                  }
+                  if (latest.yearLevel != null) {
+                    selectedYearLevel = latest.yearLevel!;
+                  }
+                  if (latest.lecturerId > 0) {
+                    selectedLecturerId = latest.lecturerId;
+                  }
+                  if (latest.dayOfWeek.isNotEmpty) {
+                    selectedDay = latest.dayOfWeek;
+                  }
+                  if (latest.semester.isNotEmpty) {
+                    selectedSemester = latest.semester;
+                  }
+                  if (latest.academicYear.isNotEmpty) {
+                    academicYearCtrl.text = latest.academicYear;
+                  }
+                  if (latest.totalSessions > 0) {
+                    totalSessionsCtrl.text = '${latest.totalSessions}';
+                  }
+
+                  if (latest.classDate != null && latest.classDate!.isNotEmpty) {
+                    final parsed = DateTime.tryParse(latest.classDate!);
+                    if (parsed != null) {
+                      final nextDate = parsed.add(const Duration(days: 7));
+                      selectedDate = nextDate;
+                      if (nextDate.weekday >= 1 && nextDate.weekday <= 7) {
+                        selectedDay = weekDaysKhmer[nextDate.weekday - 1];
+                      }
+                    }
+                  }
+                });
+              }
+            }
 
             return AlertDialog(
               backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -268,7 +406,8 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              initialValue: selectedSemester,
+                              key: ValueKey('sem_$selectedSemester'),
+                              initialValue: ['1', '2'].contains(selectedSemester) ? selectedSemester : '1',
                               decoration: InputDecoration(
                                 labelText: AppLanguage.tr('ឆមាស (Semester)', 'Semester'),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -287,35 +426,57 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      // កូដមុខវិជ្ជា & ឈ្មោះមុខវិជ្ជា
+                      // កូដមុខវិជ្ជា & ឈ្មោះមុខវិជ្ជា (Auto-Fill Defaults ពេលវាយបញ្ចូល ឬរើសពីបញ្ជី)
                       Row(
                         children: [
                           SizedBox(
-                            width: 150,
-                            child: TextField(
+                            width: 175,
+                            child: EditableComboField(
                               controller: codeCtrl,
-                              decoration: InputDecoration(
-                                labelText: AppLanguage.tr('កូដមុខវិជ្ជា', 'Subject Code'),
-                                hintText: 'CS101',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                              ),
+                              labelText: AppLanguage.tr('កូដមុខវិជ្ជា', 'Subject Code'),
+                              hintText: 'ឧ. HMA-Y4',
+                              suggestions: existingSubjectCodes,
+                              onChanged: (val) => autoFillByCode(val),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: TextField(
+                            child: EditableComboField(
                               controller: nameCtrl,
-                              decoration: InputDecoration(
-                                labelText: AppLanguage.tr('ឈ្មោះមុខវិជ្ជា', 'Subject Name'),
-                                hintText: 'Mobile App Development',
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                              ),
+                              labelText: AppLanguage.tr('ឈ្មោះមុខវិជ្ជា', 'Subject Name'),
+                              hintText: 'ឧ. Hybrid Mobile App',
+                              suggestions: existingSubjectNames,
+                              onChanged: (val) => autoFillByName(val),
                             ),
                           ),
                         ],
                       ),
+                      if (autoFilledFromCode != null) ...[
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.auto_awesome_rounded, size: 14, color: Color(0xFF10B981)),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  AppLanguage.tr(
+                                    'ទាញយកទិន្នន័យគំរូពី $autoFilledFromCode រួចរាល់! (អាចកែប្រែកាលបរិច្ឆេទ ឬទិន្នន័យបានតាមចិត្ត)',
+                                    'Auto-filled defaults from $autoFilledFromCode! (You can modify date or any fields)',
+                                  ),
+                                  style: const TextStyle(fontSize: 11, color: Color(0xFF10B981), fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 14),
 
                       // បន្ទប់រៀន & ម៉ោង
@@ -422,8 +583,9 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<String>(
+                              key: ValueKey('day_$selectedDay'),
                               isExpanded: true,
-                              initialValue: selectedDay,
+                              initialValue: weekDaysKhmer.contains(selectedDay) ? selectedDay : weekDaysKhmer.first,
                               decoration: InputDecoration(
                                 labelText: AppLanguage.tr('ថ្ងៃរៀន (Day of Week)', 'Day of Week'),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -468,7 +630,8 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
 
                       // ជ្រើសរើសគ្រូបង្រៀន (Lecturer Selection)
                       DropdownButtonFormField<int>(
-                        initialValue: selectedLecturerId,
+                        key: ValueKey('lec_$selectedLecturerId'),
+                        initialValue: (lecturers.any((l) => l['id'] == selectedLecturerId)) ? selectedLecturerId : (lecturers.isNotEmpty ? lecturers.first['id'] as int? : null),
                         decoration: InputDecoration(
                           labelText: AppLanguage.tr('ចាត់តាំងគ្រូបង្រៀន (Assign Lecturer)', 'Assign Lecturer'),
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
@@ -508,8 +671,9 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<int>(
+                              key: ValueKey('year_$selectedYearLevel'),
                               isExpanded: true,
-                              initialValue: selectedYearLevel,
+                              initialValue: [1, 2, 3, 4].contains(selectedYearLevel) ? selectedYearLevel : 1,
                               decoration: InputDecoration(
                                 labelText: AppLanguage.tr('សម្រាប់ឆ្នាំទី (Year Level)', 'Target Year Level'),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
