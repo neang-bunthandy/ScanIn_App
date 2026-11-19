@@ -2029,6 +2029,8 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                       child: DataTable(
                                         columnSpacing: 18,
                                         horizontalMargin: 12,
+                                        dataRowMinHeight: 68,
+                                        dataRowMaxHeight: 78,
                                     headingRowColor: WidgetStateProperty.all(
                                       isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
                                     ),
