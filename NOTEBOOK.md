@@ -377,6 +377,35 @@
    - **មូលហេតុបច្ចេកទេស៖** នៅក្នុង Flutter Web `Container` constructor មាន check `assert(decoration != null || clipBehavior == Clip.none)`។ ការដាក់ `color` ផ្ទាល់ជាមួយ `clipBehavior: Clip.hardEdge` ដោយគ្មាន `BoxDecoration` ធ្វើឱ្យ Throw Assertion Exception។
    - **ដំណោះស្រាយ៖** ជំនួសមកប្រើ `ClipRect(child: Container(width: sidebarWidth, color: sidebarBg, child: ...))` ដែលជាវិធីសាស្ត្រស្តង់ដារ និងមានស្ថិរភាពបំផុតរបស់ Flutter (Commit `67d445e`)។
 
+14. **កិច្ចការទី ១៤ (Task 14 — រួចរាល់ ១០០% ✅) ៖ ចុះឈ្មោះនិស្សិតពិតប្រាកដទាំង ២០ នាក់ពេញលេញ (IT Gen 20 Clean Production)**
+   - ផ្អែកលើតារាងសាលាផ្លូវការរបស់សាកលវិទ្យាល័យ (រូបភាព `media_1794914096166_0425cad2.jpg`)៖
+     - **ដកឈ្មោះ `នាង ប៊ុនថានឌី` (`NEANG BUNTHANDY` - លេខរៀងទី ១៥) ចេញ** ពីបញ្ជីសិស្ស ស្របតាមការណែនាំរបស់ម្ចាស់គម្រោង ដោយសារគាត់ជា Master Admin អ្នកគ្រប់គ្រងកំពូលនៃប្រព័ន្ធ។
+     - ចំនួននិស្សិតពិតប្រាកដសរុបគឺ **២០ នាក់** នៃដេប៉ាតឺម៉ង់ព័ត៌មានវិទ្យា (IT) ជំនាន់ទី ២០ ឆ្នាំទី ៤ (Intake 2023)។
+   - **និស្សិតទាំង ២០ នាក់ត្រូវបានចុះឈ្មោះក្នុង MySQL Database ដោយជោគជ័យ៖**
+     1. `IT20-001` — **កាទិក វីរ៉ាច** (KATHIK VIRAJ) — `kathik.viraj@scanin.app`
+     2. `IT20-002` — **គឹម សីហា** (KIM SEYHA) — `kim.seyha@scanin.app`
+     3. `IT20-003` — **ឃន រតនសត្យា** (KHORN RATHANAKSATYA) — `khorn.rathanaksatya@scanin.app`
+     4. `IT20-004` — **ឆែម ម៉ីហា** (CHHEM MEYHA) — `chhem.meyha@scanin.app`
+     5. `IT20-005` — **ដាំ អាយុសុធី** (DAM ARYUSOTHY) — `dam.aryusothy@scanin.app`
+     6. `IT20-006` — **ឃឿន សុខខេង** (KHOEURN SOKKHENG) — `khoeurn.sokkheng@scanin.app`
+     7. `IT20-007` — **ចៅ សុភក្ត្រា** (CHAO SOPHEAKTRA) — `chao.sopheaktra@scanin.app`
+     8. `IT20-008` — **ឆន មករា** (CHHON MAKARA) — `chhon.makara@scanin.app`
+     9. `IT20-009` — **ឌៀប ជោគជ័យ** (DIEB JOKCHEY) — `dieb.jokchey@scanin.app`
+     10. `IT20-010` — **ណន ដានីត** (NORN DANITH) — `norn.danith@scanin.app`
+     11. `IT20-011` — **តាន់ ជូហេង** (TANN CHOUHENG) — `tann.chouheng@scanin.app`
+     12. `IT20-012` — **ថង សុដាវ៉ាន់** (THORNG SODAVAN) — `thorng.sodavan@scanin.app`
+     13. `IT20-013` — **ធី ចាន់ថន** (THEY CHANTHORN) — `they.chanthorn@scanin.app`
+     14. `IT20-014` — **ធេង គីមហេង** (THENG KOEMHENG) — `theng.koemheng@scanin.app`
+     15. `IT20-015` — **នី ស៊ីដា** (NY SHIDA) — `ny.shida@scanin.app`
+     16. `IT20-016` — **ប៉ែន វ៉ារី** (PEN VARY) — `pen.vary@scanin.app`
+     17. `IT20-017` — **ផាង វិផាត់** (PHANG VIPHATH) — `phang.viphath@scanin.app`
+     18. `IT20-018` — **ពិសិដ្ឋ ចាន់កក្កដា** (PISETH CHANKAKADA) — `piseth.chankakada@scanin.app`
+     19. `IT20-019` — **ភៅ ព័ន្ធមុនីរ័ត្ន** (PHAO POANMONIRATH) — `phao.poanmonirath@scanin.app`
+     20. `IT20-020` — **ម៉ន ប៊ុននាត** (MON BUNNEAT) — `mon.bunneat@scanin.app`
+   - **ផ្ទៀងផ្ទាត់សមកាលកម្មថ្នាក់រៀន (Class Roster Verification)៖**
+     - ថ្នាក់រៀន `Hybrid Mobile App` (`HMA-Y4`) បានឆ្លុះបញ្ចាំងនិស្សិតត្រូវគ្នាទាំង **២០ នាក់ (20 Matched Students)** ស្វ័យប្រវត្តិតាម Database។
+     - Test Suite ដំណើរការជោគជ័យ **៣០ passed (១៩៣ assertions) ១០០%**។
+
 ---
 
 ### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code - FFC Audit)
@@ -395,10 +424,8 @@
 
 ---
 
-### 📋 ផែនការការងារដែលត្រូវធ្វើបន្តនៅថ្ងៃស្អែក (Tomorrow's Roadmap)
-1. **ចុះឈ្មោះនិស្សិតពិត ១៦ នាក់ដែលនៅសល់ (Total 21 Students of IT Gen 20) ៖**
-   - បញ្ចូលឈ្មោះនិស្សិត ១៦ នាក់ទៀតពីបញ្ជីផ្លូវការរបស់សាកលវិទ្យាល័យ ឱ្យគ្រប់ចំនួន ២១ នាក់នៃថ្នាក់ IT ជំនាន់ទី ២០។
-2. **មុខងារ Upload Profile Photo (Camera / Gallery) ៖**
+### 📋 ផែនការការងារជំហានបន្ទាប់ (Next Steps Roadmap)
+1. **មុខងារ Upload Profile Photo (Camera / Gallery) ៖**
    - ដំឡើង package `image_picker` លើ Mobile App `scan_in`។
    - បង្កើត API `POST /api/profile/avatar` ក្នុង Laravel សម្រាប់ Upload និងរក្សាទុករូបភាព Profile សិស្ស និងគ្រូ។
 3. **មុខងារ Export របាយការណ៍វត្តមាន (Excel / PDF) ៖**
