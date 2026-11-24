@@ -73,11 +73,17 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
             orElse: () => classes.first,
           );
 
-    // គណនាស្ថិតិរួម ដោយប្រើ Loop សាមញ្ញ ងាយស្រួលពន្យល់
+    // គណនាស្ថិតិរួម ដោយមិនរាប់ស្ទួនចំពោះមុខវិជ្ជាដដែលៗ (Unique Course Code)
+    final Set<String> uniqueCourseCodes = {};
     int totalStudents = 0;
     for (var c in classes) {
-      totalStudents += c.studentCount;
+      final key = c.subjectCode.trim().isNotEmpty ? c.subjectCode.trim() : c.subjectName.trim();
+      if (!uniqueCourseCodes.contains(key)) {
+        uniqueCourseCodes.add(key);
+        totalStudents += c.studentCount;
+      }
     }
+    final int uniqueClassesCount = uniqueCourseCodes.length;
 
     int activeQrCount = 0;
     for (var active in classQrActive.values) {
@@ -264,7 +270,7 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
               // ថ្នាក់បង្រៀន (Classes)
               Expanded(
                 child: _buildStatCard(
-                  count: '${classes.length}',
+                  count: '$uniqueClassesCount',
                   label: AppLanguage.tr('ថ្នាក់បង្រៀន', 'Classes'),
                   bgColor: isDark ? const Color(0xFF1D4ED8).withValues(alpha: 0.15) : const Color(0xFFEFF6FF),
                   borderColor: isDark ? const Color(0xFF1D4ED8).withValues(alpha: 0.35) : const Color(0xFFBFDBFE),

@@ -407,11 +407,17 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
     final dividerCol = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
     final avatarBg = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
 
-    // គណនាចំនួនសិស្សសរុប ដោយប្រើ Loop សាមញ្ញ ងាយស្រួលពន្យល់
+    // គណនាចំនួនសិស្សសរុប និងចំនួនថ្នាក់ ដោយមិនរាប់ស្ទួនចំពោះមុខវិជ្ជាដដែលៗ (Unique Course Code)
+    final Set<String> uniqueCourseCodes = {};
     int totalStudents = 0;
     for (var c in widget.classes) {
-      totalStudents += c.studentCount;
+      final key = c.subjectCode.trim().isNotEmpty ? c.subjectCode.trim() : c.subjectName.trim();
+      if (!uniqueCourseCodes.contains(key)) {
+        uniqueCourseCodes.add(key);
+        totalStudents += c.studentCount;
+      }
     }
+    final int uniqueClassesCount = uniqueCourseCodes.length;
 
     // គណនាភាគរយសកម្មភាពបង្រៀនជាក់ស្តែងពី Database (MySQL)
     final int totalRecords = widget.attendanceRecords.length;
@@ -569,7 +575,7 @@ class _LecturerProfileScreenState extends State<LecturerProfileScreen> {
                       Expanded(
                         child: _buildMiniStatBox(
                           title: AppLanguage.tr('ថ្នាក់បង្រៀន', 'Classes'),
-                          count: '${widget.classes.length}',
+                          count: '$uniqueClassesCount',
                           color: AppColors.primary,
                           icon: Icons.menu_book_rounded,
                         ),

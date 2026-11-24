@@ -162,15 +162,13 @@ class AppDateTime {
 
   /// ពិនិត្យមើលថាតើថ្នាក់រៀនមួយត្រូវរៀននៅថ្ងៃ targetDate ឬទេ
   static bool matchesClassSchedule(String dayOfWeekString, String? classDateString, DateTime targetDate) {
-    // ១. បើមាន class_date កំណត់ជាក់លាក់ (ឧ. 2026-11-21)
+    // ១. បើមាន class_date កំណត់ជាក់លាក់ (ឧ. 2026-11-21) ត្រូវផ្គូផ្គងឱ្យចំថ្ងៃនោះតែម្តង មិនធ្លាក់ទៅជាន់ថ្ងៃសប្តាហ៍ឡើយ
     if (classDateString != null && classDateString.trim().isNotEmpty) {
       final cleanYmd = classDateString.trim().split('T')[0].split(' ')[0];
-      if (cleanYmd == formatDateYmd(targetDate)) {
-        return true;
-      }
+      return cleanYmd == formatDateYmd(targetDate);
     }
 
-    // ២. ផ្គូផ្គងតាមថ្ងៃក្នុងសប្តាហ៍ (ច័ន្ទ ដល់ អាទិត្យ)
+    // ២. ផ្គូផ្គងតាមថ្ងៃក្នុងសប្តាហ៍ (ច័ន្ទ ដល់ អាទិត្យ) ប្រសិនបើមិនទាន់មាន class_date ជាក់លាក់
     final wd = targetDate.weekday; // 1=Mon .. 7=Sun
     final dayMap = {
       1: ['ច័ន្ទ', 'ចន្ទ', 'mon'],
