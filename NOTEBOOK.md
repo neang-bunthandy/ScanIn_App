@@ -415,29 +415,37 @@
      - ពេលគ្រូចុចលើថ្ងៃសៅរ៍ ទី២៨ វិច្ឆិកា នឹងបង្ហាញតែ Session ថ្ងៃទី ២៨ មួយគត់ (បង្ហាញ `ថ្នាក់បង្រៀនតាមថ្ងៃ (1)`), ហើយពេលចុចថ្ងៃទី ២១ នឹងបង្ហាញតែ Session ថ្ងៃទី ២១។
      - ធ្វើសមកាលកម្មកូដនេះដូចគ្នាទាំងលើ Mobile App និង Web Admin។
 
+16. **កិច្ចការទី ១៦ (Task 16 — រួចរាល់ ១០០% ✅) ៖ មុខងារ Upload រូបថត Profile (Camera & Gallery) លើទូរស័ព្ទដៃ**
+   - **Backend API (`scan_in_backend`) ៖**
+     - បង្កើត API Endpoint `POST /api/profile/avatar` ក្នុង `AuthController.php` និងចុះបញ្ជី Route ក្នុង `routes/api.php` ក្រោម `auth:sanctum` Middleware។
+     - ផ្ទៀងផ្ទាត់សុពលភាពឯកសាររូបភាពយ៉ាងម៉ឺងម៉ាត់ (`mimes:jpeg,png,jpg,webp|max:5120` រហូតដល់ 5MB)។
+     - យន្តការសម្អាត Storage ឆ្លាតវៃ៖ ប្រសិនបើគណនីមានរូបថតចាស់ក្នុង Storage វានឹងលុបរូបចាស់ចេញដោយស្វ័យប្រវត្តិ មុននឹងរក្សាទុករូបថ្មី (`avatar_{user_id}_{timestamp}_{random}.ext`) ដើម្បីកុំឱ្យចង្អៀតថាសរឹង។
+     - បង្កើត Feature Test Suite ពេញលេញ `AvatarUploadTest.php` ចំនួន ៥ ករណី (Student Upload, Lecturer Upload, Non-Image Validation, Unauthenticated Reject, Storage Cleanup) ➔ **35 passed, 216 assertions (100% PASS)**។
+   - **Frontend Mobile App (`scan_in`) ៖**
+     - ដំឡើង package `image_picker: ^1.2.4` និងកំណត់ Camera & Photo Library Usage Descriptions ក្នុង iOS `Info.plist`។
+     - បង្កើត Helper `ApiConfig.resolveImageUrl` សម្រាប់បម្លែង Relative Path នៃរូបភាពឱ្យទៅជា Full URL ដោយស្វ័យប្រវត្តិតាមឧបករណ៍ (Android Emulator `10.0.2.2`, iOS/Web/Desktop `127.0.0.1`, ឬ Custom WiFi IP)។
+     - បន្ថែម `AuthService.uploadAvatar` ប្រើប្រាស់ `http.MultipartRequest` ជាមួយ `MultipartFile.fromBytes` រួច Update `UserModel` ថ្មីក្នុង SharedPreferences។
+     - ភ្ជាប់លើ UI ទាំងពីរ៖ `student_profile_screen.dart` (និស្សិត) និង `lecturer_profile_screen.dart` (សាស្ត្រាចារ្យ) ជាមួយ BottomSheet ជ្រើសរើស Camera / Gallery, Progress Loading Spinner, និង CircleAvatar ដែលបង្ហាញរូបភាព NetworkImage ភ្លាមៗដោយរលូន។
+     - `flutter analyze` លើ `scan_in` ទទួលបាន **No issues found!** (០ errors, ០ warnings)។
+
 ---
 
 ### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code - FFC Audit)
 - **ការត្រួតពិនិត្យឯកសារ និងថត (Files & Folders) ៖**
-  - បានបោសសម្អាតឯកសារបណ្តោះអាសន្ន 0-byte (`name}`, `student_code}`) ចេញពី `scan_in_backend`។
-  - គ្មានឯកសារ Scratch/Test (`test_*.php`, `check_*.php`) នៅក្នុង Directory គម្រោងឡើយ។
-  - គ្មាន log files ចាស់ៗ (`flutter_*.log`) នៅក្នុង Repository។
+   - បានបន្ថែម `/android/build/` និង `/android/app/build/` ចូល `.gitignore` ដើម្បីការពារ Build Artifacts។
+   - គ្មានឯកសារបណ្តោះអាសន្ន 0-byte ឬ Scratch Scripts សេសសល់ក្នុង Repository ឡើយ។
 - **សុពលភាពកូដ និងការធ្វើតេស្ត (Code Quality & Verification) ៖**
-  - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៣០ passed, ១៩៣ assertions (១០០% PASS)** រយៈពេលត្រឹមតែ **២.៧៨ វិនាទី**។
-  - **Flutter Web Admin (`scan_in_admin`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)** ក្នុងរយៈពេល **២.០ វិនាទី**។
-  - **Flutter Mobile App (`scan_in`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)** ក្នុងរយៈពេល **២.២ វិនាទី**។
-  - **Database Service ៖** MySQL / MariaDB ដំណើរការយ៉ាងរលូនលើ Port 3306។
+   - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៣៥ passed, ២១៦ assertions (១០០% PASS)** ក្នុងរយៈពេល **២.៨៧ វិនាទី**។
+   - **Flutter Web Admin (`scan_in_admin`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)** ក្នុងរយៈពេល **១.៩ វិនាទី**។
+   - **Flutter Mobile App (`scan_in`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)** ក្នុងរយៈពេល **២.២ វិនាទី**។
+   - **Database Service ៖** MySQL / MariaDB ដំណើរការយ៉ាងរលូនលើ Port 3306 (`TcpTestSucceeded : True`)។
 - **Git & Backup ៖**
-  - Git Working Tree ស្អាតបាត ១០០% (`nothing to commit, working tree clean`)។
-  - Commit ចុងក្រោយត្រូវបាន Push ទៅកាន់ `origin/main` (GitHub) និង Robocopy Sync ទៅកាន់ Backup Mirror `C:\Users\Jitsu Window\Scan_In_App_Backup\`។
+   - Commit និង Push ទៅកាន់ `origin/main` (GitHub) ព្រមទាំង Robocopy Sync ទៅកាន់ Backup Mirror `C:\Users\Jitsu Window\Scan_In_App_Backup\`។
 
 ---
 
 ### 📋 ផែនការការងារជំហានបន្ទាប់ (Next Steps Roadmap)
-1. **មុខងារ Upload Profile Photo (Camera / Gallery) ៖**
-   - ដំឡើង package `image_picker` លើ Mobile App `scan_in`។
-   - បង្កើត API `POST /api/profile/avatar` ក្នុង Laravel សម្រាប់ Upload និងរក្សាទុករូបភាព Profile សិស្ស និងគ្រូ។
-3. **មុខងារ Export របាយការណ៍វត្តមាន (Excel / PDF) ៖**
+1. **មុខងារ Export របាយការណ៍វត្តមាន (Excel / PDF) ៖**
    - គាំទ្រការទាញទិន្នន័យវត្តមានតាមមុខវិជ្ជា និងតាមដេប៉ាតឺម៉ង់សម្រាប់គ្រូ និងរដ្ឋបាលយកទៅប្រើប្រាស់ផ្លូវការ។
-4. **WebSocket / Auto-Refresh សម្រាប់ Projector Mode ៖**
+2. **WebSocket / Auto-Refresh សម្រាប់ Projector Mode ៖**
    - ពេលសិស្សស្កេនលើទូរស័ព្ទ បញ្ជីឈ្មោះលើផ្ទាំង Projector កុំព្យូទ័រគ្រូ update ឡើងមកភ្លាមៗដោយស្វ័យប្រវត្តិ។

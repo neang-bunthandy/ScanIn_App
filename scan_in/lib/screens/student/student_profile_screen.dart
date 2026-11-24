@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_theme.dart';
 import '../../core/app_language.dart';
+import '../../core/api_config.dart';
 import '../../models/user_model.dart';
 import '../../models/attendance_model.dart';
 import '../../services/auth_service.dart';
@@ -34,6 +36,99 @@ class StudentProfileScreen extends StatefulWidget {
 }
 
 class _StudentProfileScreenState extends State<StudentProfileScreen> {
+  late UserModel _currentStudent;
+  final ImagePicker _picker = ImagePicker();
+  bool _isUploadingAvatar = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentStudent = widget.student;
+  }
+
+  @override
+  void didUpdateWidget(covariant StudentProfileScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.student != oldWidget.student) {
+      _currentStudent = widget.student;
+    }
+  }
+
+  Future<void> _pickAndUploadAvatar(ImageSource source) async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+
+      if (pickedFile == null) return;
+
+      setState(() {
+        _isUploadingAvatar = true;
+      });
+
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+
+      final bytes = await pickedFile.readAsBytes();
+      final result = await AuthService.uploadAvatar(
+        bytes: bytes,
+        filename: pickedFile.name,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // pop loading
+
+      setState(() {
+        _isUploadingAvatar = false;
+        if (result.success && result.user != null) {
+          _currentStudent = result.user!;
+        }
+      });
+
+      if (result.success) {
+        widget.onRefresh?.call();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result.message),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isUploadingAvatar = false;
+        });
+        Navigator.of(context, rootNavigator: true).maybePop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('បរាជ័យក្នុងការ Upload៖ $e'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   void _showChangeAvatarSheet() {
     showModalBottomSheet(
       context: context,
@@ -70,12 +165,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   title: Text(AppLanguage.tr('ថតរូបផ្ទាល់ (Camera)', 'Take Photo (Camera)')),
                   onTap: () {
                     Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(AppLanguage.tr('មុខងារ Camera នឹងដំណើរការជាមួយកាមេរ៉ាពិត', 'Camera feature will work on a real device')),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                    _pickAndUploadAvatar(ImageSource.camera);
                   },
                 ),
               ),
@@ -89,12 +179,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   title: Text(AppLanguage.tr('ជ្រើសរើសពីរូបភាព (Gallery)', 'Choose from Gallery')),
                   onTap: () {
                     Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(AppLanguage.tr('មុខងារ Gallery នឹងដំណើរការជាមួយរូបថត', 'Gallery feature will work with photo library')),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                    _pickAndUploadAvatar(ImageSource.gallery);
                   },
                 ),
               ),
@@ -396,7 +481,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final student = widget.student;
+    final student = _currentStudent;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final borderCol = isDark ? const Color(0xFF334155) : AppColors.border;
@@ -440,13 +525,24 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                     Stack(
                       alignment: Alignment.bottomRight,
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 44,
                           backgroundColor: AppColors.primaryLight,
-                          child: Icon(Icons.person, size: 52, color: AppColors.primary),
+                          backgroundImage: student.avatarUrl != null && student.avatarUrl!.isNotEmpty
+                              ? NetworkImage(ApiConfig.resolveImageUrl(student.avatarUrl) ?? student.avatarUrl!)
+                              : null,
+                          child: _isUploadingAvatar
+                              ? const SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.primary),
+                                )
+                              : (student.avatarUrl == null || student.avatarUrl!.isEmpty
+                                  ? const Icon(Icons.person, size: 52, color: AppColors.primary)
+                                  : null),
                         ),
                         InkWell(
-                          onTap: _showChangeAvatarSheet,
+                          onTap: _isUploadingAvatar ? null : _showChangeAvatarSheet,
                           borderRadius: BorderRadius.circular(20),
                           child: Container(
                             padding: const EdgeInsets.all(6),

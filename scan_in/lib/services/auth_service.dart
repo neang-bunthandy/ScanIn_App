@@ -125,6 +125,75 @@ class AuthService {
     return token != null && token.isNotEmpty;
   }
 
+  /// រក្សាទុក User Profile ថ្មីក្នុង SharedPreferences
+  static Future<void> updateCurrentUser(UserModel user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyUser, jsonEncode(user.toJson()));
+  }
+
+  /// Upload រូបថត Profile (Camera / Gallery)
+  static Future<AuthResult> uploadAvatar({
+    required List<int> bytes,
+    required String filename,
+  }) async {
+    try {
+      final token = await getToken();
+      final uri = Uri.parse(ApiConfig.uploadAvatarUrl);
+      final request = http.MultipartRequest('POST', uri);
+
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.headers['Accept'] = 'application/json';
+
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'avatar',
+          bytes,
+          filename: filename,
+        ),
+      );
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+      final response = await http.Response.fromStream(streamedResponse);
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        UserModel? updatedUser;
+        if (data['user'] != null) {
+          updatedUser = UserModel.fromJson(data['user'] as Map<String, dynamic>);
+          await updateCurrentUser(updatedUser);
+        }
+
+        return AuthResult(
+          success: true,
+          message: data['message'] as String? ?? 'បានផ្លាស់ប្តូររូបថត Profile ដោយជោគជ័យ',
+          user: updatedUser,
+        );
+      } else {
+        return AuthResult(
+          success: false,
+          message: data['message'] as String? ?? 'ការបញ្ចូលរូបថតមិនជោគជ័យ',
+        );
+      }
+    } on SocketException catch (_) {
+      return const AuthResult(
+        success: false,
+        message: 'មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ។',
+      );
+    } on TimeoutException catch (_) {
+      return const AuthResult(
+        success: false,
+        message: 'ការ Upload លើសម៉ោងកំណត់ (Timeout)។ សូមព្យាយាមម្តងទៀត។',
+      );
+    } catch (e) {
+      return AuthResult(
+        success: false,
+        message: 'មានបញ្ហាមិនរំពឹងទុក៖ $e',
+      );
+    }
+  }
+
   /// ប្តូរពាក្យសម្ងាត់ (Change Password API)
   static Future<Map<String, dynamic>> changePassword({
     required String currentPassword,

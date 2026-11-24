@@ -47,6 +47,15 @@ class ApiConfig {
   static String get meUrl => '$baseUrl/me';
   static String get logoutUrl => '$baseUrl/logout';
   static String get changePasswordUrl => '$baseUrl/user/change-password';
+  static String get uploadAvatarUrl => '$baseUrl/profile/avatar';
+
+  /// បម្លែង Relative Path នៃរូបភាពឱ្យទៅជា Full URL ដែលអាចទាញយកបាន
+  static String? resolveImageUrl(String? path) {
+    if (path == null || path.trim().isEmpty) return null;
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    final cleanPath = path.startsWith('/') ? path : '/$path';
+    return 'http://$host:$port$cleanPath';
+  }
 
   // Classes & Users Endpoints (Laravel REST API)
   static String get classesUrl => '$baseUrl/classes';

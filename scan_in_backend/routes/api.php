@@ -718,6 +718,7 @@ Route::delete('/sub-admins/{id}', function (Request $request, $id) {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/user/change-password', [AuthController::class, 'changePassword']);
+    Route::post('/profile/avatar', [AuthController::class, 'uploadAvatar']);
     Route::get('/student/classes', [ClassController::class, 'index']);
 
     // Class routes

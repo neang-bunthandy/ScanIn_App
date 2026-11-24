@@ -53,6 +53,10 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>NSCameraUsageDescription</key>
+	<string>ScanIn needs camera access to take profile photos and scan QR codes.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ScanIn needs photo library access to choose your profile photo.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

@@ -167,6 +167,57 @@ class AuthController extends Controller
     }
 
     /**
+     * Upload User Profile Avatar
+     */
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,webp|max:5120',
+        ]);
+
+        $user = $request->user();
+        $file = $request->file('avatar');
+
+        // លុបរូបភាពចាស់ចេញពី Storage ប្រសិនបើមាន
+        if ($user->avatar_url && str_starts_with($user->avatar_url, '/storage/avatars/')) {
+            $oldRelativePath = str_replace('/storage/', '', $user->avatar_url);
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($oldRelativePath);
+        }
+
+        // រក្សាទុករូបភាពថ្មីក្នុង storage/app/public/avatars
+        $extension = $file->getClientOriginalExtension() ?: 'jpg';
+        $filename = 'avatar_' . $user->id . '_' . time() . '_' . \Illuminate\Support\Str::random(6) . '.' . $extension;
+        $path = $file->storeAs('avatars', $filename, 'public');
+
+        $avatarUrl = '/storage/' . $path;
+        $user->avatar_url = $avatarUrl;
+        $user->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'បានផ្លាស់ប្តូររូបថត Profile ដោយជោគជ័យ',
+            'avatar_url' => $avatarUrl,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'latin_name' => $user->latin_name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'student_code' => $user->student_code,
+                'staff_id' => $user->staff_id,
+                'department' => $user->department,
+                'generation' => $user->generation,
+                'intake_year' => $user->intake_year,
+                'year_level' => $user->year_level !== null ? (int)$user->year_level : null,
+                'status' => $user->status ?? 'active',
+                'phone' => $user->phone,
+                'avatar_url' => $user->avatar_url,
+                'created_at' => $user->created_at?->toIso8601String(),
+            ],
+        ], 200);
+    }
+
+    /**
      * User Logout API
      */
     public function logout(Request $request)
