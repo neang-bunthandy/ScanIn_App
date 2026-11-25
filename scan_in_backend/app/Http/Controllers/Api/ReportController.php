@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Attendance;
+use App\Models\ClassModel;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -207,6 +209,160 @@ class ReportController extends Controller
                 ],
             ],
         ], 200);
+    }
+
+    /**
+     * Export របាយការណ៍វត្តមានជា Excel CSV (UTF-8 BOM) ឬ JSON សម្រាប់ PDF
+     * គាំទ្រ Admin, Sub-Admin និង Lecturer (គ្រូអាចទាញបានតែថ្នាក់របស់ខ្លួនឯងប៉ុណ្ណោះ)
+     */
+    public function exportAttendance(Request $request)
+    {
+        $user = $request->user();
+        if (!$user || (!$user->isAcademicAdmin() && $user->role !== 'lecturer')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'មានតែអ្នកគ្រប់គ្រង ឬគ្រូបង្រៀនប៉ុណ្ណោះដែលអាចទាញរបាយការណ៍វត្តមានបាន។',
+            ], 403);
+        }
+
+        if ($request->filled('class_id')) {
+            $class = ClassModel::find($request->class_id);
+            if (!$class) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'រកមិនឃើញថ្នាក់រៀននេះទេ។',
+                ], 404);
+            }
+            if ($user->role === 'lecturer' && (int)$class->user_id !== (int)$user->id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'អ្នកមិនមានសិទ្ធិទាញរបាយការណ៍សម្រាប់ថ្នាក់របស់គ្រូផ្សេងឡើយ។',
+                ], 403);
+            }
+        }
+
+        $query = Attendance::with(['student', 'classModel'])
+            ->whereHas('classModel', function ($q) use ($user, $request) {
+                if ($user->role === 'lecturer') {
+                    $q->where('user_id', $user->id);
+                }
+                if ($request->filled('subject_code')) {
+                    $q->where('subject_code', trim((string)$request->subject_code));
+                }
+                if ($request->filled('department')) {
+                    $q->where('department', trim((string)$request->department));
+                }
+            });
+
+        if ($request->filled('class_id')) {
+            $query->where('class_id', (int)$request->class_id);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', trim((string)$request->date_from));
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', trim((string)$request->date_to));
+        }
+        if ($request->filled('status')) {
+            $query->where('status', strtolower(trim((string)$request->status)));
+        }
+
+        $records = $query->orderBy('date', 'desc')->orderBy('id', 'desc')->get();
+
+        $statusLabels = [
+            'present' => 'មករៀន (Present)',
+            'late' => 'មកយឺត (Late)',
+            'absent' => 'អវត្តមាន (Absent)',
+            'excused' => 'ច្បាប់ (Excused)',
+        ];
+
+        $format = strtolower(trim((string)$request->query('format', 'csv')));
+
+        if ($format === 'json') {
+            $total = $records->count();
+            $present = $records->where('status', 'present')->count();
+            $late = $records->where('status', 'late')->count();
+            $absent = $records->where('status', 'absent')->count();
+            $excused = $records->where('status', 'excused')->count();
+
+            $formatted = $records->map(function ($a) use ($statusLabels) {
+                $st = strtolower((string)$a->status);
+                return [
+                    'id' => $a->id,
+                    'student_code' => $a->student?->student_code ?? '-',
+                    'student_name' => $a->student?->name ?? '-',
+                    'latin_name' => $a->student?->latin_name ?? '',
+                    'department' => $a->student?->department ?? ($a->classModel?->department ?? '-'),
+                    'subject_code' => $a->classModel?->subject_code ?? '-',
+                    'subject_name' => $a->classModel?->subject_name ?? '-',
+                    'date' => $a->date ? $a->date->format('Y-m-d') : '-',
+                    'scanned_at' => $a->scanned_at ? $a->scanned_at->format('H:i') : '-',
+                    'status' => $st,
+                    'status_label' => $statusLabels[$st] ?? $st,
+                    'note' => $a->note ?? '',
+                ];
+            })->values();
+
+            return response()->json([
+                'status' => true,
+                'summary' => [
+                    'total' => $total,
+                    'present' => $present,
+                    'late' => $late,
+                    'absent' => $absent,
+                    'excused' => $excused,
+                    'attendance_rate' => $total > 0 ? round((($present + $late) / $total) * 100) : 0,
+                ],
+                'data' => $formatted,
+            ], 200);
+        }
+
+        // Default: UTF-8 BOM CSV compatible with Microsoft Excel (supports Khmer Unicode)
+        $escapeCsv = function (?string $val): string {
+            $v = str_replace('"', '""', (string)($val ?? ''));
+            return '"' . $v . '"';
+        };
+
+        $lines = [];
+        $lines[] = implode(',', [
+            '#',
+            'Student Code',
+            'Student Name (KH)',
+            'Student Name (Latin)',
+            'Department',
+            'Subject Code',
+            'Subject Name',
+            'Date',
+            'Scanned Time',
+            'Status',
+            'Note',
+        ]);
+
+        foreach ($records as $index => $a) {
+            $st = strtolower((string)$a->status);
+            $lines[] = implode(',', [
+                $index + 1,
+                $escapeCsv($a->student?->student_code ?? '-'),
+                $escapeCsv($a->student?->name ?? '-'),
+                $escapeCsv($a->student?->latin_name ?? ''),
+                $escapeCsv($a->student?->department ?? ($a->classModel?->department ?? '-')),
+                $escapeCsv($a->classModel?->subject_code ?? '-'),
+                $escapeCsv($a->classModel?->subject_name ?? '-'),
+                $escapeCsv($a->date ? $a->date->format('Y-m-d') : '-'),
+                $escapeCsv($a->scanned_at ? $a->scanned_at->format('H:i') : '-'),
+                $escapeCsv($statusLabels[$st] ?? $st),
+                $escapeCsv($a->note ?? ''),
+            ]);
+        }
+
+        // Prepend UTF-8 BOM so Excel renders Khmer script properly
+        $csvContent = "\xEF\xBB\xBF" . implode("\r\n", $lines);
+        $filename = 'attendance_report_' . date('Y-m-d') . '.csv';
+
+        return response($csvContent, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }
 

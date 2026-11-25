@@ -1,5 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_routes.dart';
@@ -9,6 +10,7 @@ import '../models/user_model.dart';
 import '../services/class_service.dart';
 import '../services/attendance_service.dart';
 import '../services/auth_service.dart';
+import '../utils/web_export_helper.dart';
 import 'admin_scaffold.dart';
 
 class AdminAttendancesScreen extends StatefulWidget {
@@ -103,8 +105,8 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
     }
   }
 
-  /// ទាញយក ឬចម្លងរបាយការណ៍វត្តមានជាទម្រង់ CSV / Excel
-  void _exportAttendanceCsv() {
+  /// ទាញយកឯកសាររបាយការណ៍វត្តមានជា Excel (.csv UTF-8 BOM) ផ្ទាល់ពី Backend ឬ Fallback Local
+  Future<void> _exportExcelCsv() async {
     if (_attendances.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -118,52 +120,233 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
     }
 
     final selectedClass = _classes.where((c) => c.id == _selectedClassId).firstOrNull;
+    final safeCode = (selectedClass?.subjectCode ?? 'all')
+        .replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+    final today = DateTime.now().toIso8601String().split('T').first;
+    final filename = 'attendance_${safeCode}_$today.csv';
 
-    final header = [
-      '#',
-      'Student Code',
-      'Student Name',
-      'Class Code',
-      'Class Name',
-      'Date',
-      'Time Scanned',
-      'Status',
-      'Note / Reason',
-    ].join(',');
+    // Try fetching official UTF-8 BOM CSV from Laravel backend first
+    Uint8List? bytes = await AttendanceService.fetchExportCsvBytes(classId: _selectedClassId);
 
-    final rows = _attendances.asMap().entries.map((entry) {
-      final idx = entry.key + 1;
-      final a = entry.value;
-      final scanTime = a.scannedAt != null
-          ? '${a.scannedAt!.hour.toString().padLeft(2, '0')}:${a.scannedAt!.minute.toString().padLeft(2, '0')}'
-          : '-';
-      return [
-        idx,
-        '"${a.studentCode}"',
-        '"${a.studentName}"',
-        '"${a.subjectCode ?? selectedClass?.subjectCode ?? ''}"',
-        '"${a.subjectName ?? selectedClass?.subjectName ?? ''}"',
-        '"${a.date}"',
-        '"$scanTime"',
-        '"${a.statusText}"',
-        '"${(a.note ?? '').replaceAll('"', '""')}"',
+    // Fallback to building UTF-8 BOM CSV locally if needed
+    if (bytes == null) {
+      final header = [
+        '#',
+        'Student Code',
+        'Student Name',
+        'Class Code',
+        'Class Name',
+        'Date',
+        'Time Scanned',
+        'Status',
+        'Note / Reason',
       ].join(',');
-    });
 
-    final csv = [header, ...rows].join('\n');
-    Clipboard.setData(ClipboardData(text: csv));
+      final rows = _attendances.asMap().entries.map((entry) {
+        final idx = entry.key + 1;
+        final a = entry.value;
+        final scanTime = a.scannedAt != null
+            ? '${a.scannedAt!.hour.toString().padLeft(2, '0')}:${a.scannedAt!.minute.toString().padLeft(2, '0')}'
+            : '-';
+        return [
+          idx,
+          '"${a.studentCode}"',
+          '"${a.studentName.replaceAll('"', '""')}"',
+          '"${a.subjectCode ?? selectedClass?.subjectCode ?? ''}"',
+          '"${(a.subjectName ?? selectedClass?.subjectName ?? '').replaceAll('"', '""')}"',
+          '"${a.date}"',
+          '"$scanTime"',
+          '"${a.statusText}"',
+          '"${(a.note ?? '').replaceAll('"', '""')}"',
+        ].join(',');
+      });
 
+      final csv = [header, ...rows].join('\r\n');
+      bytes = Uint8List.fromList([0xEF, 0xBB, 0xBF, ...utf8.encode(csv)]);
+    }
+
+    downloadBytesFile(bytes: bytes, filename: filename);
+
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(AppLanguage.tr(
-          'បានចម្លងរបាយការណ៍វត្តមាន (${_attendances.length} នាក់) ជា CSV រួចរាល់! អាច Paste ចូល Excel បានភ្លាមៗ។',
-          'Copied attendance CSV (${_attendances.length} records) to clipboard! Ready to paste into Excel.',
+          'បានទាញយកឯកសារ Excel ($filename) រួចរាល់!',
+          'Downloaded Excel CSV ($filename) successfully!',
         )),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 4),
       ),
     );
+  }
+
+  String _escapeHtml(String value) {
+    return value
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
+  }
+
+  /// បើកផ្ទាំងរបាយការណ៍ផ្លូវការសម្រាប់ Print / Save as PDF (គាំទ្រអក្សរខ្មែរ ១០០%)
+  void _exportPdfPrint() {
+    if (_attendances.isEmpty) return;
+
+    final selectedClass = _classes.where((c) => c.id == _selectedClassId).firstOrNull;
+    final present = _attendances.where((a) => a.isPresent).length;
+    final lateCount = _attendances.where((a) => a.isLate).length;
+    final absent = _attendances.where((a) => a.isAbsent).length;
+    final excused = _attendances.where((a) => a.status.toLowerCase() == 'excused').length;
+    final total = _attendances.length;
+    final today = DateTime.now().toIso8601String().split('T').first;
+
+    final rowsHtml = _attendances.asMap().entries.map((entry) {
+      final idx = entry.key + 1;
+      final a = entry.value;
+      final scanTime = a.scannedAt != null
+          ? '${a.scannedAt!.hour.toString().padLeft(2, '0')}:${a.scannedAt!.minute.toString().padLeft(2, '0')}'
+          : '-';
+      final badgeClass = a.isPresent
+          ? 'st-present'
+          : (a.isLate ? 'st-late' : (a.status.toLowerCase() == 'excused' ? 'st-excused' : 'st-absent'));
+      return '''
+        <tr>
+          <td style="text-align:center;">$idx</td>
+          <td>${_escapeHtml(a.studentCode)}</td>
+          <td><strong>${_escapeHtml(a.studentName)}</strong></td>
+          <td style="text-align:center;">${_escapeHtml(a.date)}</td>
+          <td style="text-align:center;">$scanTime</td>
+          <td style="text-align:center;"><span class="badge $badgeClass">${_escapeHtml(a.statusText)}</span></td>
+          <td>${_escapeHtml(a.note ?? '')}</td>
+        </tr>
+      ''';
+    }).join('\n');
+
+    final subjectTitle = selectedClass != null
+        ? '${_escapeHtml(selectedClass.subjectCode)} — ${_escapeHtml(selectedClass.subjectName)}'
+        : 'គ្រប់មុខវិជ្ជា (All Classes)';
+    final deptInfo = selectedClass != null ? _escapeHtml(selectedClass.department ?? '-') : '-';
+    final lecturerInfo = selectedClass != null ? _escapeHtml(selectedClass.lecturerName ?? '-') : '-';
+
+    final html = '''
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance Report - $subjectTitle</title>
+  <style>
+    @page { size: A4; margin: 16mm; }
+    body {
+      font-family: "Khmer OS Siemreap", "Noto Sans Khmer", "Battambang", Arial, sans-serif;
+      color: #1e293b;
+      margin: 0;
+      padding: 20px;
+      font-size: 12px;
+    }
+    .header {
+      text-align: center;
+      border-bottom: 2px solid #2563eb;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+    .header h1 { margin: 0 0 4px; font-size: 18px; color: #0f172a; }
+    .header p { margin: 0; color: #64748b; font-size: 12px; }
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      line-height: 1.7;
+    }
+    .summary {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .sum-box {
+      flex: 1;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center;
+    }
+    .sum-box .num { font-size: 16px; font-weight: bold; }
+    .sum-box .lbl { font-size: 11px; color: #64748b; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+    th, td { border: 1px solid #cbd5e1; padding: 7px 8px; text-align: left; }
+    th { background: #f1f5f9; font-weight: bold; color: #0f172a; text-align: center; }
+    .badge { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+    .st-present { background: #dcfce7; color: #166534; }
+    .st-late { background: #fef3c7; color: #92400e; }
+    .st-excused { background: #dbeafe; color: #1e40af; }
+    .st-absent { background: #fee2e2; color: #991b1b; }
+    .signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 36px;
+      padding: 0 24px;
+    }
+    .sig-box { text-align: center; width: 200px; }
+    .sig-line { margin-top: 52px; border-top: 1px solid #64748b; padding-top: 4px; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>របាយការណ៍វត្តមាននិស្សិត (Student Attendance Report)</h1>
+    <p>ScanIn Smart Attendance System • ថ្ងៃបោះពុម្ព៖ $today</p>
+  </div>
+  <div class="meta">
+    <div>
+      <strong>មុខវិជ្ជា៖</strong> $subjectTitle<br>
+      <strong>ដេប៉ាតឺម៉ង់៖</strong> $deptInfo
+    </div>
+    <div>
+      <strong>គ្រូបង្រៀន៖</strong> $lecturerInfo<br>
+      <strong>ចំនួនសរុប៖</strong> $total នាក់
+    </div>
+  </div>
+  <div class="summary">
+    <div class="sum-box"><div class="num">$total</div><div class="lbl">សរុប (Total)</div></div>
+    <div class="sum-box"><div class="num" style="color:#16a34a;">$present</div><div class="lbl">មករៀន (Present)</div></div>
+    <div class="sum-box"><div class="num" style="color:#d97706;">$lateCount</div><div class="lbl">យឺត (Late)</div></div>
+    <div class="sum-box"><div class="num" style="color:#2563eb;">$excused</div><div class="lbl">ច្បាប់ (Excused)</div></div>
+    <div class="sum-box"><div class="num" style="color:#dc2626;">$absent</div><div class="lbl">អវត្តមាន (Absent)</div></div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:36px;">ល.រ</th>
+        <th style="width:100px;">អត្តលេខ</th>
+        <th>ឈ្មោះនិស្សិត</th>
+        <th style="width:95px;">កាលបរិច្ឆេទ</th>
+        <th style="width:70px;">ម៉ោងស្កេន</th>
+        <th style="width:110px;">ស្ថានភាព</th>
+        <th>កំណត់សម្គាល់</th>
+      </tr>
+    </thead>
+    <tbody>
+      $rowsHtml
+    </tbody>
+  </table>
+  <div class="signatures">
+    <div class="sig-box">
+      <strong>សាស្ត្រាចារ្យទទួលបន្ទុក</strong>
+      <div class="sig-line">ហត្ថលេខា និងឈ្មោះ</div>
+    </div>
+    <div class="sig-box">
+      <strong>ការិយាល័យសិក្សា / រដ្ឋបាល</strong>
+      <div class="sig-line">បានពិនិត្យ និងឯកភាព</div>
+    </div>
+  </div>
+</body>
+</html>
+''';
+
+    printHtmlReport(html);
   }
 
   /// បើកផ្ទាំង Dialog ឱ្យគ្រូ ឬ Admin កែប្រែស្ថានភាពវត្តមានសិស្សជាក់ស្តែង
@@ -536,15 +719,27 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
                       ),
                       const SizedBox(width: 12),
                       OutlinedButton.icon(
-                        icon: const Icon(Icons.download_rounded, size: 16),
-                        label: Text(AppLanguage.tr('Export CSV', 'Export CSV')),
+                        icon: const Icon(Icons.table_view_rounded, size: 16),
+                        label: Text(AppLanguage.tr('Export Excel', 'Export Excel')),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: const Color(0xFF10B981),
                           side: const BorderSide(color: Color(0xFF10B981)),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        onPressed: _attendances.isEmpty ? null : _exportAttendanceCsv,
+                        onPressed: _attendances.isEmpty ? null : _exportExcelCsv,
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.picture_as_pdf_rounded, size: 16),
+                        label: Text(AppLanguage.tr('Print / PDF', 'Print / PDF')),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: _attendances.isEmpty ? null : _exportPdfPrint,
                       ),
                       const SizedBox(width: 8),
                       Container(

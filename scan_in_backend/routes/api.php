@@ -545,6 +545,8 @@ Route::post('/students/bulk-status', function (Request $request) {
 
 // Admin Only Reports API
 Route::get('/admin/reports/student-stats', [ReportController::class, 'studentStats']);
+// Attendance Export API (Admin, Sub-Admin & Lecturer)
+Route::get('/reports/attendance/export', [ReportController::class, 'exportAttendance']);
 
 Route::delete('/students/{id}', function (Request $request, $id) {
     if ($request->user() && !$request->user()->isAcademicAdmin()) {

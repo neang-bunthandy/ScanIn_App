@@ -59,6 +59,11 @@ class ApiConfig {
   static String get promoteStudentsUrl => '$baseUrl/students/promote';
   static String get bulkStudentStatusUrl => '$baseUrl/students/bulk-status';
   static String get adminStudentStatsUrl => '$baseUrl/admin/reports/student-stats';
+  static String attendanceExportUrl({int? classId, String format = 'csv'}) {
+    final params = <String>['format=$format'];
+    if (classId != null) params.add('class_id=$classId');
+    return '$baseUrl/reports/attendance/export?${params.join('&')}';
+  }
   static String lecturerDetailUrl(int id) => '$baseUrl/lecturers/$id';
   static String studentDetailUrl(int id) => '$baseUrl/students/$id';
   static String classDetailUrl(int id) => '$baseUrl/classes/$id';

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
 import '../models/attendance_model.dart';
@@ -176,5 +177,26 @@ class AttendanceService {
     } catch (e) {
       return {'success': false, 'message': 'បញ្ហាការតភ្ជាប់៖ $e'};
     }
+  }
+
+  /// ទាញយកឯកសារ CSV (UTF-8 BOM សម្រាប់ Excel) ពី Backend API
+  static Future<Uint8List?> fetchExportCsvBytes({int? classId}) async {
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) return null;
+
+      final response = await http.get(
+        Uri.parse(ApiConfig.attendanceExportUrl(classId: classId, format: 'csv')),
+        headers: {
+          'Accept': 'text/csv',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 12));
+
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      }
+    } catch (_) {}
+    return null;
   }
 }

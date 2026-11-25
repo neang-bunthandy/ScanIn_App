@@ -428,6 +428,16 @@
      - ភ្ជាប់លើ UI ទាំងពីរ៖ `student_profile_screen.dart` (និស្សិត) និង `lecturer_profile_screen.dart` (សាស្ត្រាចារ្យ) ជាមួយ BottomSheet ជ្រើសរើស Camera / Gallery, Progress Loading Spinner, និង CircleAvatar ដែលបង្ហាញរូបភាព NetworkImage ភ្លាមៗដោយរលូន។
      - `flutter analyze` លើ `scan_in` ទទួលបាន **No issues found!** (០ errors, ០ warnings)។
 
+17. **កិច្ចការទី ១៧ (Task 17 — រួចរាល់ ១០០% ✅) ៖ មុខងារ Export របាយការណ៍វត្តមាន (Excel CSV UTF-8 BOM & Print/PDF)**
+   - **Backend API (`scan_in_backend`) ៖**
+     - បន្ថែម `ReportController::exportAttendance` និង Route `GET /api/reports/attendance/export` ក្រោម `auth:sanctum`។
+     - គាំទ្រ Filter តាម `class_id`, `subject_code`, `department`, `date_from`, `date_to`, `status` និងទម្រង់ `format=csv` (UTF-8 BOM `\xEF\xBB\xBF` ដើម្បីឱ្យ Excel បើកអក្សរខ្មែរច្បាស់ស្អាត) ឬ `format=json`។
+     - ការពារសិទ្ធិតាម Role៖ Admin/Sub-Admin Export បានទូទាំងសាលា គ្រូបង្រៀន (`lecturer`) Export បានតែថ្នាក់របស់ខ្លួនឯង (និស្សិតត្រូវបានហាមឃាត់ `403`)។
+     - បង្កើត Feature Tests `AttendanceExportTest.php` ចំនួន ៣ ករណីតេស្ត ➔ **38 passed, 226 assertions (100% PASS)**។
+   - **Frontend Web Admin (`scan_in_admin`) ៖**
+     - បន្ថែម `package:web` និង Conditional Helper `web_export_helper.dart` / `web_export_helper_web.dart` សម្រាប់ទាញយកឯកសារផ្ទាល់លើ Browser និងបើកផ្ទាំង Print/PDF។
+     - បំពាក់ប៊ូតុង **Export Excel** (ទាញឯកសារ `.csv` UTF-8 BOM ផ្ទាល់) និង **Print / PDF** (របាយការណ៍ផ្លូវការ A4 មានស្ថិតិសង្ខេប និងកន្លែងចុះហត្ថលេខា គាំទ្រអក្សរខ្មែរ ១០០%) ក្នុង `admin_attendances_screen.dart`។
+
 ---
 
 ### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code - FFC Audit)
@@ -435,9 +445,9 @@
    - បានបន្ថែម `/android/build/` និង `/android/app/build/` ចូល `.gitignore` ដើម្បីការពារ Build Artifacts។
    - គ្មានឯកសារបណ្តោះអាសន្ន 0-byte ឬ Scratch Scripts សេសសល់ក្នុង Repository ឡើយ។
 - **សុពលភាពកូដ និងការធ្វើតេស្ត (Code Quality & Verification) ៖**
-   - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៣៥ passed, ២១៦ assertions (១០០% PASS)** ក្នុងរយៈពេល **២.៨៧ វិនាទី**។
-   - **Flutter Web Admin (`scan_in_admin`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)** ក្នុងរយៈពេល **១.៩ វិនាទី**។
-   - **Flutter Mobile App (`scan_in`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)** ក្នុងរយៈពេល **២.២ វិនាទី**។
+   - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៣៨ passed, ២២៦ assertions (១០០% PASS)**។
+   - **Flutter Web Admin (`scan_in_admin`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)**។
+   - **Flutter Mobile App (`scan_in`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)**។
    - **Database Service ៖** MySQL / MariaDB ដំណើរការយ៉ាងរលូនលើ Port 3306 (`TcpTestSucceeded : True`)។
 - **Git & Backup ៖**
    - Commit និង Push ទៅកាន់ `origin/main` (GitHub) ព្រមទាំង Robocopy Sync ទៅកាន់ Backup Mirror `C:\Users\Jitsu Window\Scan_In_App_Backup\`។
@@ -445,7 +455,5 @@
 ---
 
 ### 📋 ផែនការការងារជំហានបន្ទាប់ (Next Steps Roadmap)
-1. **មុខងារ Export របាយការណ៍វត្តមាន (Excel / PDF) ៖**
-   - គាំទ្រការទាញទិន្នន័យវត្តមានតាមមុខវិជ្ជា និងតាមដេប៉ាតឺម៉ង់សម្រាប់គ្រូ និងរដ្ឋបាលយកទៅប្រើប្រាស់ផ្លូវការ។
-2. **WebSocket / Auto-Refresh សម្រាប់ Projector Mode ៖**
+1. **WebSocket / Auto-Refresh សម្រាប់ Projector Mode ៖**
    - ពេលសិស្សស្កេនលើទូរស័ព្ទ បញ្ជីឈ្មោះលើផ្ទាំង Projector កុំព្យូទ័រគ្រូ update ឡើងមកភ្លាមៗដោយស្វ័យប្រវត្តិ។
