@@ -10,6 +10,7 @@ import '../models/user_model.dart';
 import '../services/class_service.dart';
 import '../services/attendance_service.dart';
 import '../services/auth_service.dart';
+import '../services/campus_setting_service.dart';
 import '../utils/web_export_helper.dart';
 import 'admin_scaffold.dart';
 
@@ -347,6 +348,215 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
 ''';
 
     printHtmlReport(html);
+  }
+
+  /// ផ្ទាំងកំណត់ទីតាំង GPS សាលា (Campus Geofencing Settings) សម្រាប់ Admin / Sub-Admin
+  Future<void> _showCampusGpsDialog() async {
+    final current = await CampusSettingService.getSettings();
+    if (!mounted) return;
+
+    final nameCtrl = TextEditingController(
+      text: current?.campusName ?? 'សាកលវិទ្យាល័យ (Main Campus)',
+    );
+    final pasteCtrl = TextEditingController(
+      text: (current?.campusLat != null && current?.campusLng != null)
+          ? '${current!.campusLat}, ${current.campusLng}'
+          : '',
+    );
+    final latCtrl = TextEditingController(
+      text: current?.campusLat?.toString() ?? '',
+    );
+    final lngCtrl = TextEditingController(
+      text: current?.campusLng?.toString() ?? '',
+    );
+    final radiusCtrl = TextEditingController(
+      text: (current?.allowedRadiusMeters ?? 65).toString(),
+    );
+    bool enforceGps = current?.enforceGps ?? false;
+    bool isSaving = false;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            title: Row(
+              children: [
+                const Icon(Icons.location_on_rounded, color: AppColors.primary),
+                const SizedBox(width: 8),
+                Text(
+                  AppLanguage.tr('កំណត់ទីតាំង GPS សាលា (Geofencing)', 'Campus GPS Geofencing'),
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: 480,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: nameCtrl,
+                      decoration: InputDecoration(
+                        labelText: AppLanguage.tr('ឈ្មោះទីតាំង / សាខា', 'Campus Name'),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: pasteCtrl,
+                      decoration: InputDecoration(
+                        labelText: AppLanguage.tr(
+                          'Paste ពី Google Maps (ឧ. 13.095742, 103.202218)',
+                          'Paste from Google Maps (e.g. 13.095742, 103.202218)',
+                        ),
+                        prefixIcon: const Icon(Icons.map_rounded, size: 18),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      onChanged: (val) {
+                        final parts = val.split(',');
+                        if (parts.length == 2) {
+                          final lat = double.tryParse(parts[0].trim());
+                          final lng = double.tryParse(parts[1].trim());
+                          if (lat != null && lng != null) {
+                            setDialogState(() {
+                              latCtrl.text = lat.toString();
+                              lngCtrl.text = lng.toString();
+                            });
+                          }
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: latCtrl,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                            decoration: InputDecoration(
+                              labelText: 'Latitude',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: lngCtrl,
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                            decoration: InputDecoration(
+                              labelText: 'Longitude',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: radiusCtrl,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: AppLanguage.tr('កាំរង្វង់អនុញ្ញាត (ម៉ែត្រ)', 'Allowed Radius (meters)'),
+                        suffixText: 'm',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        for (final preset in [
+                          (65, '65m (45×75m)'),
+                          (80, '80m'),
+                          (100, '100m'),
+                          (150, '150m'),
+                        ])
+                          ActionChip(
+                            label: Text(preset.$2, style: const TextStyle(fontSize: 12)),
+                            onPressed: () => setDialogState(() => radiusCtrl.text = preset.$1.toString()),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        AppLanguage.tr('បើកការផ្ទៀងផ្ទាត់ GPS ពេលស្កេន QR', 'Enforce GPS Check on QR Scan'),
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      ),
+                      subtitle: Text(
+                        AppLanguage.tr(
+                          'សិស្សនៅក្រៅកាំរង្វង់សាលា ឬប្រើ Fake GPS នឹងមិនអាចស្កេនបានឡើយ',
+                          'Reject scans outside campus radius or using Fake GPS',
+                        ),
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      value: enforceGps,
+                      onChanged: (v) => setDialogState(() => enforceGps = v),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSaving ? null : () => Navigator.pop(ctx),
+                child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
+              ),
+              ElevatedButton.icon(
+                icon: isSaving
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.save_rounded, size: 16),
+                label: Text(AppLanguage.tr('រក្សាទុក', 'Save')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: isSaving
+                    ? null
+                    : () async {
+                        final lat = double.tryParse(latCtrl.text.trim());
+                        final lng = double.tryParse(lngCtrl.text.trim());
+                        final rad = int.tryParse(radiusCtrl.text.trim()) ?? 65;
+
+                        setDialogState(() => isSaving = true);
+                        final res = await CampusSettingService.updateSettings(
+                          campusName: nameCtrl.text,
+                          campusLat: lat,
+                          campusLng: lng,
+                          allowedRadiusMeters: rad,
+                          enforceGps: enforceGps,
+                        );
+                        if (!ctx.mounted) return;
+                        setDialogState(() => isSaving = false);
+
+                        if (res['success'] == true) {
+                          Navigator.pop(ctx);
+                        }
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(res['message'] as String),
+                            backgroundColor: res['success'] == true ? AppColors.success : AppColors.error,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   /// បើកផ្ទាំង Dialog ឱ្យគ្រូ ឬ Admin កែប្រែស្ថានភាពវត្តមានសិស្សជាក់ស្តែង
@@ -718,6 +928,20 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
+                      if (_currentUser?.role == 'admin' || _currentUser?.role == 'sub_admin') ...[
+                        OutlinedButton.icon(
+                          icon: const Icon(Icons.location_on_rounded, size: 16),
+                          label: Text(AppLanguage.tr('កំណត់ GPS', 'GPS Settings')),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF0EA5E9),
+                            side: const BorderSide(color: Color(0xFF0EA5E9)),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          onPressed: _showCampusGpsDialog,
+                        ),
+                        const SizedBox(width: 8),
+                      ],
                       OutlinedButton.icon(
                         icon: const Icon(Icons.table_view_rounded, size: 16),
                         label: Text(AppLanguage.tr('Export Excel', 'Export Excel')),
@@ -828,7 +1052,30 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
                                   ),
                                   DataCell(Text(a.date)),
                                   DataCell(Text(a.scannedAt != null ? a.scannedAt!.toLocal().toString().substring(11, 16) : '-')),
-                                  DataCell(Text(a.note ?? '-', style: TextStyle(color: subTextCol, fontSize: 12))),
+                                  DataCell(
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (a.distanceMeters != null) ...[
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFF0EA5E9).withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              '📍 ${a.distanceMeters}m',
+                                              style: const TextStyle(color: Color(0xFF0284C7), fontSize: 11, fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                        ],
+                                        Flexible(
+                                          child: Text(a.note ?? '-', style: TextStyle(color: subTextCol, fontSize: 12), overflow: TextOverflow.ellipsis),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   DataCell(
                                     ElevatedButton.icon(
                                       icon: const Icon(Icons.edit_note_rounded, size: 16),

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
 import '../models/attendance_model.dart';
 import 'auth_service.dart';
+import 'location_service.dart';
 
 class AttendanceService {
   /// ទាញយកបញ្ជីវត្តមានរបស់ថ្នាក់រៀនជាក់លាក់មួយ (Lecturer views Attendance for a Class)
@@ -32,11 +33,28 @@ class AttendanceService {
     return [];
   }
 
-  /// សិស្សស្កេន QR Code កត់វត្តមាន (Student Scans QR)
+  /// សិស្សស្កេន QR Code កត់វត្តមាន (Student Scans QR + GPS Geofencing)
   static Future<Map<String, dynamic>> scanAttendance(String qrToken) async {
     try {
       final token = await AuthService.getToken();
       if (token != null) {
+        final gps = await LocationService.getCurrentPosition();
+        if (gps.isMocked) {
+          return {
+            'success': false,
+            'message': 'រកឃើញការប្រើប្រាស់កម្មវិធីបន្លំទីតាំង (Fake GPS)! មិនអាចកត់វត្តមានបានឡើយ។',
+          };
+        }
+
+        final payload = <String, dynamic>{
+          'qr_token': qrToken.trim(),
+          'is_mocked': gps.isMocked,
+        };
+        if (gps.hasLocation) {
+          payload['latitude'] = gps.latitude;
+          payload['longitude'] = gps.longitude;
+        }
+
         final response = await http.post(
           Uri.parse(ApiConfig.scanAttendanceUrl),
           headers: {
@@ -44,14 +62,15 @@ class AttendanceService {
             'Accept': 'application/json',
             'Authorization': 'Bearer $token',
           },
-          body: jsonEncode({'qr_token': qrToken.trim()}),
-        ).timeout(const Duration(seconds: 8));
+          body: jsonEncode(payload),
+        ).timeout(const Duration(seconds: 10));
 
         final data = jsonDecode(response.body);
         final bool isSuccess = (response.statusCode == 200 || response.statusCode == 201) && data['status'] == true;
+        final String fallbackError = gps.errorMessage ?? (isSuccess ? 'បានកត់វត្តមានជោគជ័យ' : 'មិនអាចកត់វត្តមានបានទេ');
         return {
           'success': isSuccess,
-          'message': data['message'] ?? (isSuccess ? 'បានកត់វត្តមានជោគជ័យ' : 'មិនអាចកត់វត្តមានបានទេ'),
+          'message': data['message'] ?? fallbackError,
           'attendance': data['attendance'] != null
               ? AttendanceModel.fromJson(data['attendance'] as Map<String, dynamic>)
               : null,

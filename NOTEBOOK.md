@@ -444,13 +444,24 @@
      - បំពាក់ `Timer.periodic` រៀងរាល់ **៣ វិនាទី** (`_pollTimer`) ទាញយកទិន្នន័យសិស្សស្កេនថ្មីៗពី Backend (`AttendanceService.getClassAttendances`) ដោយស្វ័យប្រវត្តិ រួមទាំងបង្ហាញម៉ោងស្កេន ចំនួន `checkedIn / totalExpected` ផ្លាកស្ថានភាព (`មករៀន`, `យឺត`) និងពេលវេលា Sync ចុងក្រោយ។
      - ធ្វើបច្ចុប្បន្នភាពចំនួនវត្តមានលើតារាងមេដោយស្វ័យប្រវត្តិនៅពេលមានសិស្សស្កេនថ្មី។
 
+19. **កិច្ចការទី ១៩ (Task 19 — រួចរាល់ ១០០% ✅) ៖ មុខងារ GPS Geofencing (ចាប់ទីតាំងបរិវេណសាលា) & Anti-Fake-GPS**
+   - **Backend Database & API (`scan_in_backend`) ៖**
+     - បង្កើត Migration `2026_11_25_000001_add_gps_geofencing_tables_and_columns.php` បន្ថែមតារាង `campus_settings` (`campus_name`, `campus_lat`, `campus_lng`, `allowed_radius_meters = 65`, `enforce_gps = false`) និង Column `scan_lat`, `scan_lng`, `distance_meters` ក្នុង `attendances`។
+     - បង្កើត `CampusSetting` Model ជាមួយរូបមន្ត **Haversine Formula** (`calculateDistanceMeters`) និង `CampusSettingController` (`GET /api/campus-settings`, `PUT /api/admin/campus-settings`)។
+     - កែសម្រួល `AttendanceController::scan` ឱ្យទប់ស្កាត់ **Fake GPS (`is_mocked`)** និងបដិសេធស្កេនក្រៅបរិវេណសាលា (`403`) ព្រមទាំងរក្សាទុកចម្ងាយពិតជាម៉ែត្រ។
+     - បង្កើត Feature Tests `GpsGeofencingTest.php` ចំនួន ៦ ករណីតេស្ត ➔ **44 passed, 243 assertions (100% PASS)**។
+   - **Frontend Web Admin (`scan_in_admin`) ៖**
+     - បន្ថែម `CampusSettingService` និងផ្ទាំង **«កំណត់ GPS»** ក្នុង `admin_attendances_screen.dart` ជាមួយមុខងារ Smart Paste ពី Google Maps (`Lat, Lng`), Quick Radius Presets (`65m (45×75m)`, `80m`, `100m`, `150m`), Switch បើក/បិទ GPS និង Distance Badge (`📍 Xm`) ក្នុងតារាងវត្តមាន។
+   - **Frontend Mobile App (`scan_in`) ៖**
+     - ដំឡើង `geolocator: ^14.1.2`, កំណត់ Permissions ក្នុង `AndroidManifest.xml` & `Info.plist`, បង្កើត `LocationService` (`LocationAccuracy.high` + `isMocked`) និងភ្ជាប់ក្នុង `AttendanceService.scanAttendance`។
+
 ---
 
 ### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code - FFC Audit)
 - **ការត្រួតពិនិត្យឯកសារ និងថត (Files & Folders) ៖**
    - គ្មានឯកសារបណ្តោះអាសន្ន 0-byte ឬ Scratch Scripts សេសសល់ក្នុង Repository ឡើយ។
 - **សុពលភាពកូដ និងការធ្វើតេស្ត (Code Quality & Verification) ៖**
-   - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៣៨ passed, ២២៦ assertions (១០០% PASS)**។
+   - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៤៤ passed, ២៤៣ assertions (១០០% PASS)**។
    - **Flutter Web Admin (`scan_in_admin`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)**។
    - **Flutter Mobile App (`scan_in`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)**។
    - **Database Service ៖** MySQL / MariaDB ដំណើរការយ៉ាងរលូនលើ Port 3306 (`TcpTestSucceeded : True`)។
@@ -460,4 +471,5 @@
 ---
 
 ### 📋 ផែនការការងារជំហានបន្ទាប់ (Next Steps Roadmap)
-- មុខងារស្នូលទាំងអស់ក្នុង Roadmap ត្រូវបានបញ្ចប់ ១០០% រួចរាល់! ត្រៀមសម្រាប់ការធ្វើតេស្ត End-to-End លើឧបករណ៍ពិត និងការពង្រីកបន្ថែមតាមតម្រូវការសាលា។
+1. **មុខងារ Face ID Check-In + Device Binding (`local_auth` + `device_id`) ៖**
+   - ជម្រើសទី ២ សម្រាប់សិស្សក្នុងបរិវេណសាលា (GPS Verified) កត់វត្តមានភ្លាមៗដោយ Face ID ពេលគ្រូបើក QR យឺត ឬមានបញ្ហា QR ដោយមិនបាច់ស្កេនជាន់គ្នាជាមួយ QR Code ឡើយ។

@@ -14,6 +14,7 @@ class AttendanceModel {
   final DateTime? scannedAt;
   final String date; // ឧ. 2026-10-15
   final String? note;
+  final int? distanceMeters;
   final DateTime? createdAt;
 
   const AttendanceModel({
@@ -30,6 +31,7 @@ class AttendanceModel {
     this.scannedAt,
     required this.date,
     this.note,
+    this.distanceMeters,
     this.createdAt,
   });
 
@@ -93,6 +95,9 @@ class AttendanceModel {
           : null,
       date: json['date'] as String? ?? '',
       note: json['note'] as String?,
+      distanceMeters: json['distance_meters'] is int
+          ? json['distance_meters'] as int
+          : int.tryParse(json['distance_meters']?.toString() ?? ''),
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,
@@ -115,6 +120,7 @@ class AttendanceModel {
       'scanned_at': scannedAt?.toIso8601String(),
       'date': date,
       'note': note,
+      'distance_meters': distanceMeters,
       'created_at': createdAt?.toIso8601String(),
     };
   }

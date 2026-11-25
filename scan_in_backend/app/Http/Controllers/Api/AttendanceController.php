@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Attendance;
+use App\Models\CampusSetting;
 use App\Models\ClassModel;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -11,13 +12,24 @@ use Carbon\Carbon;
 class AttendanceController extends Controller
 {
     /**
-     * សិស្សស្កេនកូដ QR ដើម្បីកត់វត្តមាន (Scan Attendance)
+     * សិស្សស្កេនកូដ QR ដើម្បីកត់វត្តមាន (Scan Attendance + GPS Geofencing)
      */
     public function scan(Request $request)
     {
         $request->validate([
             'qr_token' => 'required|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'is_mocked' => 'nullable|boolean',
         ]);
+
+        // ១. ការពារកម្មវិធីបន្លំទីតាំង (Anti-Fake GPS / Mock Location)
+        if ($request->boolean('is_mocked')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'រកឃើញការប្រើប្រាស់កម្មវិធីបន្លំទីតាំង (Fake GPS)! មិនអាចកត់វត្តមានបានឡើយ។',
+            ], 403);
+        }
 
         $user = $request->user();
         $qrToken = trim($request->qr_token);
@@ -79,6 +91,43 @@ class AttendanceController extends Controller
         $now = Carbon::now();
         $recordDate = $class->class_date ?: $today;
 
+        // ២. ពិនិត្យទីតាំង GPS ក្នុងបរិវេណសាលា (GPS Geofencing)
+        $campus = CampusSetting::current();
+        $scanLat = $request->filled('latitude') ? (float)$request->latitude : null;
+        $scanLng = $request->filled('longitude') ? (float)$request->longitude : null;
+        $distanceMeters = null;
+
+        if ($campus->campus_lat !== null && $campus->campus_lng !== null && $scanLat !== null && $scanLng !== null) {
+            $distanceMeters = (int) round(CampusSetting::calculateDistanceMeters(
+                (float)$campus->campus_lat,
+                (float)$campus->campus_lng,
+                $scanLat,
+                $scanLng
+            ));
+        }
+
+        if ($campus->enforce_gps && $campus->campus_lat !== null && $campus->campus_lng !== null) {
+            if ($scanLat === null || $scanLng === null) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'សូមបើកទីតាំង GPS លើទូរស័ព្ទរបស់អ្នកជាមុនសិន ដើម្បីស្កេនកត់វត្តមាន!',
+                ], 403);
+            }
+
+            if ($distanceMeters > $campus->allowed_radius_meters) {
+                $distLabel = $distanceMeters >= 1000
+                    ? number_format($distanceMeters / 1000, 1) . ' km'
+                    : $distanceMeters . ' ម៉ែត្រ';
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'អ្នកនៅក្រៅបរិវេណសាលា! ចម្ងាយរបស់អ្នកគឺ ' . $distLabel . ' ពីសាលា (អនុញ្ញាតត្រឹម ' . $campus->allowed_radius_meters . ' ម៉ែត្រ)។',
+                    'distance_meters' => $distanceMeters,
+                    'allowed_radius_meters' => $campus->allowed_radius_meters,
+                ], 403);
+            }
+        }
+
         // ពិនិត្យម៉ោងចាប់ផ្តើមថ្នាក់រៀន ដើម្បីកំណត់ថាមកទាន់ពេល ឬមកយឺត (> 15 នាទី)
         $status = 'present';
         $note = 'បានស្កេនតាម QR Code';
@@ -106,6 +155,9 @@ class AttendanceController extends Controller
                 'status' => $status,
                 'scanned_at' => $now,
                 'note' => $note,
+                'scan_lat' => $scanLat,
+                'scan_lng' => $scanLng,
+                'distance_meters' => $distanceMeters,
             ]
         );
 
@@ -126,6 +178,9 @@ class AttendanceController extends Controller
                 'date' => $attendance->date,
                 'scanned_at' => $attendance->scanned_at?->toIso8601String(),
                 'note' => $attendance->note,
+                'scan_lat' => $attendance->scan_lat,
+                'scan_lng' => $attendance->scan_lng,
+                'distance_meters' => $attendance->distance_meters,
             ],
         ], 200);
     }
@@ -154,6 +209,9 @@ class AttendanceController extends Controller
                     'date' => (string)$att->date,
                     'scanned_at' => $att->scanned_at?->toIso8601String(),
                     'note' => $att->note,
+                    'scan_lat' => $att->scan_lat,
+                    'scan_lng' => $att->scan_lng,
+                    'distance_meters' => $att->distance_meters,
                 ];
             });
 
@@ -199,6 +257,9 @@ class AttendanceController extends Controller
                     'date' => (string)$att->date,
                     'scanned_at' => $att->scanned_at?->toIso8601String(),
                     'note' => $att->note,
+                    'scan_lat' => $att->scan_lat,
+                    'scan_lng' => $att->scan_lng,
+                    'distance_meters' => $att->distance_meters,
                 ];
             });
 

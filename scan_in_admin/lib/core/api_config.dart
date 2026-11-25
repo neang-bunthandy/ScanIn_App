@@ -77,4 +77,8 @@ class ApiConfig {
   static String updateAttendanceUrl(int id) => '$baseUrl/attendances/$id';
   static String get scanAttendanceUrl => '$baseUrl/attendances/scan';
   static String get studentAttendancesUrl => '$baseUrl/student/attendances';
+
+  // Campus GPS Geofencing Endpoints
+  static String get campusSettingsUrl => '$baseUrl/campus-settings';
+  static String get adminCampusSettingsUrl => '$baseUrl/admin/campus-settings';
 }

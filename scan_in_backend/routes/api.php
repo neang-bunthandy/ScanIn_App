@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CampusSettingController;
 use App\Http\Controllers\Api\ClassController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\ReportController;
@@ -547,6 +548,9 @@ Route::post('/students/bulk-status', function (Request $request) {
 Route::get('/admin/reports/student-stats', [ReportController::class, 'studentStats']);
 // Attendance Export API (Admin, Sub-Admin & Lecturer)
 Route::get('/reports/attendance/export', [ReportController::class, 'exportAttendance']);
+// Campus GPS Geofencing Settings
+Route::get('/campus-settings', [CampusSettingController::class, 'show']);
+Route::put('/admin/campus-settings', [CampusSettingController::class, 'update']);
 
 Route::delete('/students/{id}', function (Request $request, $id) {
     if ($request->user() && !$request->user()->isAcademicAdmin()) {
