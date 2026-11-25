@@ -438,11 +438,16 @@
      - បន្ថែម `package:web` និង Conditional Helper `web_export_helper.dart` / `web_export_helper_web.dart` សម្រាប់ទាញយកឯកសារផ្ទាល់លើ Browser និងបើកផ្ទាំង Print/PDF។
      - បំពាក់ប៊ូតុង **Export Excel** (ទាញឯកសារ `.csv` UTF-8 BOM ផ្ទាល់) និង **Print / PDF** (របាយការណ៍ផ្លូវការ A4 មានស្ថិតិសង្ខេប និងកន្លែងចុះហត្ថលេខា គាំទ្រអក្សរខ្មែរ ១០០%) ក្នុង `admin_attendances_screen.dart`។
 
+18. **កិច្ចការទី ១៨ (Task 18 — រួចរាល់ ១០០% ✅) ៖ មុខងារ Live Auto-Refresh សម្រាប់ Projector QR Mode**
+   - **Frontend Web Admin (`scan_in_admin/lib/screens/admin_classes_screen.dart`) ៖**
+     - កែប្រែ `_ProjectorDialog` ទៅជាប្លង់ ២ ជួរឈរទំនើប (2-Column Responsive Split)៖ ខាងឆ្វេងបង្ហាញ QR Code ទំហំធំ និងនាឡិការាប់ថយក្រោយ, ខាងស្ដាំបង្ហាញផ្ទាំង **«វត្តមានផ្ទាល់ (Live Check-in Feed)»**។
+     - បំពាក់ `Timer.periodic` រៀងរាល់ **៣ វិនាទី** (`_pollTimer`) ទាញយកទិន្នន័យសិស្សស្កេនថ្មីៗពី Backend (`AttendanceService.getClassAttendances`) ដោយស្វ័យប្រវត្តិ រួមទាំងបង្ហាញម៉ោងស្កេន ចំនួន `checkedIn / totalExpected` ផ្លាកស្ថានភាព (`មករៀន`, `យឺត`) និងពេលវេលា Sync ចុងក្រោយ។
+     - ធ្វើបច្ចុប្បន្នភាពចំនួនវត្តមានលើតារាងមេដោយស្វ័យប្រវត្តិនៅពេលមានសិស្សស្កេនថ្មី។
+
 ---
 
 ### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code - FFC Audit)
 - **ការត្រួតពិនិត្យឯកសារ និងថត (Files & Folders) ៖**
-   - បានបន្ថែម `/android/build/` និង `/android/app/build/` ចូល `.gitignore` ដើម្បីការពារ Build Artifacts។
    - គ្មានឯកសារបណ្តោះអាសន្ន 0-byte ឬ Scratch Scripts សេសសល់ក្នុង Repository ឡើយ។
 - **សុពលភាពកូដ និងការធ្វើតេស្ត (Code Quality & Verification) ៖**
    - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៣៨ passed, ២២៦ assertions (១០០% PASS)**។
@@ -455,5 +460,4 @@
 ---
 
 ### 📋 ផែនការការងារជំហានបន្ទាប់ (Next Steps Roadmap)
-1. **WebSocket / Auto-Refresh សម្រាប់ Projector Mode ៖**
-   - ពេលសិស្សស្កេនលើទូរស័ព្ទ បញ្ជីឈ្មោះលើផ្ទាំង Projector កុំព្យូទ័រគ្រូ update ឡើងមកភ្លាមៗដោយស្វ័យប្រវត្តិ។
+- មុខងារស្នូលទាំងអស់ក្នុង Roadmap ត្រូវបានបញ្ចប់ ១០០% រួចរាល់! ត្រៀមសម្រាប់ការធ្វើតេស្ត End-to-End លើឧបករណ៍ពិត និងការពង្រីកបន្ថែមតាមតម្រូវការសាលា។

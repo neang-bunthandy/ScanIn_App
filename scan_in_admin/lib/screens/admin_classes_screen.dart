@@ -5,6 +5,7 @@ import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_routes.dart';
 import '../models/class_model.dart';
+import '../models/attendance_model.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/class_service.dart';
@@ -2492,6 +2493,10 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
   late String _currentToken;
   int _countdown = 240; // 4 minutes
   Timer? _timer;
+  Timer? _pollTimer;
+  List<AttendanceModel> _liveAttendances = [];
+  bool _isLoadingLive = true;
+  DateTime? _lastSyncedAt;
 
   @override
   void initState() {
@@ -2500,6 +2505,8 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
     _isActive = widget.classModel.isQrActive;
     _currentToken = widget.classModel.qrToken ?? 'SCANIN-${_class.subjectCode}-${DateTime.now().year}';
     _startTimer();
+    _fetchLiveAttendances();
+    _startLivePolling();
   }
 
   void _startTimer() {
@@ -2514,9 +2521,48 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
     });
   }
 
+  void _startLivePolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (mounted) {
+        _fetchLiveAttendances();
+      }
+    });
+  }
+
+  Future<void> _fetchLiveAttendances() async {
+    final list = await AttendanceService.getClassAttendances(_class.id);
+    if (!mounted) return;
+
+    // Sort scanned students most-recent-first
+    final sorted = List<AttendanceModel>.from(list);
+    sorted.sort((a, b) {
+      final aTime = a.scannedAt;
+      final bTime = b.scannedAt;
+      if (aTime != null && bTime != null) return bTime.compareTo(aTime);
+      if (aTime != null) return -1;
+      if (bTime != null) return 1;
+      return b.id.compareTo(a.id);
+    });
+
+    final previousCount = _liveAttendances.where((a) => a.isPresent || a.isLate).length;
+    final newCount = sorted.where((a) => a.isPresent || a.isLate).length;
+
+    setState(() {
+      _liveAttendances = sorted;
+      _isLoadingLive = false;
+      _lastSyncedAt = DateTime.now();
+    });
+
+    if (newCount != previousCount) {
+      widget.onStatusChanged();
+    }
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
+    _pollTimer?.cancel();
     super.dispose();
   }
 
@@ -2543,214 +2589,397 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
     return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
+  Widget _buildLiveCheckInPanel() {
+    final checkedIn = _liveAttendances.where((a) => a.isPresent || a.isLate).toList();
+    final totalExpected = _class.studentCount > 0 ? _class.studentCount : _liveAttendances.length;
+    final syncText = _lastSyncedAt != null
+        ? '${_lastSyncedAt!.hour.toString().padLeft(2, '0')}:${_lastSyncedAt!.minute.toString().padLeft(2, '0')}:${_lastSyncedAt!.second.toString().padLeft(2, '0')}'
+        : '--:--:--';
+
+    return Container(
+      height: 410,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF334155)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 9,
+                height: 9,
+                decoration: BoxDecoration(
+                  color: _isActive ? const Color(0xFF22C55E) : const Color(0xFF94A3B8),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  AppLanguage.tr('វត្តមានផ្ទាល់ (Live Check-in)', 'Live Check-in Feed'),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0EA5E9).withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${checkedIn.length} / $totalExpected',
+                  style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+              const SizedBox(width: 4),
+              IconButton(
+                tooltip: AppLanguage.tr('ធ្វើបច្ចុប្បន្នភាពភ្លាម', 'Refresh now'),
+                icon: const Icon(Icons.sync_rounded, color: Color(0xFF94A3B8), size: 18),
+                onPressed: _fetchLiveAttendances,
+              ),
+            ],
+          ),
+          Text(
+            AppLanguage.tr(
+              'Auto-Refresh រៀងរាល់ ៣ វិនាទី • ចុងក្រោយ៖ $syncText',
+              'Auto-refreshes every 3s • Last sync: $syncText',
+            ),
+            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+          ),
+          const SizedBox(height: 12),
+          const Divider(color: Color(0xFF334155), height: 1),
+          const SizedBox(height: 10),
+          Expanded(
+            child: _isLoadingLive
+                ? const Center(child: CircularProgressIndicator(color: Color(0xFF38BDF8)))
+                : checkedIn.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.qr_code_scanner_rounded, size: 40, color: Color(0xFF475569)),
+                            const SizedBox(height: 10),
+                            Text(
+                              AppLanguage.tr('កំពុងរង់ចាំនិស្សិតស្កេន QR...', 'Waiting for students to scan QR...'),
+                              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: checkedIn.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (ctx, i) {
+                          final a = checkedIn[i];
+                          final isLate = a.isLate;
+                          final badgeColor = isLate ? const Color(0xFFF59E0B) : const Color(0xFF22C55E);
+                          final timeStr = a.scannedAt != null
+                              ? '${a.scannedAt!.hour.toString().padLeft(2, '0')}:${a.scannedAt!.minute.toString().padLeft(2, '0')}'
+                              : '-';
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFF334155)),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 15,
+                                  backgroundColor: badgeColor.withValues(alpha: 0.16),
+                                  child: Icon(
+                                    isLate ? Icons.schedule_rounded : Icons.check_rounded,
+                                    color: badgeColor,
+                                    size: 16,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        a.studentName,
+                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        '${a.studentCode} • $timeStr',
+                                        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: badgeColor.withValues(alpha: 0.16),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    a.statusText,
+                                    style: TextStyle(color: badgeColor, fontWeight: FontWeight.bold, fontSize: 11),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: const Color(0xFF0F172A), // Dark slate presentation background
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Container(
-        width: 680,
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Top Bar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0284C7).withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        _class.subjectCode,
-                        style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      _class.subjectName,
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  tooltip: 'បិទ',
-                  icon: const Icon(Icons.close_rounded, color: Colors.white70),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Class info
-            Text(
-              '${_class.room} • ${_class.dayOfWeek} (${_class.time}) • ឆមាស ${_class.semester} (${_class.academicYear})',
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-            ),
-            const SizedBox(height: 24),
-
-            // Big QR Frame for Projector
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.cyan.withValues(alpha: 0.25),
-                    blurRadius: 30,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Column(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 960),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Top Bar
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (!_isActive)
-                    Container(
-                      width: 240,
-                      height: 240,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.pause_circle_outline_rounded, size: 56, color: Color(0xFFEF4444)),
-                          const SizedBox(height: 12),
-                          Text(
-                            AppLanguage.tr('QR Code ត្រូវបានផ្អាក', 'QR Code is Paused'),
-                            style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold, fontSize: 15),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            AppLanguage.tr('ចុច "បើកដំណើរការ" ដើម្បីបន្ត', 'Click Resume to activate'),
-                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                          child: Text(
+                            _class.subjectCode,
+                            style: const TextStyle(color: Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 13),
                           ),
-                        ],
-                      ),
-                    )
-                  else
-                    // QR Visual Mockup Box with Scanner Styling
-                    Container(
-                      width: 240,
-                      height: 240,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF0F172A), width: 3),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildQrCorner(),
-                              _buildQrCorner(),
-                            ],
+                        ),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            _class.subjectName,
+                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          Column(
-                            children: [
-                              const Icon(Icons.qr_code_2_rounded, size: 80, color: Color(0xFF0F172A)),
-                              const SizedBox(height: 4),
-                              Text(
-                                _currentToken,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                  color: Color(0xFF0F172A),
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              _buildQrCorner(),
-                              Container(
-                                width: 20,
-                                height: 20,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0284C7),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
+                  ),
+                  IconButton(
+                    tooltip: 'បិទ',
+                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    onPressed: () => Navigator.pop(context),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(height: 20),
+              const SizedBox(height: 6),
 
-            // Token and Countdown
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFF334155)),
-                  ),
-                  child: Row(
+              // Class info
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '${_class.room} • ${_class.dayOfWeek} (${_class.time}) • ឆមាស ${_class.semester} (${_class.academicYear})',
+                  style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                ),
+              ),
+              const SizedBox(height: 22),
+
+              // 2-Column Split: Left = Big QR, Right = Live Check-in Feed
+              LayoutBuilder(
+                builder: (ctx, constraints) {
+                  final isWide = constraints.maxWidth >= 720;
+                  final qrColumn = Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.timer_outlined, color: Color(0xFF38BDF8), size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        'ផុតកំណត់ក្នុង៖ ${_formatTimer(_countdown)}',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      Container(
+                        padding: const EdgeInsets.all(22),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.cyan.withValues(alpha: 0.25),
+                              blurRadius: 30,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            if (!_isActive)
+                              Container(
+                                width: 220,
+                                height: 220,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.pause_circle_outline_rounded, size: 56, color: Color(0xFFEF4444)),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      AppLanguage.tr('QR Code ត្រូវបានផ្អាក', 'QR Code is Paused'),
+                                      style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold, fontSize: 15),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      AppLanguage.tr('ចុច "បើកដំណើរការ" ដើម្បីបន្ត', 'Click Resume to activate'),
+                                      style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            else
+                              Container(
+                                width: 220,
+                                height: 220,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: const Color(0xFF0F172A), width: 3),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        _buildQrCorner(),
+                                        _buildQrCorner(),
+                                      ],
+                                    ),
+                                    Column(
+                                      children: [
+                                        const Icon(Icons.qr_code_2_rounded, size: 74, color: Color(0xFF0F172A)),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          _currentToken,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'monospace',
+                                            fontSize: 11,
+                                            color: Color(0xFF0F172A),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        _buildQrCorner(),
+                                        Container(
+                                          width: 20,
+                                          height: 20,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF0284C7),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFF334155)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.timer_outlined, color: Color(0xFF38BDF8), size: 16),
+                                const SizedBox(width: 6),
+                                Text(
+                                  _formatTimer(_countdown),
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.refresh_rounded, size: 16),
+                            label: Text(AppLanguage.tr('ប្តូរ Token', 'Regenerate')),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF334155),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: _regenerateToken,
+                          ),
+                          ElevatedButton.icon(
+                            icon: Icon(_isActive ? Icons.pause_rounded : Icons.play_arrow_rounded, size: 16),
+                            label: Text(_isActive ? AppLanguage.tr('ផ្អាក QR', 'Pause') : AppLanguage.tr('បើក QR', 'Resume')),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _isActive ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: _toggleStatus,
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: Text(AppLanguage.tr('ប្តូរ Token ថ្មី', 'Regenerate')),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF334155),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  onPressed: _regenerateToken,
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  icon: Icon(_isActive ? Icons.pause_rounded : Icons.play_arrow_rounded, size: 18),
-                  label: Text(_isActive ? AppLanguage.tr('ផ្អាក QR', 'Pause') : AppLanguage.tr('បើក QR', 'Resume')),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isActive ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  onPressed: _toggleStatus,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              AppLanguage.tr(
-                'និស្សិតបើកកម្មវិធី ScanIn លើទូរស័ព្ទដើម្បីស្កេនកត់ត្រាវត្តមានភ្លាមៗ',
-                'Students open ScanIn mobile app to scan and check-in instantly',
+                  );
+
+                  if (isWide) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 5, child: qrColumn),
+                        const SizedBox(width: 24),
+                        Expanded(flex: 6, child: _buildLiveCheckInPanel()),
+                      ],
+                    );
+                  }
+                  return Column(
+                    children: [
+                      qrColumn,
+                      const SizedBox(height: 20),
+                      _buildLiveCheckInPanel(),
+                    ],
+                  );
+                },
               ),
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
-            ),
-          ],
+              const SizedBox(height: 16),
+              Text(
+                AppLanguage.tr(
+                  'និស្សិតបើកកម្មវិធី ScanIn លើទូរស័ព្ទដើម្បីស្កេនកត់ត្រាវត្តមានភ្លាមៗ',
+                  'Students open ScanIn mobile app to scan and check-in instantly',
+                ),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+              ),
+            ],
+          ),
         ),
       ),
     );
