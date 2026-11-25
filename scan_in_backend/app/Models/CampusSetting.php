@@ -14,6 +14,7 @@ class CampusSetting extends Model
         'campus_lng',
         'allowed_radius_meters',
         'enforce_gps',
+        'allow_face_id_checkin',
     ];
 
     protected $casts = [
@@ -21,6 +22,7 @@ class CampusSetting extends Model
         'campus_lng' => 'float',
         'allowed_radius_meters' => 'integer',
         'enforce_gps' => 'boolean',
+        'allow_face_id_checkin' => 'boolean',
     ];
 
     /**
@@ -34,6 +36,7 @@ class CampusSetting extends Model
                 'campus_name' => 'សាកលវិទ្យាល័យ (Main Campus)',
                 'allowed_radius_meters' => 65,
                 'enforce_gps' => false,
+                'allow_face_id_checkin' => true,
             ]);
         }
         return $setting;

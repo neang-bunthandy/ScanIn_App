@@ -713,6 +713,28 @@ class ClassService {
     }
   }
 
+  /// Admin Reset Device ID របស់សិស្សពេលសិស្សដូរទូរស័ព្ទថ្មី
+  static Future<Map<String, dynamic>> resetStudentDevice(int id) async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.post(
+        Uri.parse(ApiConfig.resetStudentDeviceUrl(id)),
+        headers: {
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 8));
+
+      final data = jsonDecode(response.body);
+      return {
+        'success': response.statusCode == 200 && data['status'] == true,
+        'message': data['message'] ?? 'បាន Reset Device ID ជោគជ័យ',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'បញ្ហាតភ្ជាប់៖ $e'};
+    }
+  }
+
   /// Admin ដំឡើងឆ្នាំសិក្សានិស្សិត +1 ឆ្នាំ (Promote Year Level)
   static Future<Map<String, dynamic>> promoteStudents({
     String? generation,

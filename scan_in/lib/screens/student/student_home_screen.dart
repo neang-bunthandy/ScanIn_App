@@ -95,6 +95,30 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     }
   }
 
+  // ដំណើរការកត់វត្តមានដោយ Face ID + GPS (មិនបាច់រង់ចាំ QR Code)
+  Future<void> _processFaceCheckIn(ClassModel classItem) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+
+    final result = await AttendanceService.faceCheckIn(classItem.id);
+
+    if (!mounted) return;
+    Navigator.pop(context); // បិទ Loading Dialog
+
+    if (result['success'] == true) {
+      final AttendanceModel? att = result['attendance'] as AttendanceModel?;
+      _loadBackendData();
+      _showScanSuccessDialog(att, 'FACE-ID');
+    } else {
+      _showScanErrorDialog(result['message'] as String? ?? 'ការផ្ទៀងផ្ទាត់ Face ID បរាជ័យ');
+    }
+  }
+
   // បង្ហាញផ្ទាំងជោគជ័យក្រោយពេលកត់វត្តមានចូល Database រួចរាល់
   void _showScanSuccessDialog(AttendanceModel? att, String qrToken) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -602,6 +626,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   attendances: _attendances,
                   isLoading: _isLoading,
                   onScanQr: _handleScanQr,
+                  onFaceCheckIn: _processFaceCheckIn,
                   onRefresh: _loadBackendData,
                 ),
                 // Tab 2: ប្រវត្តិ (History)

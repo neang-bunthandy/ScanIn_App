@@ -37,6 +37,7 @@ class CampusSettingController extends Controller
             'campus_lng' => 'nullable|numeric|between:-180,180',
             'allowed_radius_meters' => 'required|integer|min:10|max:5000',
             'enforce_gps' => 'required|boolean',
+            'allow_face_id_checkin' => 'nullable|boolean',
         ]);
 
         if (!empty($validated['enforce_gps']) && ($validated['campus_lat'] === null || $validated['campus_lng'] === null)) {
@@ -53,6 +54,9 @@ class CampusSettingController extends Controller
             'campus_lng' => $validated['campus_lng'] ?? $setting->campus_lng,
             'allowed_radius_meters' => (int)$validated['allowed_radius_meters'],
             'enforce_gps' => (bool)$validated['enforce_gps'],
+            'allow_face_id_checkin' => array_key_exists('allow_face_id_checkin', $validated)
+                ? (bool)$validated['allow_face_id_checkin']
+                : $setting->allow_face_id_checkin,
         ]);
 
         return response()->json([

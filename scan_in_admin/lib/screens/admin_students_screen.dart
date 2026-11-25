@@ -1519,6 +1519,59 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
+  Future<void> _confirmResetDevice(Map<String, dynamic> stu) async {
+    final id = stu['id'] as int;
+    final name = stu['name']?.toString() ?? 'Unknown';
+    final code = stu['student_code']?.toString() ?? '';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            const Icon(Icons.phonelink_erase_rounded, color: Color(0xFFF59E0B)),
+            const SizedBox(width: 8),
+            Text(AppLanguage.tr('Reset Device ID', 'Reset Device ID')),
+          ],
+        ),
+        content: Text(
+          AppLanguage.tr(
+            'តើអ្នកចង់ដោះលែងការភ្ជាប់ទូរស័ព្ទ (Reset Device ID) របស់សិស្ស "$name ($code)" ដើម្បីឱ្យគាត់អាចភ្ជាប់ទូរស័ព្ទថ្មីបានមែនទេ?',
+            'Reset bound device for "$name ($code)" so they can bind a new phone?',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF59E0B),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(AppLanguage.tr('Reset Device', 'Reset Device')),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final result = await ClassService.resetStudentDevice(id);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] as String? ?? ''),
+          backgroundColor: result['success'] == true ? AppColors.success : AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -2039,6 +2092,11 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                                     tooltip: AppLanguage.tr('កែសម្រួលគណនីសិស្ស', 'Edit Student'),
                                                     icon: const Icon(Icons.edit_outlined, size: 18, color: AppColors.primary),
                                                     onPressed: () => _openEditStudentDialog(stu),
+                                                  ),
+                                                  IconButton(
+                                                    tooltip: AppLanguage.tr('Reset Device ID (ដូរទូរស័ព្ទថ្មី)', 'Reset Device ID'),
+                                                    icon: const Icon(Icons.phonelink_erase_rounded, size: 18, color: Color(0xFFF59E0B)),
+                                                    onPressed: () => _confirmResetDevice(stu),
                                                   ),
                                                   IconButton(
                                                     tooltip: AppLanguage.tr('លុបគណនីសិស្ស', 'Delete Student'),

@@ -1056,6 +1056,27 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
                                     Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: (a.checkInMethod == 'face_id'
+                                                    ? const Color(0xFF8B5CF6)
+                                                    : const Color(0xFF64748B))
+                                                .withValues(alpha: 0.14),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            a.checkInMethod == 'face_id' ? 'Face ID' : 'QR',
+                                            style: TextStyle(
+                                              color: a.checkInMethod == 'face_id'
+                                                  ? const Color(0xFF7C3AED)
+                                                  : const Color(0xFF475569),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
                                         if (a.distanceMeters != null) ...[
                                           Container(
                                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

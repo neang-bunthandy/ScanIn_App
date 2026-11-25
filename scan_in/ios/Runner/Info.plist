@@ -59,6 +59,8 @@
 	<string>ScanIn needs photo library access to choose your profile photo.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>ScanIn needs your GPS location to verify that you are inside the university campus when checking in.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>ScanIn uses Face ID to verify your identity for quick campus attendance check-in.</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

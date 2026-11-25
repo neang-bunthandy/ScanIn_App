@@ -35,6 +35,7 @@ class User extends Authenticatable
         'status',
         'phone',
         'avatar_url',
+        'device_id',
     ];
 
     /**

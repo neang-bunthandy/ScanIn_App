@@ -71,5 +71,6 @@ class ApiConfig {
   static String classAttendancesUrl(int classId) => '$baseUrl/classes/$classId/attendances';
   static String updateAttendanceUrl(int id) => '$baseUrl/attendances/$id';
   static String get scanAttendanceUrl => '$baseUrl/attendances/scan';
+  static String get faceCheckInUrl => '$baseUrl/attendances/face-checkin';
   static String get studentAttendancesUrl => '$baseUrl/student/attendances';
 }

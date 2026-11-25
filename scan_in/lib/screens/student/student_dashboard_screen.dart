@@ -17,6 +17,7 @@ class StudentDashboardScreen extends StatefulWidget {
   final List<AttendanceModel> attendances;
   final bool isLoading;
   final VoidCallback onScanQr;
+  final void Function(ClassModel)? onFaceCheckIn;
   final Future<void> Function()? onRefresh;
 
   const StudentDashboardScreen({
@@ -26,6 +27,7 @@ class StudentDashboardScreen extends StatefulWidget {
     this.attendances = const [],
     this.isLoading = false,
     required this.onScanQr,
+    this.onFaceCheckIn,
     this.onRefresh,
   });
 
@@ -657,6 +659,26 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                       statusBadge,
                     ],
                   ),
+                  if (!isFuture && !isPast && att == null && widget.onFaceCheckIn != null) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => widget.onFaceCheckIn!(c),
+                        icon: const Icon(Icons.face_retouching_natural_rounded, size: 16),
+                        label: Text(
+                          AppLanguage.tr('កត់វត្តមានដោយ Face ID', 'Face ID Check-In'),
+                          style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF7C3AED),
+                          side: BorderSide(color: const Color(0xFF7C3AED).withValues(alpha: 0.45)),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

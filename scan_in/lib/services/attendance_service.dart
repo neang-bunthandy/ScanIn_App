@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
 import '../models/attendance_model.dart';
 import 'auth_service.dart';
+import 'biometric_service.dart';
 import 'location_service.dart';
 
 class AttendanceService {
@@ -46,9 +47,12 @@ class AttendanceService {
           };
         }
 
+        final deviceId = await BiometricService.getOrCreateDeviceId();
+
         final payload = <String, dynamic>{
           'qr_token': qrToken.trim(),
           'is_mocked': gps.isMocked,
+          'device_id': deviceId,
         };
         if (gps.hasLocation) {
           payload['latitude'] = gps.latitude;
@@ -87,6 +91,77 @@ class AttendanceService {
       'success': false,
       'message': 'សូមចូលគណនីជាសិស្សជាមុនសិន!',
     };
+  }
+
+  /// សិស្សកត់វត្តមានដោយ Face ID + GPS + Device Binding (ពេលគ្រូបើក QR យឺត ឬនៅក្នុងបរិវេណសាលា)
+  static Future<Map<String, dynamic>> faceCheckIn(int classId) async {
+    try {
+      final token = await AuthService.getToken();
+      if (token == null) {
+        return {
+          'success': false,
+          'message': 'សូមចូលគណនីជាសិស្សជាមុនសិន!',
+        };
+      }
+
+      // ១. ផ្ទៀងផ្ទាត់ Face ID / Biometric របស់ទូរស័ព្ទ
+      final bio = await BiometricService.authenticateWithFaceId();
+      if (!bio.success) {
+        return {
+          'success': false,
+          'message': bio.errorMessage ?? 'ការផ្ទៀងផ្ទាត់ Face ID មិនបានសម្រេច!',
+        };
+      }
+
+      // ២. ចាប់ទីតាំង GPS + ឆែក Anti-Fake GPS
+      final gps = await LocationService.getCurrentPosition();
+      if (gps.isMocked) {
+        return {
+          'success': false,
+          'message': 'រកឃើញការប្រើប្រាស់កម្មវិធីបន្លំទីតាំង (Fake GPS)! មិនអាចកត់វត្តមានបានឡើយ។',
+        };
+      }
+
+      // ៣. ទាញយក Device ID ប្រចាំទូរស័ព្ទ
+      final deviceId = await BiometricService.getOrCreateDeviceId();
+
+      final payload = <String, dynamic>{
+        'class_id': classId,
+        'biometric_verified': true,
+        'device_id': deviceId,
+        'is_mocked': gps.isMocked,
+      };
+      if (gps.hasLocation) {
+        payload['latitude'] = gps.latitude;
+        payload['longitude'] = gps.longitude;
+      }
+
+      final response = await http.post(
+        Uri.parse(ApiConfig.faceCheckInUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(payload),
+      ).timeout(const Duration(seconds: 10));
+
+      final data = jsonDecode(response.body);
+      final bool isSuccess = (response.statusCode == 200 || response.statusCode == 201) && data['status'] == true;
+      final String fallbackError = gps.errorMessage ?? (isSuccess ? 'បានកត់វត្តមានដោយ Face ID ជោគជ័យ' : 'មិនអាចកត់វត្តមានបានទេ');
+      return {
+        'success': isSuccess,
+        'message': data['message'] ?? fallbackError,
+        'attendance': data['attendance'] != null
+            ? AttendanceModel.fromJson(data['attendance'] as Map<String, dynamic>)
+            : null,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ៖ $e',
+      };
+    }
   }
 
   /// ទាញយកប្រវត្តិវត្តមានរបស់សិស្សផ្ទាល់ខ្លួន (Student Attendance History)

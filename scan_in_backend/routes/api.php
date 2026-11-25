@@ -733,5 +733,29 @@ Route::delete('/sub-admins/{id}', function (Request $request, $id) {
 
     // Attendance routes for students
     Route::post('/attendances/scan', [AttendanceController::class, 'scan']);
+    Route::post('/attendances/face-checkin', [AttendanceController::class, 'faceCheckIn']);
     Route::get('/student/attendances', [AttendanceController::class, 'studentHistory']);
+
+    // Admin Reset Student Device Binding
+    Route::post('/admin/students/{id}/reset-device', function (Request $request, $id) {
+        if (!$request->user() || !$request->user()->isAcademicAdmin()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'មានតែអ្នកគ្រប់គ្រង (Admin) ប៉ុណ្ណោះដែលអាច Reset Device ID បាន។',
+            ], 403);
+        }
+        $student = \App\Models\User::where('role', 'student')->find($id);
+        if (!$student) {
+            return response()->json([
+                'status' => false,
+                'message' => 'រកមិនឃើញគណនីសិស្សនេះទេ',
+            ], 404);
+        }
+        $student->device_id = null;
+        $student->save();
+        return response()->json([
+            'status' => true,
+            'message' => 'បាន Reset Device ID សម្រាប់ ' . $student->name . ' ដោយជោគជ័យ',
+        ], 200);
+    });
 });

@@ -15,6 +15,7 @@ class Attendance extends Model
         'class_id',
         'user_id',
         'status',
+        'check_in_method',
         'date',
         'scanned_at',
         'note',

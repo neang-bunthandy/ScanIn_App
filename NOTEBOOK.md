@@ -455,13 +455,27 @@
    - **Frontend Mobile App (`scan_in`) ៖**
      - ដំឡើង `geolocator: ^14.1.2`, កំណត់ Permissions ក្នុង `AndroidManifest.xml` & `Info.plist`, បង្កើត `LocationService` (`LocationAccuracy.high` + `isMocked`) និងភ្ជាប់ក្នុង `AttendanceService.scanAttendance`។
 
+20. **កិច្ចការទី ២០ (Task 20 — រួចរាល់ ១០០% ✅) ៖ មុខងារ Face ID Check-In + Single Device Binding (Dual Check-In Modes)**
+    - **គោលការណ៍ Dual Check-In (ងាយស្រួល និងមិនខាតពេល) ៖**
+      - ប្រសិនបើសិស្សស្កេន **QR Code** រួចហើយ គឺកត់វត្តមានភ្លាម (មិនសួរ Face ID ទៀតទេ)។
+      - ប្រសិនបើគ្រូបើក QR យឺត ឬសិស្សនៅកង់ទីនក្នុងបរិវេណសាលា សិស្សអាចចុច **«កត់វត្តមានដោយ Face ID»** លើកាតថ្នាក់រៀនថ្ងៃនេះដើម្បីកត់វត្តមានភ្លាមៗ (GPS + Face ID + Device ID)។
+    - **Backend (`scan_in_backend`) ៖**
+      - Migration `2026_11_25_000002_add_face_id_and_device_binding.php` បន្ថែម `device_id` (`users`), `allow_face_id_checkin` (`campus_settings`, Default `true`), និង `check_in_method` (`attendances`: `qr` / `face_id`)។
+      - បង្កើត Endpoint `POST /api/attendances/face-checkin` និង `POST /api/admin/students/{id}/reset-device` ដោយប្រើ Shared Helper `processCheckIn()` រួមជាមួយ `scan()`។
+      - បង្កើត Feature Tests `FaceIdCheckinTest.php` ចំនួន ៣ ករណីតេស្ត ➔ **47 passed, 253 assertions (100% PASS)**។
+    - **Web Admin (`scan_in_admin`) ៖**
+      - បង្ហាញផ្លាក **`QR`** / **`Face ID`** ដោយស្វ័យប្រវត្តិក្នុងតារាងវត្តមាន (`admin_attendances_screen.dart`)។
+      - បន្ថែមប៊ូតុង **`Reset Device ID`** លើបញ្ជីសិស្ស (`admin_students_screen.dart`) សម្រាប់ដោះលែងការភ្ជាប់ទូរស័ព្ទពេលសិស្សដូរទូរស័ព្ទថ្មី។
+    - **Mobile App (`scan_in`) ៖**
+      - ដំឡើង `local_auth: ^3.0.2`, បង្កើត `BiometricService` (`getOrCreateDeviceId` + `authenticateWithFaceId`), បន្ថែម `AttendanceService.faceCheckIn`, និងបង្ហាញប៊ូតុង **«កត់វត្តមានដោយ Face ID»** ក្នុង `student_dashboard_screen.dart`។
+
 ---
 
 ### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code - FFC Audit)
 - **ការត្រួតពិនិត្យឯកសារ និងថត (Files & Folders) ៖**
    - គ្មានឯកសារបណ្តោះអាសន្ន 0-byte ឬ Scratch Scripts សេសសល់ក្នុង Repository ឡើយ។
 - **សុពលភាពកូដ និងការធ្វើតេស្ត (Code Quality & Verification) ៖**
-   - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៤៤ passed, ២៤៣ assertions (១០០% PASS)**។
+   - **Laravel Backend Test Suite ៖** `php artisan test` ទទួលបានលទ្ធផល **៤៧ passed, ២៥៣ assertions (១០០% PASS)**។
    - **Flutter Web Admin (`scan_in_admin`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)**។
    - **Flutter Mobile App (`scan_in`) ៖** `flutter analyze` ទទួលបាន **No issues found! (0 warnings, 0 errors)**។
    - **Database Service ៖** MySQL / MariaDB ដំណើរការយ៉ាងរលូនលើ Port 3306 (`TcpTestSucceeded : True`)។
@@ -471,5 +485,4 @@
 ---
 
 ### 📋 ផែនការការងារជំហានបន្ទាប់ (Next Steps Roadmap)
-1. **មុខងារ Face ID Check-In + Device Binding (`local_auth` + `device_id`) ៖**
-   - ជម្រើសទី ២ សម្រាប់សិស្សក្នុងបរិវេណសាលា (GPS Verified) កត់វត្តមានភ្លាមៗដោយ Face ID ពេលគ្រូបើក QR យឺត ឬមានបញ្ហា QR ដោយមិនបាច់ស្កេនជាន់គ្នាជាមួយ QR Code ឡើយ។
+- មុខងារស្នូល និងសុវត្ថិភាពកម្រិតខ្ពស់ទាំងអស់ (Multi-Role Auth, Smart Auto-Fill, Export Excel/PDF, Live Projector Feed, GPS Geofencing, Face ID & Device Binding) ត្រូវបានបញ្ចប់ ១០០%! ត្រៀមសម្រាប់ការតេស្តជាក់ស្ដែងលើឧបករណ៍ពិតក្នុងបរិវេណសាលា។

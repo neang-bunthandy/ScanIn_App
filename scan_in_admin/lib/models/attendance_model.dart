@@ -11,6 +11,7 @@ class AttendanceModel {
   final String studentName;
   final String studentCode;
   final String status; // 'present' (មក), 'late' (យឺត), 'absent' (អវត្តមាន)
+  final String checkInMethod; // 'qr' ឬ 'face_id'
   final DateTime? scannedAt;
   final String date; // ឧ. 2026-10-15
   final String? note;
@@ -28,6 +29,7 @@ class AttendanceModel {
     required this.studentName,
     required this.studentCode,
     required this.status,
+    this.checkInMethod = 'qr',
     this.scannedAt,
     required this.date,
     this.note,
@@ -90,6 +92,7 @@ class AttendanceModel {
       studentCode: (json['student_code'] ??
           (json['student'] is Map ? json['student']['student_code'] : null)) as String? ?? '',
       status: json['status'] as String? ?? 'present',
+      checkInMethod: json['check_in_method'] as String? ?? 'qr',
       scannedAt: json['scanned_at'] != null
           ? DateTime.tryParse(json['scanned_at'] as String)
           : null,

@@ -81,4 +81,5 @@ class ApiConfig {
   // Campus GPS Geofencing Endpoints
   static String get campusSettingsUrl => '$baseUrl/campus-settings';
   static String get adminCampusSettingsUrl => '$baseUrl/admin/campus-settings';
+  static String resetStudentDeviceUrl(int id) => '$baseUrl/admin/students/$id/reset-device';
 }

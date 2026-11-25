@@ -21,20 +21,10 @@ class AttendanceController extends Controller
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'is_mocked' => 'nullable|boolean',
+            'device_id' => 'nullable|string|max:191',
         ]);
 
-        // ១. ការពារកម្មវិធីបន្លំទីតាំង (Anti-Fake GPS / Mock Location)
-        if ($request->boolean('is_mocked')) {
-            return response()->json([
-                'status' => false,
-                'message' => 'រកឃើញការប្រើប្រាស់កម្មវិធីបន្លំទីតាំង (Fake GPS)! មិនអាចកត់វត្តមានបានឡើយ។',
-            ], 403);
-        }
-
-        $user = $request->user();
         $qrToken = trim($request->qr_token);
-
-        // ស្វែងរកថ្នាក់រៀនដែលមាន token ត្រូវគ្នា
         $class = ClassModel::where('qr_token', $qrToken)->first();
 
         if (!$class) {
@@ -51,7 +41,65 @@ class AttendanceController extends Controller
             ], 400);
         }
 
-        // ពិនិត្យស្ថានភាពសិស្ស (អនុញ្ញាតតែសិស្សកំពុងសិក្សា 'active' ប៉ុណ្ណោះ)
+        return $this->processCheckIn($request, $class, 'qr');
+    }
+
+    /**
+     * សិស្សកត់វត្តមានដោយ Face ID + GPS + Device Binding (ពេលគ្រូបើក QR យឺត ឬនៅកង់ទីនក្នុងសាលា)
+     */
+    public function faceCheckIn(Request $request)
+    {
+        $campus = CampusSetting::current();
+        if (!$campus->allow_face_id_checkin) {
+            return response()->json([
+                'status' => false,
+                'message' => 'មុខងារ Face ID Check-In ត្រូវបានបិទជាបណ្ដោះអាសន្នដោយអ្នកគ្រប់គ្រង។',
+            ], 403);
+        }
+
+        $request->validate([
+            'class_id' => 'required|integer',
+            'biometric_verified' => 'required|boolean',
+            'device_id' => 'required|string|max:191',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'is_mocked' => 'nullable|boolean',
+        ]);
+
+        if (!$request->boolean('biometric_verified')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'ការផ្ទៀងផ្ទាត់ Face ID មិនបានសម្រេច! សូមព្យាយាមម្តងទៀត។',
+            ], 403);
+        }
+
+        $class = ClassModel::find($request->class_id);
+        if (!$class) {
+            return response()->json([
+                'status' => false,
+                'message' => 'រកមិនឃើញថ្នាក់រៀននេះទេ!',
+            ], 404);
+        }
+
+        return $this->processCheckIn($request, $class, 'face_id');
+    }
+
+    /**
+     * ដំណើរការផ្ទៀងផ្ទាត់រួមសម្រាប់ទាំង QR Scan និង Face ID Check-In
+     */
+    private function processCheckIn(Request $request, ClassModel $class, string $method)
+    {
+        // ១. ការពារកម្មវិធីបន្លំទីតាំង (Anti-Fake GPS / Mock Location)
+        if ($request->boolean('is_mocked')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'រកឃើញការប្រើប្រាស់កម្មវិធីបន្លំទីតាំង (Fake GPS)! មិនអាចកត់វត្តមានបានឡើយ។',
+            ], 403);
+        }
+
+        $user = $request->user();
+
+        // ២. ពិនិត្យស្ថានភាពសិស្ស (អនុញ្ញាតតែសិស្សកំពុងសិក្សា 'active' ប៉ុណ្ណោះ)
         $studentStatus = strtolower(trim((string)($user->status ?? 'active')));
         if ($user->role === 'student' && $studentStatus !== 'active') {
             $statusMsg = $studentStatus === 'graduated'
@@ -63,7 +111,7 @@ class AttendanceController extends Controller
             ], 403);
         }
 
-        // ពិនិត្យថាតើនិស្សិតស្ថិតក្នុងដេប៉ាតឺម៉ង់របស់ថ្នាក់នេះឬទេ
+        // ៣. ពិនិត្យថាតើនិស្សិតស្ថិតក្នុងដេប៉ាតឺម៉ង់ ឆ្នាំសិក្សា និងជំនាន់របស់ថ្នាក់នេះឬទេ
         if (!empty($class->department) && trim((string)($user->department ?? '')) !== trim((string)$class->department)) {
             return response()->json([
                 'status' => false,
@@ -71,7 +119,6 @@ class AttendanceController extends Controller
             ], 403);
         }
 
-        // ពិនិត្យឆ្នាំសិក្សា (Year Level 1-4)
         if (!empty($class->year_level) && (int)($user->year_level ?? 0) !== (int)$class->year_level) {
             return response()->json([
                 'status' => false,
@@ -79,7 +126,6 @@ class AttendanceController extends Controller
             ], 403);
         }
 
-        // ពិនិត្យជំនាន់ (Generation) ប្រសិនបើថ្នាក់បានកំណត់ (គាំទ្រទាំងលេខខ្មែរ និងអារ៉ាប់)
         if (!empty($class->generation) && !\App\Models\ClassModel::matchesGeneration($user->generation, $class->generation)) {
             return response()->json([
                 'status' => false,
@@ -87,11 +133,25 @@ class AttendanceController extends Controller
             ], 403);
         }
 
+        // ៤. ពិនិត្យ Single Device Binding (១ គណនី = ១ ទូរស័ព្ទ)
+        $incomingDeviceId = trim((string)($request->input('device_id') ?? ''));
+        if ($incomingDeviceId !== '') {
+            if (empty($user->device_id)) {
+                $user->device_id = $incomingDeviceId;
+                $user->save();
+            } elseif ($user->device_id !== $incomingDeviceId) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'គណនីនេះត្រូវបានភ្ជាប់ជាមួយទូរស័ព្ទផ្សេងរួចហើយ! សូមទាក់ទង Admin ដើម្បី Reset Device។',
+                ], 403);
+            }
+        }
+
         $today = Carbon::today()->toDateString();
         $now = Carbon::now();
         $recordDate = $class->class_date ?: $today;
 
-        // ២. ពិនិត្យទីតាំង GPS ក្នុងបរិវេណសាលា (GPS Geofencing)
+        // ៥. ពិនិត្យទីតាំង GPS ក្នុងបរិវេណសាលា (GPS Geofencing)
         $campus = CampusSetting::current();
         $scanLat = $request->filled('latitude') ? (float)$request->latitude : null;
         $scanLng = $request->filled('longitude') ? (float)$request->longitude : null;
@@ -128,23 +188,22 @@ class AttendanceController extends Controller
             }
         }
 
-        // ពិនិត្យម៉ោងចាប់ផ្តើមថ្នាក់រៀន ដើម្បីកំណត់ថាមកទាន់ពេល ឬមកយឺត (> 15 នាទី)
+        // ៦. ពិនិត្យម៉ោងចាប់ផ្តើមថ្នាក់រៀន ដើម្បីកំណត់ថាមកទាន់ពេល ឬមកយឺត (> 15 នាទី)
         $status = 'present';
-        $note = 'បានស្កេនតាម QR Code';
+        $note = $method === 'face_id' ? 'បានកត់វត្តមានដោយ Face ID' : 'បានស្កេនតាម QR Code';
 
         if (!empty($class->time) && preg_match('/(\d{1,2}:\d{2})/', $class->time, $m)) {
             try {
                 $startTime = Carbon::createFromFormat('Y-m-d H:i', $today . ' ' . $m[1]);
                 if ($now->greaterThan($startTime->copy()->addMinutes(15))) {
                     $status = 'late';
-                    $note = 'ស្កេនយឺត (ម៉ោង ' . $now->format('H:i') . ' លើស ១៥ នាទី)';
+                    $note = ($method === 'face_id' ? 'Face ID យឺត' : 'ស្កេនយឺត') . ' (ម៉ោង ' . $now->format('H:i') . ' លើស ១៥ នាទី)';
                 }
             } catch (\Exception $e) {
                 // រក្សា status = present ប្រសិនបើ parse ម៉ោងមិនចេញ
             }
         }
 
-        // ពិនិត្យមើលថាតើសិស្សបានស្កេនរួចហើយឬនៅសម្រាប់ថ្ងៃនេះ
         $attendance = Attendance::updateOrCreate(
             [
                 'class_id' => $class->id,
@@ -153,6 +212,7 @@ class AttendanceController extends Controller
             ],
             [
                 'status' => $status,
+                'check_in_method' => $method,
                 'scanned_at' => $now,
                 'note' => $note,
                 'scan_lat' => $scanLat,
@@ -175,6 +235,7 @@ class AttendanceController extends Controller
                 'student_name' => $user->name,
                 'student_code' => $user->student_code ?? 'STU-' . $user->id,
                 'status' => $attendance->status,
+                'check_in_method' => $attendance->check_in_method,
                 'date' => $attendance->date,
                 'scanned_at' => $attendance->scanned_at?->toIso8601String(),
                 'note' => $attendance->note,
@@ -206,6 +267,7 @@ class AttendanceController extends Controller
                     'student_name' => $att->student?->name,
                     'student_code' => $att->student?->student_code,
                     'status' => $att->status,
+                    'check_in_method' => $att->check_in_method ?? 'qr',
                     'date' => (string)$att->date,
                     'scanned_at' => $att->scanned_at?->toIso8601String(),
                     'note' => $att->note,
@@ -254,6 +316,7 @@ class AttendanceController extends Controller
                     'student_name' => $att->student?->name,
                     'student_code' => $att->student?->student_code,
                     'status' => $att->status,
+                    'check_in_method' => $att->check_in_method ?? 'qr',
                     'date' => (string)$att->date,
                     'scanned_at' => $att->scanned_at?->toIso8601String(),
                     'note' => $att->note,
