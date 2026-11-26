@@ -1,10 +1,15 @@
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import '../core/api_config.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_routes.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/class_service.dart';
+import '../utils/web_export_helper.dart';
 
 class AdminScaffold extends StatefulWidget {
   final String title;
@@ -46,6 +51,161 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     if (widget.currentRoute != route) {
       Navigator.pushReplacementNamed(context, route);
     }
+  }
+
+  Future<Uint8List?> _showAvatarCropDialog(Uint8List rawBytes) async {
+    final boundaryKey = GlobalKey();
+    final transformCtrl = TransformationController();
+    double zoom = 1.0;
+
+    return showDialog<Uint8List?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlgState) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            title: Row(
+              children: [
+                const Icon(Icons.crop_rounded, color: AppColors.primary),
+                const SizedBox(width: 8),
+                Text(
+                  AppLanguage.tr('កាត់តម្រឹមរូបថត Profile', 'Crop Profile Photo'),
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              width: 320,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AppLanguage.tr(
+                      'អូសរូបភាព ឬប្រើរបារខាងក្រោមដើម្បីពង្រីក/បង្រួម',
+                      'Drag to reposition or use the slider to zoom',
+                    ),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: 260,
+                    height: 260,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primary, width: 3),
+                      color: const Color(0xFF0F172A),
+                    ),
+                    child: ClipOval(
+                      child: RepaintBoundary(
+                        key: boundaryKey,
+                        child: InteractiveViewer(
+                          transformationController: transformCtrl,
+                          minScale: 1.0,
+                          maxScale: 3.5,
+                          boundaryMargin: const EdgeInsets.all(80),
+                          child: Image.memory(
+                            rawBytes,
+                            width: 260,
+                            height: 260,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      const Icon(Icons.zoom_out_rounded, size: 18),
+                      Expanded(
+                        child: Slider(
+                          value: zoom,
+                          min: 1.0,
+                          max: 3.5,
+                          activeColor: AppColors.primary,
+                          onChanged: (v) {
+                            setDlgState(() {
+                              zoom = v;
+                              final offset = (1.0 - zoom) * 130.0;
+                              transformCtrl.value = Matrix4.identity()
+                                ..translateByDouble(offset, offset, 0.0, 1.0)
+                                ..scaleByDouble(zoom, zoom, 1.0, 1.0);
+                            });
+                          },
+                        ),
+                      ),
+                      const Icon(Icons.zoom_in_rounded, size: 18),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  transformCtrl.dispose();
+                  Navigator.pop(ctx, null);
+                },
+                child: Text(AppLanguage.tr('បោះបង់', 'Cancel')),
+              ),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.check_rounded, size: 17),
+                label: Text(AppLanguage.tr('រក្សាទុក', 'Save Photo')),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  try {
+                    final boundary = boundaryKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+                    if (boundary != null) {
+                      final image = await boundary.toImage(pixelRatio: 2.0);
+                      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+                      if (byteData != null) {
+                        final cropped = byteData.buffer.asUint8List();
+                        transformCtrl.dispose();
+                        if (ctx.mounted) Navigator.pop(ctx, cropped);
+                        return;
+                      }
+                    }
+                  } catch (_) {}
+                  transformCtrl.dispose();
+                  if (ctx.mounted) Navigator.pop(ctx, rawBytes);
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _handleUploadAvatar() async {
+    final picked = await pickFileBytes(accept: 'image/*');
+    if (picked == null || !mounted) return;
+
+    final croppedBytes = await _showAvatarCropDialog(picked.bytes);
+    if (croppedBytes == null || !mounted) return;
+
+    final result = await AuthService.uploadAvatar(
+      bytes: croppedBytes,
+      filename: 'avatar_cropped.png',
+    );
+    if (!mounted) return;
+
+    if (result.success && result.user != null) {
+      setState(() => _currentUser = result.user);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result.message),
+        backgroundColor: result.success ? AppColors.success : AppColors.error,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _handleLogout() async {
@@ -582,116 +742,64 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                   ),
                 ),
 
-                // Footer Profile & Logout
+                // Footer: Change Password & Logout
                 Container(
-                  padding: EdgeInsets.all(isCompact ? 10 : 16),
+                  padding: EdgeInsets.all(isCompact ? 10 : 14),
                   decoration: BoxDecoration(
                     border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.08))),
                   ),
                   child: isCompact
                       ? Column(
                           children: [
-                            Tooltip(
-                              message: '${_currentUser?.name ?? "User"}\n(${isLecturer ? "Lecturer" : (_currentUser?.isSubAdmin == true ? "Sub-Admin" : "Master Admin")})',
-                              child: CircleAvatar(
-                                radius: 18,
-                                backgroundColor: isLecturer ? const Color(0xFF0284C7) : AppColors.primary,
-                                child: Text(
-                                  _currentUser?.name.isNotEmpty == true ? _currentUser!.name[0].toUpperCase() : 'A',
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
                             IconButton(
                               tooltip: AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
-                              icon: const Icon(Icons.key_rounded, color: Color(0xFFF59E0B), size: 18),
+                              icon: const Icon(Icons.key_rounded, color: Color(0xFFF59E0B), size: 19),
                               onPressed: _showChangePasswordDialog,
                             ),
                             const SizedBox(height: 4),
                             IconButton(
                               tooltip: AppLanguage.tr('ចាកចេញ (Sign Out)', 'Sign Out'),
-                              icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 18),
+                              icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 20),
                               onPressed: _handleLogout,
                             ),
                           ],
                         )
-                      : FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: SizedBox(
-                            width: 228,
-                            child: Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 18,
-                                  backgroundColor: isLecturer ? const Color(0xFF0284C7) : AppColors.primary,
-                                  child: Text(
-                                    _currentUser?.name.isNotEmpty == true ? _currentUser!.name[0].toUpperCase() : 'A',
-                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                                  ),
+                      : Column(
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _showChangePasswordDialog,
+                                icon: const Icon(Icons.key_rounded, color: Color(0xFFF59E0B), size: 17),
+                                label: Text(
+                                  AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
+                                  style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        _currentUser?.name ?? (isLecturer ? 'សាស្រ្តាចារ្យ' : 'អ្នកគ្រប់គ្រង'),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                                      ),
-                                      Container(
-                                        margin: const EdgeInsets.only(top: 2),
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                                        decoration: BoxDecoration(
-                                          color: isLecturer
-                                              ? const Color(0xFF0284C7).withValues(alpha: 0.25)
-                                              : AppColors.primary.withValues(alpha: 0.25),
-                                          borderRadius: BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          isLecturer
-                                              ? 'គ្រូបង្រៀន (Lecturer)'
-                                              : (_currentUser?.isSubAdmin == true
-                                                  ? 'ការិយាល័យសិក្សា (Sub-Admin)'
-                                                  : 'អ្នកគ្រប់គ្រង (Admin)'),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: isLecturer
-                                                ? const Color(0xFF38BDF8)
-                                                : (_currentUser?.isSubAdmin == true
-                                                    ? const Color(0xFF34D399)
-                                                    : const Color(0xFF93C5FD)),
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: const Color(0xFFF59E0B).withValues(alpha: 0.35)),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                 ),
-                                const SizedBox(width: 4),
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                                  tooltip: AppLanguage.tr('ប្តូរពាក្យសម្ងាត់', 'Change Password'),
-                                  icon: const Icon(Icons.key_rounded, color: Color(0xFFF59E0B), size: 18),
-                                  onPressed: _showChangePasswordDialog,
-                                ),
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                                  tooltip: AppLanguage.tr('ចាកចេញ (Sign Out)', 'Sign Out'),
-                                  icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 19),
-                                  onPressed: _handleLogout,
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: _handleLogout,
+                                icon: const Icon(Icons.logout_rounded, color: Color(0xFFEF4444), size: 18),
+                                label: Text(
+                                  AppLanguage.tr('ចាកចេញ (Logout)', 'Logout'),
+                                  style: const TextStyle(color: Color(0xFFEF4444), fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.35)),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                 ),
               ],
@@ -729,53 +837,104 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isLecturer)
-                            Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0284C7).withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.tv_rounded, color: Color(0xFF0284C7), size: 16),
-                                  if (!isCompact) ...[
-                                    const SizedBox(width: 6),
-                                    const Text(
-                                      'Projector Mode Ready',
-                                      style: TextStyle(color: Color(0xFF0284C7), fontSize: 12, fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF16A34A).withValues(alpha: 0.12),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.cloud_done_rounded, color: Color(0xFF16A34A), size: 16),
-                                if (!isCompact) ...[
-                                  const SizedBox(width: 6),
-                                  const Text(
-                                    'Laravel API Connected',
-                                    style: TextStyle(color: Color(0xFF16A34A), fontSize: 12, fontWeight: FontWeight.bold),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (isLecturer)
+                                Container(
+                                  margin: const EdgeInsets.only(right: 10),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0284C7).withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(20),
                                   ),
-                                ],
-                              ],
-                            ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.tv_rounded, color: Color(0xFF0284C7), size: 16),
+                                      if (!isCompact) ...[
+                                        const SizedBox(width: 6),
+                                        const Text(
+                                          'Projector Mode Ready',
+                                          style: TextStyle(color: Color(0xFF0284C7), fontSize: 12, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              // Top-Right User Profile (Avatar Upload + Name + Role + Change Password)
+                              InkWell(
+                                onTap: _handleUploadAvatar,
+                                borderRadius: BorderRadius.circular(24),
+                                child: Tooltip(
+                                  message: AppLanguage.tr('ចុចដើម្បីប្តូររូបថត Profile', 'Click to change profile photo'),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Stack(
+                                          alignment: Alignment.bottomRight,
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 17,
+                                              backgroundColor: isLecturer ? const Color(0xFF0284C7) : AppColors.primary,
+                                              backgroundImage: _currentUser?.avatarUrl != null && _currentUser!.avatarUrl!.isNotEmpty
+                                                  ? NetworkImage(ApiConfig.resolveImageUrl(_currentUser!.avatarUrl) ?? _currentUser!.avatarUrl!)
+                                                  : null,
+                                              child: _currentUser?.avatarUrl == null || _currentUser!.avatarUrl!.isEmpty
+                                                  ? Text(
+                                                      _currentUser?.name.isNotEmpty == true ? _currentUser!.name[0].toUpperCase() : 'A',
+                                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                                    )
+                                                  : null,
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.all(2),
+                                              decoration: BoxDecoration(
+                                                color: topBarBg,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(Icons.camera_alt_rounded, size: 10, color: AppColors.primary),
+                                            ),
+                                          ],
+                                        ),
+                                        if (!isCompact) ...[
+                                          const SizedBox(width: 10),
+                                          Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                _currentUser?.name ?? (isLecturer ? 'សាស្រ្តាចារ្យ' : 'អ្នកគ្រប់គ្រង'),
+                                                style: TextStyle(color: textCol, fontSize: 13, fontWeight: FontWeight.bold),
+                                              ),
+                                              Text(
+                                                isLecturer
+                                                    ? 'គ្រូបង្រៀន (Lecturer)'
+                                                    : (_currentUser?.isSubAdmin == true
+                                                        ? 'ការិយាល័យសិក្សា (Sub-Admin)'
+                                                        : 'Master Admin'),
+                                                style: TextStyle(
+                                                  color: isLecturer
+                                                      ? const Color(0xFF0284C7)
+                                                      : (_currentUser?.isSubAdmin == true
+                                                          ? const Color(0xFF10B981)
+                                                          : AppColors.primary),
+                                                  fontSize: 10.5,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
                     ],
                   ),
                 ),

@@ -10,6 +10,7 @@ import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/class_service.dart';
 import '../utils/web_export_helper.dart';
+import '../widgets/admin_search_field.dart';
 import '../widgets/editable_combo_field.dart';
 import 'admin_scaffold.dart';
 
@@ -30,15 +31,33 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
   int? _filterYearLevel;
   String? _filterDepartment;
   String? _filterStatus;
+  final TextEditingController _searchCtrl = TextEditingController();
+  String? _searchQuery;
 
   @override
   void dispose() {
     _horizontalScrollCtrl.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
   List<Map<String, dynamic>> get _filteredStudents {
+    final q = (_searchQuery ?? '').trim().toLowerCase();
     return _students.where((stu) {
+      if (q.isNotEmpty) {
+        final name = (stu['name'] ?? '').toString().toLowerCase();
+        final latin = (stu['latin_name'] ?? '').toString().toLowerCase();
+        final code = (stu['student_code'] ?? '').toString().toLowerCase();
+        final email = (stu['email'] ?? '').toString().toLowerCase();
+        final phone = (stu['phone'] ?? '').toString().toLowerCase();
+        if (!name.contains(q) &&
+            !latin.contains(q) &&
+            !code.contains(q) &&
+            !email.contains(q) &&
+            !phone.contains(q)) {
+          return false;
+        }
+      }
       if (_filterGeneration != null && (stu['generation'] ?? '').toString() != _filterGeneration) {
         return false;
       }
@@ -1983,6 +2002,15 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                             runSpacing: 10,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
+                              AdminSearchField(
+                                controller: _searchCtrl,
+                                hintText: AppLanguage.tr('ស្វែងរកឈ្មោះ, កូដ, Email...', 'Search name, code, email...'),
+                                onChanged: (val) => setState(() => _searchQuery = val),
+                                onClear: () => setState(() {
+                                  _searchCtrl.clear();
+                                  _searchQuery = '';
+                                }),
+                              ),
                               SizedBox(
                                 width: 210,
                                 child: DropdownButtonFormField<String?>(

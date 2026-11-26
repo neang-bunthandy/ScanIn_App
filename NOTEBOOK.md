@@ -476,6 +476,16 @@
       - បន្ថែមប៊ូតុង **«ជ្រើសរើស File (.xlsx / .csv)»** ដោយប្រើ `pickFileBytes()` ឱ្យបុគ្គលិកសាលាអាច Import ឯកសារផ្ទាល់ដោយមិនបាច់ Copy & Paste។
       - បំពាក់ប្រព័ន្ធ **ពិនិត្យឈ្មោះ កូដ និង Email ស្ទួន** ទាំងជាមួយ Database ដែលមានស្រាប់ និងស្ទួនគ្នាក្នុង File តែមួយ ព្រមទាំងបង្ហាញប្រអប់ព្រមាន និងរំលងទិន្នន័យស្ទួនដោយស្វ័យប្រវត្តិ។
 
+22. **កិច្ចការទី ២២ (Task 22 — រួចរាល់ ១០០% ✅) ៖ មុខងារ Live Search Bar, តារាង Sub-Admin ពេញទទឹង និងកែលម្អ UI Profile**
+    - **Web Admin Search & Table UI (`scan_in_admin`) ៖**
+      - បង្កើត Shared Widget `AdminSearchField` (`lib/widgets/admin_search_field.dart`) ដែលមានកម្ពស់ស្មើនឹង Dropdown Filter ទាំងអស់ ហើយបំពាក់លើទាំង ៣ ផ្ទាំង៖ សិស្ស (`admin_students_screen.dart`), គ្រូបង្រៀន (`admin_lecturers_screen.dart`), និងថ្នាក់រៀន (`admin_classes_screen.dart`)។
+      - កែសម្រួលតារាងក្នុង `admin_sub_admins_screen.dart` ដោយប្រើ `LayoutBuilder` + `ConstrainedBox(minWidth: tableConstraints.maxWidth)` ឱ្យលាតពេញ ១០០% ស្មើនឹង Card ខាងលើ។
+    - **Top-Right Admin Profile, Interactive Crop & CORS Fix (`scan_in_admin` & `scan_in_backend`) ៖**
+      - លើកឈ្មោះ Master Admin / Sub-Admin / Lecturer និង Avatar ទៅជ្រុងខាងស្ដាំខាងលើនៃ AppBar (`admin_scaffold.dart`) ដោយទុកប៊ូតុង **«ប្តូរពាក្យសម្ងាត់»** និង **«ចាកចេញ (Logout)»** នៅខាងក្រោម Sidebar ឱ្យស្មើគ្នាស្អាត។
+      - បន្ថែមផ្ទាំង **កាត់តម្រឹមរូបថត (Interactive Avatar Crop & Zoom)** ដោយប្រើ `InteractiveViewer` + `RepaintBoundary` និង Route `GET /api/avatars/{filename}` (ភ្ជាប់ `Access-Control-Allow-Origin: *`) ដើម្បីឱ្យរូបភាព Avatar បង្ហាញលើ Flutter Web ដោយគ្មាន CORS Error។
+    - **Mobile Home Avatar & Tap-to-Profile (`scan_in`) ៖**
+      - បង្ហាញរូបភាព Avatar ពិតលើជ្រុងខាងស្ដាំខាងលើនៃ Home Screen ទាំងសិស្ស (`student_dashboard_screen.dart`) និងគ្រូ (`lecturer_dashboard_screen.dart`) ព្រមទាំងចុចលើរូប Avatar នោះដើម្បីប្ដូរទៅ Tab «ខ្ញុំ (Profile)» ភ្លាមៗ។
+
 ---
 
 ### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code - FFC Audit)

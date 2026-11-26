@@ -54,6 +54,10 @@ class ApiConfig {
     if (path == null || path.trim().isEmpty) return null;
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
     final cleanPath = path.startsWith('/') ? path : '/$path';
+    if (cleanPath.startsWith('/storage/avatars/')) {
+      final filename = cleanPath.substring('/storage/avatars/'.length);
+      return '$baseUrl/avatars/$filename';
+    }
     return 'http://$host:$port$cleanPath';
   }
 

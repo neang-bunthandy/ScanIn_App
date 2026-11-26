@@ -789,6 +789,7 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
 
               // DataTable
               Container(
+                width: double.infinity,
                 decoration: BoxDecoration(
                   color: cardBg,
                   borderRadius: BorderRadius.circular(12),
@@ -815,24 +816,28 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                               ),
                             ),
                           )
-                        : ScrollConfiguration(
-                            behavior: const MaterialScrollBehavior().copyWith(
-                              dragDevices: {
-                                PointerDeviceKind.mouse,
-                                PointerDeviceKind.touch,
-                                PointerDeviceKind.trackpad,
-                              },
-                            ),
-                            child: Scrollbar(
-                              controller: _horizontalScrollCtrl,
-                              thumbVisibility: true,
-                              child: SingleChildScrollView(
-                                controller: _horizontalScrollCtrl,
-                                scrollDirection: Axis.horizontal,
-                                child: DataTable(
-                                  headingRowColor: WidgetStateProperty.all(
-                                    isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-                                  ),
+                        : LayoutBuilder(
+                            builder: (context, tableConstraints) {
+                              return ScrollConfiguration(
+                                behavior: const MaterialScrollBehavior().copyWith(
+                                  dragDevices: {
+                                    PointerDeviceKind.mouse,
+                                    PointerDeviceKind.touch,
+                                    PointerDeviceKind.trackpad,
+                                  },
+                                ),
+                                child: Scrollbar(
+                                  controller: _horizontalScrollCtrl,
+                                  thumbVisibility: true,
+                                  child: SingleChildScrollView(
+                                    controller: _horizontalScrollCtrl,
+                                    scrollDirection: Axis.horizontal,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(minWidth: tableConstraints.maxWidth),
+                                      child: DataTable(
+                                        headingRowColor: WidgetStateProperty.all(
+                                          isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+                                        ),
                                   columns: [
                                     DataColumn(label: Text(AppLanguage.tr('ឈ្មោះខ្មែរ', 'Khmer Name'), style: TextStyle(fontWeight: FontWeight.bold, color: textCol))),
                                     DataColumn(label: Text(AppLanguage.tr('ឈ្មោះឡាតាំង', 'Latin Name'), style: TextStyle(fontWeight: FontWeight.bold, color: textCol))),
@@ -890,9 +895,12 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                                       ],
                                     );
                                   }).toList(),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                           ),
               ),
             ],

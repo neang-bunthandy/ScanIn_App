@@ -190,6 +190,53 @@ class AuthService {
     }
   }
 
+  /// Upload រូបថត Profile (Master Admin / Sub-Admin / Lecturer)
+  static Future<AuthResult> uploadAvatar({
+    required List<int> bytes,
+    required String filename,
+  }) async {
+    try {
+      final token = await getToken();
+      final request = http.MultipartRequest('POST', Uri.parse(ApiConfig.uploadAvatarUrl));
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.headers['Accept'] = 'application/json';
+
+      request.files.add(
+        http.MultipartFile.fromBytes('avatar', bytes, filename: filename),
+      );
+
+      final streamed = await request.send().timeout(const Duration(seconds: 25));
+      final response = await http.Response.fromStream(streamed);
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['status'] == true) {
+        UserModel? updatedUser;
+        if (data['user'] != null) {
+          updatedUser = UserModel.fromJson(data['user'] as Map<String, dynamic>);
+          _cachedUser = updatedUser;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_keyUser, jsonEncode(updatedUser.toJson()));
+        }
+        return AuthResult(
+          success: true,
+          message: data['message'] as String? ?? 'បានផ្លាស់ប្តូររូបថត Profile ដោយជោគជ័យ',
+          user: updatedUser,
+        );
+      }
+      return AuthResult(
+        success: false,
+        message: data['message'] as String? ?? 'ការបញ្ចូលរូបថតមិនជោគជ័យ',
+      );
+    } catch (e) {
+      return AuthResult(
+        success: false,
+        message: 'មានបញ្ហាមិនរំពឹងទុក៖ $e',
+      );
+    }
+  }
+
   /// ចាកចេញពីគណនី (Logout)
   static Future<void> logout() async {
     try {

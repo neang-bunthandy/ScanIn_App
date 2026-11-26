@@ -627,6 +627,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   isLoading: _isLoading,
                   onScanQr: _handleScanQr,
                   onFaceCheckIn: _processFaceCheckIn,
+                  onGoToProfileTab: () => setState(() => _currentIndex = 2),
                   onRefresh: _loadBackendData,
                 ),
                 // Tab 2: ប្រវត្តិ (History)

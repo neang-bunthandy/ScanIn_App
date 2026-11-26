@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/api_config.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
 import '../../core/app_datetime.dart';
@@ -21,6 +22,7 @@ class LecturerDashboardScreen extends StatefulWidget {
   final Function(ClassModel) onShowQr;
   final Function(ClassModel) onToggleQr;
   final VoidCallback onGoToAttendanceTab;
+  final VoidCallback? onGoToProfileTab;
   final Future<void> Function()? onRefresh;
 
   const LecturerDashboardScreen({
@@ -32,6 +34,7 @@ class LecturerDashboardScreen extends StatefulWidget {
     required this.onShowQr,
     required this.onToggleQr,
     required this.onGoToAttendanceTab,
+    this.onGoToProfileTab,
     this.onRefresh,
   });
 
@@ -140,16 +143,25 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
                   ],
                 ),
               ),
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: avatarBg,
-                child: Text(
-                  lecturer.name.isNotEmpty ? lecturer.name.substring(0, 1) : 'L',
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+              InkWell(
+                onTap: widget.onGoToProfileTab,
+                borderRadius: BorderRadius.circular(24),
+                child: CircleAvatar(
+                  radius: 22,
+                  backgroundColor: avatarBg,
+                  backgroundImage: lecturer.avatarUrl != null && lecturer.avatarUrl!.isNotEmpty
+                      ? NetworkImage(ApiConfig.resolveImageUrl(lecturer.avatarUrl) ?? lecturer.avatarUrl!)
+                      : null,
+                  child: lecturer.avatarUrl == null || lecturer.avatarUrl!.isEmpty
+                      ? Text(
+                          lecturer.name.isNotEmpty ? lecturer.name.substring(0, 1) : 'L',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        )
+                      : null,
                 ),
               ),
             ],

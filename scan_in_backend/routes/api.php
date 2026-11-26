@@ -14,6 +14,17 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/avatars/{filename}', function ($filename) {
+    $safeName = basename((string)$filename);
+    $path = storage_path('app/public/avatars/' . $safeName);
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response()->file($path, [
+        'Access-Control-Allow-Origin' => '*',
+        'Cache-Control' => 'public, max-age=86400',
+    ]);
+});
 
 /*
 |--------------------------------------------------------------------------

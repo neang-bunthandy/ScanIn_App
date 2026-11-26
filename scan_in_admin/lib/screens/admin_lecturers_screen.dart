@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import '../widgets/admin_search_field.dart';
 import '../widgets/editable_combo_field.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
@@ -19,10 +20,32 @@ class AdminLecturersScreen extends StatefulWidget {
 class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
   final ScrollController _horizontalScrollCtrl = ScrollController();
   List<Map<String, dynamic>> _lecturers = [];
+  final TextEditingController _searchCtrl = TextEditingController();
+  String? _searchQuery;
+
+  List<Map<String, dynamic>> get _filteredLecturers {
+    final q = (_searchQuery ?? '').trim().toLowerCase();
+    if (q.isEmpty) return _lecturers;
+    return _lecturers.where((lec) {
+      final name = (lec['name'] ?? '').toString().toLowerCase();
+      final latin = (lec['latin_name'] ?? '').toString().toLowerCase();
+      final staffId = (lec['staff_id'] ?? '').toString().toLowerCase();
+      final email = (lec['email'] ?? '').toString().toLowerCase();
+      final dept = (lec['department'] ?? '').toString().toLowerCase();
+      final phone = (lec['phone'] ?? '').toString().toLowerCase();
+      return name.contains(q) ||
+          latin.contains(q) ||
+          staffId.contains(q) ||
+          email.contains(q) ||
+          dept.contains(q) ||
+          phone.contains(q);
+    }).toList();
+  }
 
   @override
   void dispose() {
     _horizontalScrollCtrl.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
   UserModel? _currentUser;
@@ -738,7 +761,26 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                         ),
                         const Divider(height: 1),
 
-                        if (_lecturers.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          child: Row(
+                            children: [
+                              AdminSearchField(
+                                width: 320,
+                                controller: _searchCtrl,
+                                hintText: AppLanguage.tr('ស្វែងរកឈ្មោះគ្រូ, Staff ID, Email, ដេប៉ាតឺម៉ង់...', 'Search lecturer, Staff ID, email, dept...'),
+                                onChanged: (val) => setState(() => _searchQuery = val),
+                                onClear: () => setState(() {
+                                  _searchCtrl.clear();
+                                  _searchQuery = '';
+                                }),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+
+                        if (_filteredLecturers.isEmpty)
                           Padding(
                             padding: const EdgeInsets.all(40),
                             child: Center(
@@ -791,7 +833,7 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                                       DataColumn(label: Text(AppLanguage.tr('ថ្នាក់បង្រៀន', 'Classes'))),
                                       DataColumn(label: Text(AppLanguage.tr('សកម្មភាព (Actions)', 'Actions'))),
                                     ],
-                                    rows: _lecturers.map((lec) {
+                                    rows: _filteredLecturers.map((lec) {
                                       final id = lec['id'];
                                       final staffId = lec['staff_id'] ?? '-';
                                       final name = (lec['name'] ?? 'Lecturer #$id').toString();

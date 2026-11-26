@@ -10,6 +10,7 @@ import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/class_service.dart';
 import '../services/attendance_service.dart';
+import '../widgets/admin_search_field.dart';
 import '../widgets/editable_combo_field.dart';
 import 'admin_scaffold.dart';
 
@@ -29,15 +30,28 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
   int? _filterYearLevel;
   String? _filterGeneration;
   String? _filterDepartment;
+  final TextEditingController _searchCtrl = TextEditingController();
+  String? _searchQuery;
 
   @override
   void dispose() {
     _horizontalScrollCtrl.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
   List<ClassModel> get _filteredClasses {
+    final q = (_searchQuery ?? '').trim().toLowerCase();
     return _classes.where((c) {
+      if (q.isNotEmpty) {
+        final code = c.subjectCode.toLowerCase();
+        final name = c.subjectName.toLowerCase();
+        final lec = (c.lecturerName ?? '').toLowerCase();
+        final room = c.room.toLowerCase();
+        if (!code.contains(q) && !name.contains(q) && !lec.contains(q) && !room.contains(q)) {
+          return false;
+        }
+      }
       if (_filterAcademicYear != null && c.academicYear != _filterAcademicYear) {
         return false;
       }
@@ -2041,6 +2055,15 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                             runSpacing: 10,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
+                              AdminSearchField(
+                                controller: _searchCtrl,
+                                hintText: AppLanguage.tr('ស្វែងរកកូដ, មុខវិជ្ជា, គ្រូ, បន្ទប់...', 'Search code, subject, lecturer...'),
+                                onChanged: (val) => setState(() => _searchQuery = val),
+                                onClear: () => setState(() {
+                                  _searchCtrl.clear();
+                                  _searchQuery = '';
+                                }),
+                              ),
                               SizedBox(
                                 width: 165,
                                 child: DropdownButtonFormField<String?>(

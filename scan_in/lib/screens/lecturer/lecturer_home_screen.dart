@@ -570,6 +570,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                   onShowQr: _showQrBottomSheet,
                   onToggleQr: _toggleQrForClass,
                   onGoToAttendanceTab: () => setState(() => _currentIndex = 1),
+                  onGoToProfileTab: () => setState(() => _currentIndex = 2),
                   onRefresh: _loadBackendData,
                 ),
                 // Tab 2: វត្តមាន (Attendance)

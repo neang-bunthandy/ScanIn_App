@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/api_config.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
 import '../../core/app_datetime.dart';
@@ -18,6 +19,7 @@ class StudentDashboardScreen extends StatefulWidget {
   final bool isLoading;
   final VoidCallback onScanQr;
   final void Function(ClassModel)? onFaceCheckIn;
+  final VoidCallback? onGoToProfileTab;
   final Future<void> Function()? onRefresh;
 
   const StudentDashboardScreen({
@@ -28,6 +30,7 @@ class StudentDashboardScreen extends StatefulWidget {
     this.isLoading = false,
     required this.onScanQr,
     this.onFaceCheckIn,
+    this.onGoToProfileTab,
     this.onRefresh,
   });
 
@@ -116,16 +119,25 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   ],
                 ),
               ),
-              CircleAvatar(
-                radius: 22,
-                backgroundColor: avatarBg,
-                child: Text(
-                  student.name.isNotEmpty ? student.name.substring(0, 1) : 'S',
-                  style: const TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),
+              InkWell(
+                onTap: widget.onGoToProfileTab,
+                borderRadius: BorderRadius.circular(24),
+                child: CircleAvatar(
+                  radius: 22,
+                  backgroundColor: avatarBg,
+                  backgroundImage: student.avatarUrl != null && student.avatarUrl!.isNotEmpty
+                      ? NetworkImage(ApiConfig.resolveImageUrl(student.avatarUrl) ?? student.avatarUrl!)
+                      : null,
+                  child: student.avatarUrl == null || student.avatarUrl!.isEmpty
+                      ? Text(
+                          student.name.isNotEmpty ? student.name.substring(0, 1) : 'S',
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        )
+                      : null,
                 ),
               ),
             ],
