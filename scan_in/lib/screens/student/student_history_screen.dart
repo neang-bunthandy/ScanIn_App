@@ -1,11 +1,10 @@
+// Student personal attendance history screen.
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
 import '../../models/attendance_model.dart';
 import '../../services/attendance_service.dart';
 
-/// អេក្រង់ប្រវត្តិវត្តមានសិស្ស (Tab 2: ប្រវត្តិ)
-/// គាំទ្រទាំង Light Mode និង Dark Mode យ៉ាងពេញលេញ
 class StudentHistoryScreen extends StatefulWidget {
   const StudentHistoryScreen({super.key});
 
@@ -23,7 +22,6 @@ class _StudentHistoryScreenState extends State<StudentHistoryScreen> {
     _loadAttendances();
   }
 
-  // ទាញយកប្រវត្តិវត្តមានពី Backend API / Database
   Future<void> _loadAttendances() async {
     setState(() => _isLoading = true);
     final history = await AttendanceService.getMyAttendanceHistory();
@@ -48,7 +46,7 @@ class _StudentHistoryScreenState extends State<StudentHistoryScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header ចំណងជើង និងប៊ូតុង Refresh
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -69,7 +67,6 @@ class _StudentHistoryScreenState extends State<StudentHistoryScreen> {
           ),
           const SizedBox(height: 12),
 
-          // បង្ហាញ Loading ឬ បញ្ជីវត្តមាន
           Expanded(
             child: _isLoading
                 ? const Center(
@@ -117,7 +114,6 @@ class _StudentHistoryScreenState extends State<StudentHistoryScreen> {
                             itemBuilder: (context, index) {
                             final item = _attendances[index];
 
-                            // ពណ៌ Badge តាមស្ថានភាពវត្តមាន
                             Color badgeColor;
                             if (item.isPresent) {
                               badgeColor = AppColors.success;
@@ -127,7 +123,6 @@ class _StudentHistoryScreenState extends State<StudentHistoryScreen> {
                               badgeColor = AppColors.error;
                             }
 
-                            // ឈ្មោះមុខវិជ្ជា ឬ Note
                             final title = item.subjectName != null &&
                                     item.subjectName!.isNotEmpty
                                 ? item.subjectName!

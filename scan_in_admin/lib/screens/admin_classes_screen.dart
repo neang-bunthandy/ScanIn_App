@@ -1,3 +1,4 @@
+// Classes management, auto-fill, and live Projector QR screen.
 import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -75,7 +76,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     return allClasses;
   }
 
-  /// ច្របាច់បញ្ចូលគ្នានូវកាលវិភាគទាំងអស់ដែលមានកូដមុខវិជ្ជាដដែល (Group classes by Subject Code)
   List<_GroupedClass> get _groupedClasses {
     final Map<String, List<ClassModel>> map = {};
     for (final c in _filteredClasses) {
@@ -191,7 +191,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     );
   }
 
-  /// បើកផ្ទាំង Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន
   Future<void> _openCreateClassDialog() async {
     final nameCtrl = TextEditingController();
     final codeCtrl = TextEditingController();
@@ -237,7 +236,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     int selectedYearLevel = 1;
     int? selectedLecturerId;
 
-    // ទាញយកបញ្ជីគ្រូបង្រៀនពី Backend
     final lecturers = await ClassService.getLecturers();
     if (lecturers.isNotEmpty) {
       selectedLecturerId = lecturers.first['id'] as int?;
@@ -303,7 +301,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                     totalSessionsCtrl.text = '${latest.totalSessions}';
                   }
 
-                  // គណនាថ្ងៃបង្រៀនបន្ទាប់ (+៧ ថ្ងៃពីកាលបរិច្ឆេទចុងក្រោយបង្អស់ក្នុងប្រព័ន្ធ)
                   if (latest.classDate != null && latest.classDate!.isNotEmpty) {
                     final parsed = DateTime.tryParse(latest.classDate!);
                     if (parsed != null) {
@@ -407,7 +404,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ឆ្នាំសិក្សា (វាយដោយដៃ ឬរើសរហ័ស) & ឆមាស
+
                       Row(
                         children: [
                           Expanded(
@@ -441,7 +438,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      // កូដមុខវិជ្ជា & ឈ្មោះមុខវិជ្ជា (Auto-Fill Defaults ពេលវាយបញ្ចូល ឬរើសពីបញ្ជី)
                       Row(
                         children: [
                           SizedBox(
@@ -494,7 +490,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ],
                       const SizedBox(height: 14),
 
-                      // បន្ទប់រៀន & ម៉ោង
                       Row(
                         children: [
                           Expanded(
@@ -522,7 +517,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Quick Single Session Chips (៦ Sessions ស្តង់ដារសាកលវិទ្យាល័យ មួយ Session = ៩០ នាទី)
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -554,7 +548,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      // កាលបរិច្ឆេទនៃ Session (Session Date) & ថ្ងៃរៀន (Day of week)
                       Row(
                         children: [
                           Expanded(
@@ -624,7 +617,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      // ចំនួនសប្តាហ៍សរុប (Total Weeks - Default 15)
                       Row(
                         children: [
                           Expanded(
@@ -643,7 +635,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ),
                       const SizedBox(height: 14),
 
-                      // ជ្រើសរើសគ្រូបង្រៀន (Lecturer Selection)
                       DropdownButtonFormField<int>(
                         key: ValueKey('lec_$selectedLecturerId'),
                         initialValue: (lecturers.any((l) => l['id'] == selectedLecturerId)) ? selectedLecturerId : (lecturers.isNotEmpty ? lecturers.first['id'] as int? : null),
@@ -814,7 +805,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     }
   }
 
-  /// កែប្រែព័ត៌មានថ្នាក់រៀន (Edit Class - Admin Only)
   Future<void> _openEditClassDialog(ClassModel c) async {
     final nameCtrl = TextEditingController(text: c.subjectName);
     final codeCtrl = TextEditingController(text: c.subjectCode);
@@ -986,7 +976,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                       ),
                       const SizedBox(height: 8),
 
-                      // Quick Single Session Chips (៦ Sessions ស្តង់ដារសាកលវិទ្យាល័យ មួយ Session = ៩០ នាទី)
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1017,7 +1006,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      // កាលបរិច្ឆេទនៃ Session (Session Date) & ថ្ងៃរៀន (Day of week)
+
                       Row(
                         children: [
                           Expanded(
@@ -1279,7 +1268,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     }
   }
 
-  /// លុបថ្នាក់រៀន (Delete Class - Admin Only)
   Future<void> _confirmDeleteClass(ClassModel c) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -1348,8 +1336,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     }
   }
 
-  /// បើកផ្ទាំង Projector Fullscreen QR Code សម្រាប់គ្រូ ឬ Admin បញ្ចាំងក្នុងថ្នាក់
-  /// បង្ហាញផ្ទាំងបញ្ជីកាលបរិច្ឆេទថ្ងៃបង្រៀនទាំងអស់សម្រាប់មុខវិជ្ជានេះ
   void _showSessionsDialog(_GroupedClass grouped) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
@@ -1481,7 +1467,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                               ],
                             ),
                           ),
-                          // ប៊ូតុងបញ្ចាំង QR
+
                           IconButton(
                             tooltip: AppLanguage.tr('បញ្ចាំង QR', 'Project QR'),
                             icon: const Icon(Icons.tv_rounded, size: 20, color: Color(0xFF0284C7)),
@@ -1490,7 +1476,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                               _openProjectorModal(session);
                             },
                           ),
-                          // ប៊ូតុងមើលវត្តមាន
+
                           IconButton(
                             tooltip: AppLanguage.tr('វត្តមាន', 'Attendance'),
                             icon: const Icon(Icons.fact_check_outlined, size: 20, color: Color(0xFF10B981)),
@@ -1527,7 +1513,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     );
   }
 
-  /// ដំណើរការបញ្ចាំង QR (បើមានច្រើនកាលបរិច្ឆេទ ឱ្យជ្រើសរើស ឬបើក Active ស្វ័យប្រវត្តិ)
   void _handleProjectQr(_GroupedClass grouped) {
     if (grouped.sessions.length == 1) {
       _openProjectorModal(grouped.sessions.first);
@@ -1541,7 +1526,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     _showSessionsDialog(grouped);
   }
 
-  /// ដំណើរការមើលវត្តមាន
   void _handleViewAttendance(_GroupedClass grouped) {
     if (grouped.sessions.length == 1) {
       Navigator.pushReplacementNamed(context, AppRoutes.attendances, arguments: grouped.sessions.first.id);
@@ -1550,7 +1534,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     _showSessionsDialog(grouped);
   }
 
-  /// ដំណើរការលុបមុខវិជ្ជាជាក្រុម
   Future<void> _handleDeleteGroupedClass(_GroupedClass grouped) async {
     if (grouped.sessions.length == 1) {
       await _confirmDeleteClass(grouped.sessions.first);
@@ -1621,7 +1604,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
     );
   }
 
-  /// បើកផ្ទាំងមើលបញ្ជីឈ្មោះនិស្សិតក្នុងថ្នាក់ (Enrolled Students Roster Dialog)
   void _openClassRosterDialog(ClassModel c) {
     showDialog(
       context: context,
@@ -1711,7 +1693,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                   builder: (sCtx, setDlgState) {
                     return Column(
                       children: [
-                    // Summary bar
+
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       margin: const EdgeInsets.only(bottom: 12),
@@ -1956,7 +1938,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Header Bar
+
                         Padding(
                           padding: const EdgeInsets.all(20),
                           child: LayoutBuilder(
@@ -2047,7 +2029,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                         ),
                         const Divider(height: 1),
 
-                        // របារច្រោះថ្នាក់រៀនតាម ឆ្នាំសិក្សា, ឆ្នាំទី, ជំនាន់, ដេប៉ាតឺម៉ង់
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                           child: Wrap(
@@ -2423,7 +2404,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                        Row(
                                          mainAxisSize: MainAxisSize.min,
                                          children: [
-                                           // ប៊ូតុងបញ្ចាំងលើ Projector ពេញអេក្រង់
+
                                            ElevatedButton.icon(
                                              icon: const Icon(Icons.tv_rounded, size: 16),
                                              label: Text(AppLanguage.tr('បញ្ចាំង QR', 'Project QR')),
@@ -2437,7 +2418,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                              onPressed: () => _handleProjectQr(grouped),
                                            ),
                                            const SizedBox(width: 8),
-                                           // ប៊ូតុងមើលបញ្ជីសិស្សក្នុងថ្នាក់ (Class Roster)
+
                                            OutlinedButton.icon(
                                              icon: const Icon(Icons.people_alt_outlined, size: 16),
                                              label: Text(AppLanguage.tr('បញ្ជីសិស្ស', 'Roster')),
@@ -2450,7 +2431,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                              onPressed: () => _openClassRosterDialog(grouped.primarySession),
                                            ),
                                            const SizedBox(width: 8),
-                                           // ប៊ូតុងមើលវត្តមាន
+
                                            OutlinedButton.icon(
                                              icon: const Icon(Icons.fact_check_outlined, size: 16),
                                              label: Text(AppLanguage.tr('វត្តមាន', 'Attendance')),
@@ -2496,7 +2477,6 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
   }
 }
 
-/// ផ្ទាំង Modal បញ្ចាំង QR Code ទំហំធំសម្រាប់ Projector / HDMI
 class _ProjectorDialog extends StatefulWidget {
   final ClassModel classModel;
   final VoidCallback onStatusChanged;
@@ -2514,7 +2494,7 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
   late ClassModel _class;
   late bool _isActive;
   late String _currentToken;
-  int _countdown = 240; // 4 minutes
+  int _countdown = 240;
   Timer? _timer;
   Timer? _pollTimer;
   List<AttendanceModel> _liveAttendances = [];
@@ -2557,7 +2537,6 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
     final list = await AttendanceService.getClassAttendances(_class.id);
     if (!mounted) return;
 
-    // Sort scanned students most-recent-first
     final sorted = List<AttendanceModel>.from(list);
     sorted.sort((a, b) {
       final aTime = a.scannedAt;
@@ -2763,7 +2742,7 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: const Color(0xFF0F172A), // Dark slate presentation background
+      backgroundColor: const Color(0xFF0F172A),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 960),
@@ -2773,7 +2752,7 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Top Bar
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -2811,7 +2790,6 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
               ),
               const SizedBox(height: 6),
 
-              // Class info
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -2821,7 +2799,6 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
               ),
               const SizedBox(height: 22),
 
-              // 2-Column Split: Left = Big QR, Right = Live Check-in Feed
               LayoutBuilder(
                 builder: (ctx, constraints) {
                   final isWide = constraints.maxWidth >= 720;
@@ -3027,11 +3004,6 @@ class _ProjectorDialogState extends State<_ProjectorDialog> {
   }
 }
 
-
-
-
-
-/// Model ជំនួយសម្រាប់ច្របាច់កាលវិភាគថ្នាក់រៀនជាក្រុមតាមកូដមុខវិជ្ជា
 class _GroupedClass {
   final String key;
   final String subjectCode;

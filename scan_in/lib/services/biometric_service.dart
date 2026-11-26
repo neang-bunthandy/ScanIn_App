@@ -1,3 +1,4 @@
+// Device ID binding and Face ID/Biometric authentication service.
 import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
@@ -14,7 +15,6 @@ class BiometricService {
   static const String _keyDeviceId = 'scanin_device_id';
   static final LocalAuthentication _auth = LocalAuthentication();
 
-  /// បង្កើត ឬទាញយក Device ID ប្រចាំទូរស័ព្ទនេះ (Single Device Binding)
   static Future<String> getOrCreateDeviceId() async {
     final prefs = await SharedPreferences.getInstance();
     final existing = prefs.getString(_keyDeviceId);
@@ -29,7 +29,6 @@ class BiometricService {
     return newId;
   }
 
-  /// ផ្ទៀងផ្ទាត់ផ្ទៃមុខ (Face ID / Biometric) របស់ទូរស័ព្ទ
   static Future<BiometricAuthResult> authenticateWithFaceId() async {
     try {
       final canCheck = await _auth.canCheckBiometrics;

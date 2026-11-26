@@ -1,4 +1,5 @@
 <?php
+// ClassModel Eloquent model and generation matching helpers.
 
 namespace App\Models;
 
@@ -9,18 +10,8 @@ class ClassModel extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'classes';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'user_id',
         'subject_name',
@@ -42,11 +33,6 @@ class ClassModel extends Model
         'qr_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'is_qr_active' => 'boolean',
         'class_date' => 'date:Y-m-d',
@@ -55,17 +41,11 @@ class ClassModel extends Model
         'total_sessions' => 'integer',
     ];
 
-    /**
-     * ទំនាក់ទំនងទៅកាន់គ្រូបង្រៀន (User)
-     */
     public function lecturer()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * ស្រង់យកលេខជំនាន់ (គាំទ្រទាំងលេខខ្មែរ និងអារ៉ាប់)
-     */
     public static function extractGenNumber(?string $gen): ?int
     {
         if (!$gen) return null;
@@ -78,9 +58,6 @@ class ClassModel extends Model
         return null;
     }
 
-    /**
-     * ពិនិត្យមើលថាតើជំនាន់ទាំងពីរត្រូវគ្នាឬទេ (គាំទ្រទាំងលេខខ្មែរ និងអារ៉ាប់)
-     */
     public static function matchesGeneration(?string $genA, ?string $genB): bool
     {
         $a = trim((string)($genA ?? ''));
@@ -95,9 +72,6 @@ class ClassModel extends Model
         return false;
     }
 
-    /**
-     * បញ្ជីវត្តមានក្នុងថ្នាក់រៀននេះ
-     */
     public function attendances()
     {
         return $this->hasMany(Attendance::class, 'class_id');

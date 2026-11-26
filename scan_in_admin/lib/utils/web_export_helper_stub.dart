@@ -1,3 +1,4 @@
+// Browser file download, print/PDF, and file picker helpers.
 import 'dart:typed_data';
 
 void downloadBytesFile({
@@ -5,11 +6,11 @@ void downloadBytesFile({
   required String filename,
   String mimeType = 'text/csv;charset=utf-8',
 }) {
-  // No-op on non-web platforms
+
 }
 
 void printHtmlReport(String htmlContent) {
-  // No-op on non-web platforms
+
 }
 
 Future<({String name, Uint8List bytes})?> pickFileBytes({

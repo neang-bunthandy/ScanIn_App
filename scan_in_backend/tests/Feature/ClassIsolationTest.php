@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: ClassIsolationTest.php.
 
 namespace Tests\Feature;
 
@@ -51,7 +52,6 @@ class ClassIsolationTest extends TestCase
             'is_qr_active' => false,
         ]);
 
-        // Admin sees both classes
         $adminClasses = $this->actingAs($admin)->getJson('/api/classes')
             ->assertStatus(200)
             ->json('data');
@@ -59,27 +59,23 @@ class ClassIsolationTest extends TestCase
         $this->assertContains($daraClass->id, $adminIds);
         $this->assertContains($otherClass->id, $adminIds);
 
-        // Dara ONLY sees daraClass, NOT otherClass
         $daraClasses = $this->actingAs($dara)->getJson('/api/classes')
             ->assertStatus(200)
             ->json('data');
         $this->assertCount(1, $daraClasses);
         $this->assertEquals($daraClass->id, $daraClasses[0]['id']);
 
-        // Other lecturer ONLY sees otherClass, NOT daraClass
         $otherClasses = $this->actingAs($otherLecturer)->getJson('/api/classes')
             ->assertStatus(200)
             ->json('data');
         $this->assertCount(1, $otherClasses);
         $this->assertEquals($otherClass->id, $otherClasses[0]['id']);
 
-        // Dara cannot view attendances or toggle QR of otherClass (403)
         $this->actingAs($dara)->getJson("/api/classes/{$otherClass->id}/attendances")
             ->assertStatus(403);
         $this->actingAs($dara)->postJson("/api/classes/{$otherClass->id}/toggle-qr", ['is_qr_active' => true])
             ->assertStatus(403);
 
-        // Dara CAN view attendances and toggle QR of daraClass (200)
         $this->actingAs($dara)->getJson("/api/classes/{$daraClass->id}/attendances")
             ->assertStatus(200);
         $this->actingAs($dara)->postJson("/api/classes/{$daraClass->id}/toggle-qr", ['is_qr_active' => true])
@@ -91,7 +87,6 @@ class ClassIsolationTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $lecturer = User::factory()->create(['role' => 'lecturer']);
 
-        // Create class with class_date
         $createRes = $this->actingAs($admin)->postJson('/api/classes', [
             'subject_name' => 'Data Mining With Python',
             'subject_code' => 'IT001',
@@ -108,23 +103,19 @@ class ClassIsolationTest extends TestCase
         $classId = $createRes['id'];
         $this->assertEquals('2026-11-14', $createRes['class_date']);
 
-        // Check index returns class_date
         $listRes = $this->actingAs($admin)->getJson('/api/classes')
             ->assertStatus(200)->json('data');
         $found = collect($listRes)->firstWhere('id', $classId);
         $this->assertEquals('2026-11-14', $found['class_date']);
 
-        // Filter by matching date
         $filteredMatch = $this->actingAs($admin)->getJson('/api/classes?date=2026-11-14')
             ->assertStatus(200)->json('data');
         $this->assertNotEmpty(collect($filteredMatch)->where('id', $classId));
 
-        // Filter by different date
         $filteredMismatch = $this->actingAs($admin)->getJson('/api/classes?date=2026-11-21')
             ->assertStatus(200)->json('data');
         $this->assertEmpty(collect($filteredMismatch)->where('id', $classId));
 
-        // Update class_date
         $this->actingAs($admin)->putJson("/api/classes/{$classId}", [
             'class_date' => '2026-11-21',
         ])->assertStatus(200);

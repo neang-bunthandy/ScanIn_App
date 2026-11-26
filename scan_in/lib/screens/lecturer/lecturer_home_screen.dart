@@ -1,3 +1,4 @@
+// Lecturer bottom navigation shell and QR controls.
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
@@ -12,9 +13,6 @@ import 'lecturer_dashboard_screen.dart';
 import 'lecturer_attendance_screen.dart';
 import 'lecturer_profile_screen.dart';
 
-/// អេក្រង់មេរបស់គ្រូ (Lecturer Main Shell)
-/// គ្រប់គ្រង BottomNavigationBar និងប្តូររវាងអេក្រង់ទាំង ៣
-/// គាំទ្រ Dark Mode ទាំងស្រុងលើ Scaffold, BottomNavigationBar និងគ្រប់ Tabs
 class LecturerHomeScreen extends StatefulWidget {
   final String? lecturerEmail;
   final UserModel? user;
@@ -65,7 +63,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
     final activeUser = widget.user ?? cached ?? _cachedLecturer;
     final remoteClasses = await ClassService.getLecturerClasses();
 
-    // ធានាថាគ្រូម្នាក់ៗឃើញតែថ្នាក់ដែល Admin ចាត់តាំងឱ្យខ្លួន (user_id == activeUser.id) ប៉ុណ្ណោះ
     final filteredClasses = (activeUser != null && activeUser.role == 'lecturer')
         ? remoteClasses.where((c) => c.lecturerId == activeUser.id).toList()
         : remoteClasses;
@@ -79,7 +76,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
         _isLoading = false;
       });
 
-      // ទាញយកវត្តមានរបស់ថ្នាក់រៀននីមួយៗពី Database
       final List<AttendanceModel> allAttendances = [];
       for (var c in filteredClasses) {
         final atts = await AttendanceService.getClassAttendances(c.id);
@@ -91,7 +87,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
     }
   }
 
-  // បើក/បិទ QR សម្រាប់ថ្នាក់រៀន
   void _toggleQrForClass(ClassModel c, {bool? forceStatus}) {
     final currentStatus = _classQrActive[c.id] ?? false;
     final newStatus = forceStatus ?? !currentStatus;
@@ -132,7 +127,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
     );
   }
 
-  // បង្ហាញ Bottom Sheet QR Code សម្រាប់និស្សិតស្កេន
   void _showQrBottomSheet(ClassModel c) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sheetBg = isDark ? const Color(0xFF1E293B) : Colors.white;
@@ -149,7 +143,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
       }
     });
 
-    // បើកដំណើរការ QR ទៅកាន់ Backend ព្រមទាំង Token
     ClassService.toggleQr(c.id, true, qrToken: currentSheetToken);
 
     showModalBottomSheet(
@@ -170,7 +163,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Handle bar
+
                     Container(
                       width: 44,
                       height: 4,
@@ -181,7 +174,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                     ),
                     const SizedBox(height: 18),
 
-                    // Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -239,7 +231,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Simulated QR Code Container
                     Container(
                       width: 220,
                       height: 220,
@@ -325,7 +316,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
 
                     const SizedBox(height: 16),
 
-                    // QR Code Expiry & Token indicator
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
@@ -354,7 +344,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
 
                     const SizedBox(height: 16),
 
-                    // Live Scan Progress Counter
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
@@ -407,7 +396,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Action Buttons Row
                     Row(
                       children: [
                         Expanded(
@@ -529,7 +517,6 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
       }
     });
 
-    // Save ការកែប្រែចូល Database (MySQL)
     AttendanceService.updateAttendanceStatus(item.id, newStatus, note: note);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -561,7 +548,7 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                 : IndexedStack(
               index: _currentIndex,
               children: [
-                // Tab 1: ដើម (Dashboard)
+
                 LecturerDashboardScreen(
                   lecturer: lecturer,
                   classes: _classes,
@@ -573,14 +560,14 @@ class _LecturerHomeScreenState extends State<LecturerHomeScreen> {
                   onGoToProfileTab: () => setState(() => _currentIndex = 2),
                   onRefresh: _loadBackendData,
                 ),
-                // Tab 2: វត្តមាន (Attendance)
+
                 LecturerAttendanceScreen(
                   classes: _classes,
                   attendanceRecords: _attendanceRecords,
                   onUpdateAttendanceStatus: _updateAttendanceStatus,
                   onRefresh: _loadBackendData,
                 ),
-                // Tab 3: ខ្ញុំ (Profile)
+
                 LecturerProfileScreen(
                   lecturer: lecturer,
                   classes: _classes,

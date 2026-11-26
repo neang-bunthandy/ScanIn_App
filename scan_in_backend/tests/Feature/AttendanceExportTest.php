@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: AttendanceExportTest.php.
 
 namespace Tests\Feature;
 
@@ -70,7 +71,7 @@ class AttendanceExportTest extends TestCase
         $response->assertStatus(200);
         $this->assertStringContainsString('text/csv', $response->headers->get('Content-Type'));
         $content = $response->getContent();
-        // Verify UTF-8 BOM prefix for Excel Khmer support
+
         $this->assertStringStartsWith("\xEF\xBB\xBF", $content);
         $this->assertStringContainsString('IT20-999', $content);
         $this->assertStringContainsString('និស្សិត តេស្ត', $content);

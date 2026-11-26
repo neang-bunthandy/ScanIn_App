@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: AttendanceFeatureTest.php.
 
 namespace Tests\Feature;
 
@@ -67,7 +68,6 @@ class AttendanceFeatureTest extends TestCase
         $student = $this->createStudent();
         $class = $this->createClass($lecturer);
 
-        // 1. Teacher marks student as Present
         $resp1 = $this->actingAs($lecturer)->postJson('/api/attendances/manual', [
             'class_id' => $class->id,
             'student_id' => $student->id,
@@ -80,7 +80,6 @@ class AttendanceFeatureTest extends TestCase
             'status' => 'present',
         ]);
 
-        // 2. Teacher changes student to Late
         $resp2 = $this->actingAs($lecturer)->postJson('/api/attendances/manual', [
             'class_id' => $class->id,
             'student_id' => $student->id,
@@ -93,7 +92,6 @@ class AttendanceFeatureTest extends TestCase
             'status' => 'late',
         ]);
 
-        // 3. Teacher resets attendance (deletes record so student can re-scan or be unmarked)
         $resp3 = $this->actingAs($lecturer)->postJson('/api/attendances/manual', [
             'class_id' => $class->id,
             'student_id' => $student->id,
@@ -113,7 +111,6 @@ class AttendanceFeatureTest extends TestCase
         $student = $this->createStudent();
         $class = $this->createClass($teacher1);
 
-        // Teacher 2 cannot touch Teacher 1's class attendance
         $response = $this->actingAs($teacher2)->postJson('/api/attendances/manual', [
             'class_id' => $class->id,
             'student_id' => $student->id,
@@ -126,7 +123,7 @@ class AttendanceFeatureTest extends TestCase
     {
         $lecturer = $this->createLecturer();
         $student = $this->createStudent();
-        // Set class start time to 2 hours ago
+
         $pastStartTime = Carbon::now()->subHours(2)->format('H:i');
         $pastEndTime = Carbon::now()->subHours(1)->format('H:i');
         $class = $this->createClass($lecturer, "{$pastStartTime} - {$pastEndTime}");

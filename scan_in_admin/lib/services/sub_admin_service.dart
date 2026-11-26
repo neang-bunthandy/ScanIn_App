@@ -1,10 +1,11 @@
+// Sub-Admin CRUD management API service.
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
 import 'auth_service.dart';
 
 class SubAdminService {
-  /// ទាញយកបញ្ជី Sub-Admin ទាំងអស់ពី Server (Master Admin Only)
+
   static Future<List<Map<String, dynamic>>> getSubAdmins() async {
     try {
       final token = await AuthService.getToken();
@@ -31,7 +32,6 @@ class SubAdminService {
     }
   }
 
-  /// បង្កើតគណនី Sub-Admin ថ្មី
   static Future<Map<String, dynamic>> createSubAdmin({
     required String name,
     String? latinName,
@@ -87,7 +87,6 @@ class SubAdminService {
     }
   }
 
-  /// កែប្រែព័ត៌មាន Sub-Admin
   static Future<Map<String, dynamic>> updateSubAdmin({
     required int id,
     String? name,
@@ -146,7 +145,6 @@ class SubAdminService {
     }
   }
 
-  /// លុបគណនី Sub-Admin
   static Future<Map<String, dynamic>> deleteSubAdmin(int id) async {
     try {
       final token = await AuthService.getToken();

@@ -1,3 +1,4 @@
+// QR scan, Face ID check-in, export, and attendance API service.
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
@@ -6,7 +7,7 @@ import '../models/attendance_model.dart';
 import 'auth_service.dart';
 
 class AttendanceService {
-  /// ទាញយកបញ្ជីវត្តមានរបស់ថ្នាក់រៀនជាក់លាក់មួយ (Lecturer views Attendance for a Class)
+
   static Future<List<AttendanceModel>> getClassAttendances(int classId) async {
     try {
       final token = await AuthService.getToken();
@@ -33,7 +34,6 @@ class AttendanceService {
     return [];
   }
 
-  /// សិស្សស្កេន QR Code កត់វត្តមាន (Student Scans QR)
   static Future<Map<String, dynamic>> scanAttendance(String qrToken) async {
     try {
       final token = await AuthService.getToken();
@@ -71,7 +71,6 @@ class AttendanceService {
     };
   }
 
-  /// ទាញយកប្រវត្តិវត្តមានរបស់សិស្សផ្ទាល់ខ្លួន (Student Attendance History)
   static Future<List<AttendanceModel>> getMyAttendanceHistory() async {
     try {
       final token = await AuthService.getToken();
@@ -98,7 +97,6 @@ class AttendanceService {
     return [];
   }
 
-  /// គ្រូកែប្រែស្ថានភាពវត្តមានសិស្ស (Lecturer updates student attendance status)
   static Future<bool> updateAttendanceStatus(
     int id,
     String status, {
@@ -133,8 +131,6 @@ class AttendanceService {
     }
   }
 
-  /// គ្រូ ឬ Admin កែប្រែវត្តមានសិស្សដោយផ្ទាល់ (Manual Attendance Override)
-  /// គាំទ្រ៖ 'present', 'late', 'absent', 'reset'
   static Future<Map<String, dynamic>> recordManualAttendance({
     required int classId,
     required int studentId,
@@ -179,7 +175,6 @@ class AttendanceService {
     }
   }
 
-  /// ទាញយកឯកសារ CSV (UTF-8 BOM សម្រាប់ Excel) ពី Backend API
   static Future<Uint8List?> fetchExportCsvBytes({int? classId}) async {
     try {
       final token = await AuthService.getToken();

@@ -1,3 +1,4 @@
+// Attendance record model and status helpers.
 import '../core/app_language.dart';
 
 class AttendanceModel {
@@ -10,9 +11,9 @@ class AttendanceModel {
   final int studentId;
   final String studentName;
   final String studentCode;
-  final String status; // 'present' (មក), 'late' (យឺត), 'absent' (អវត្តមាន)
+  final String status;
   final DateTime? scannedAt;
-  final String date; // ឧ. 2026-10-15
+  final String date;
   final String? note;
   final DateTime? createdAt;
 
@@ -37,7 +38,6 @@ class AttendanceModel {
   bool get isLate => status == 'late';
   bool get isAbsent => status == 'absent';
 
-  // ឈ្មោះស្ថានភាពជាភាសាខ្មែរ
   String get statusKhmer {
     switch (status) {
       case 'present':
@@ -51,7 +51,6 @@ class AttendanceModel {
     }
   }
 
-  // ឈ្មោះស្ថានភាពតាមភាសាដែលបានជ្រើសរើស (Khmer / English)
   String get statusText {
     if (AppLanguage.isEnglish) {
       switch (status) {
@@ -68,7 +67,6 @@ class AttendanceModel {
     return statusKhmer;
   }
 
-  // បំលែងពី JSON របស់ Laravel API (Snake_case)
   factory AttendanceModel.fromJson(Map<String, dynamic> json) {
     return AttendanceModel(
       id: json['id'] as int,
@@ -99,7 +97,6 @@ class AttendanceModel {
     );
   }
 
-  // បំលែងទៅជា JSON សម្រាប់ផ្ញើទៅ Laravel API
   Map<String, dynamic> toJson() {
     return {
       'id': id,

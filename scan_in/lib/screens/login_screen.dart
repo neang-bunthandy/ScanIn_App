@@ -1,3 +1,4 @@
+// Mobile app login screen.
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
@@ -286,7 +287,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // --- Card Container (Email & Password) ---
+
                           Container(
                             padding: const EdgeInsets.all(22.0),
                             decoration: BoxDecoration(
@@ -309,7 +310,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // Label: អ៊ីមែល
+
                                 Text(
                                   AppLanguage.tr('អ៊ីមែល', 'Email'),
                                   style: TextStyle(
@@ -320,7 +321,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 8),
 
-                                // TextFormField: Email
                                 TextFormField(
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
@@ -372,7 +372,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 18),
 
-                                // Label: ពាក្យសម្ងាត់
                                 Text(
                                   AppLanguage.tr('ពាក្យសម្ងាត់', 'Password'),
                                   style: TextStyle(
@@ -383,7 +382,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 const SizedBox(height: 8),
 
-                                // TextFormField: Password
                                 TextFormField(
                                   controller: _passwordController,
                                   obscureText: _obscurePassword,
@@ -457,7 +455,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 24),
 
-                          // --- Text: ចូលជា ---
                           Center(
                             child: Text(
                               AppLanguage.tr('ចូលជា', 'Sign In As'),
@@ -470,7 +467,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 12),
 
-                          // --- Segmented Role Selector: [ 🎓 សិស្ស  |  👤 គ្រូ / បុគ្គលិក ] ---
                           Container(
                             height: 50,
                             padding: const EdgeInsets.all(4),
@@ -481,7 +477,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             child: Row(
                               children: [
-                                // Tab 1: 🎓 សិស្ស
+
                                 Expanded(
                                   child: InkWell(
                                     onTap: () => _handleRoleChanged(UserRole.student),
@@ -526,7 +522,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
 
-                                // Tab 2: 👤 គ្រូ / បុគ្គលិក
                                 Expanded(
                                   child: InkWell(
                                     onTap: () => _handleRoleChanged(UserRole.teacher),
@@ -576,7 +571,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           const SizedBox(height: 24),
 
-                          // --- Button: ចូលប្រើ ---
                           SizedBox(
                             height: 48,
                             child: ElevatedButton(

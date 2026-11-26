@@ -1,4 +1,5 @@
 <?php
+// Attendance Eloquent model.
 
 namespace App\Models;
 
@@ -32,17 +33,11 @@ class Attendance extends Model
         'distance_meters' => 'integer',
     ];
 
-    /**
-     * ទំនាក់ទំនងទៅកាន់សិស្ស (Student User)
-     */
     public function student()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * ទំនាក់ទំនងទៅកាន់ថ្នាក់រៀន (Class)
-     */
     public function classModel()
     {
         return $this->belongsTo(ClassModel::class, 'class_id');

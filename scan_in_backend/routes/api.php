@@ -1,4 +1,5 @@
 <?php
+// Defines all REST API routes for ScanIn.
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CampusSettingController;
@@ -8,11 +9,6 @@ use App\Http\Controllers\Api\ReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Public Routes
-|--------------------------------------------------------------------------
-*/
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/avatars/{filename}', function ($filename) {
     $safeName = basename((string)$filename);
@@ -26,13 +22,8 @@ Route::get('/avatars/{filename}', function ($filename) {
     ]);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Protected Routes (Requires Bearer Token)
-|--------------------------------------------------------------------------
-*/
 Route::middleware('auth:sanctum')->group(function () {
-    // Departments API (Distinct departments from preset, users & classes)
+
     Route::get('/departments', function () {
         $preset = [
             'ព័ត៌មានវិទ្យា (IT)',
@@ -72,7 +63,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/attendances/{id}', [AttendanceController::class, 'update']);
     Route::post('/attendances/manual', [AttendanceController::class, 'manual']);
 
-// Lecturers API (Admin provisions lecturer accounts)
 Route::get('/lecturers', function (Request $request) {
     if (!$request->user()->isAcademicAdmin()) {
         return response()->json([
@@ -89,7 +79,7 @@ Route::get('/lecturers', function (Request $request) {
 });
 
 Route::post('/lecturers', function (Request $request) {
-    // ធានាសុវត្ថិភាព៖ មានតែ Admin ឬ Sub-Admin ប៉ុណ្ណោះដែលអាចបង្កើតគណនីគ្រូបង្រៀនបាន
+
     if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
@@ -184,7 +174,6 @@ Route::delete('/lecturers/{id}', function (Request $request, $id) {
         ], 404);
     }
 
-    // ដោះដូរគ្រូបង្រៀនចេញពីថ្នាក់រៀន
     \App\Models\ClassModel::where('user_id', $id)->update(['user_id' => null]);
     $lecturer->delete();
 
@@ -194,7 +183,6 @@ Route::delete('/lecturers/{id}', function (Request $request, $id) {
     ]);
 });
 
-// Students API (Admin provisions student accounts)
 Route::get('/students', function (Request $request) {
     if (!$request->user()->isAcademicAdmin()) {
         return response()->json([
@@ -233,7 +221,7 @@ Route::get('/students', function (Request $request) {
 });
 
 Route::post('/students', function (Request $request) {
-    // ធានាសុវត្ថិភាព៖ មានតែ Admin ឬ Sub-Admin ប៉ុណ្ណោះដែលអាចបង្កើតគណនីសិស្សបាន
+
     if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
             'status' => false,
@@ -281,7 +269,6 @@ Route::post('/students', function (Request $request) {
     ], 201);
 });
 
-// Import Students in Bulk (from Excel / CSV or JSON)
 Route::post('/students/import', function (Request $request) {
     if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
@@ -333,7 +320,7 @@ Route::post('/students/import', function (Request $request) {
         $gender = trim($row['gender'] ?? $row['sex'] ?? '');
         $dob = trim($row['date_of_birth'] ?? $row['dob'] ?? '');
         $dept = trim($row['department'] ?? $row['major'] ?? 'General');
-        // Auto-normalize department name if English/abbreviation passed
+
         $deptLower = strtolower($dept);
         if (str_contains($deptLower, 'information technology') || $deptLower === 'it') {
             $dept = 'ព័ត៌មានវិទ្យា (IT)';
@@ -355,7 +342,7 @@ Route::post('/students/import', function (Request $request) {
         $intakeYear = trim($row['intake_year'] ?? $row['start_year'] ?? '');
         $yearLevelRaw = $row['year_level'] ?? $row['year'] ?? null;
         $yearLevel = is_numeric($yearLevelRaw) ? (int)$yearLevelRaw : null;
-        // Auto-suggest year_level from intake_year if not set
+
         if ($yearLevel === null && !empty($intakeYear) && is_numeric($intakeYear)) {
             $diff = (int)date('Y') - (int)$intakeYear + 1;
             $yearLevel = max(1, min(4, $diff));
@@ -476,7 +463,6 @@ Route::put('/students/{id}', function (Request $request, $id) {
     ]);
 });
 
-// ដំឡើងឆ្នាំសិក្សាសិស្សតាមជំនាន់ ឬទូទាំងប្រព័ន្ធ (Promote Students Year Level - Admin Only)
 Route::post('/students/promote', function (Request $request) {
     if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
@@ -514,7 +500,6 @@ Route::post('/students/promote', function (Request $request) {
     ], 200);
 });
 
-// ប្តូរស្ថានភាពសិស្សជាក្រុម (Active / Graduated / Inactive - Admin Only)
 Route::post('/students/bulk-status', function (Request $request) {
     if ($request->user() && !$request->user()->isAcademicAdmin()) {
         return response()->json([
@@ -555,11 +540,10 @@ Route::post('/students/bulk-status', function (Request $request) {
     ], 200);
 });
 
-// Admin Only Reports API
 Route::get('/admin/reports/student-stats', [ReportController::class, 'studentStats']);
-// Attendance Export API (Admin, Sub-Admin & Lecturer)
+
 Route::get('/reports/attendance/export', [ReportController::class, 'exportAttendance']);
-// Campus GPS Geofencing Settings
+
 Route::get('/campus-settings', [CampusSettingController::class, 'show']);
 Route::put('/admin/campus-settings', [CampusSettingController::class, 'update']);
 
@@ -579,7 +563,6 @@ Route::delete('/students/{id}', function (Request $request, $id) {
         ], 404);
     }
 
-    // លុបកំណត់ត្រាវត្តមានទាំងអស់របស់សិស្សនេះ
     \App\Models\Attendance::where('user_id', $id)->delete();
     $student->delete();
 
@@ -589,9 +572,6 @@ Route::delete('/students/{id}', function (Request $request, $id) {
     ]);
 });
 
-// ==========================================
-// Sub-Admins Management API (Master Admin Only)
-// ==========================================
 Route::get('/sub-admins', function (Request $request) {
     if (!$request->user()->isMasterAdmin()) {
         return response()->json([
@@ -692,7 +672,6 @@ Route::delete('/sub-admins/{id}', function (Request $request, $id) {
         ], 403);
     }
 
-    // មិនអាចលុបគណនីខ្លួនឯងបានទេ
     if ((int)$request->user()->id === (int)$id) {
         return response()->json([
             'status' => false,
@@ -708,7 +687,6 @@ Route::delete('/sub-admins/{id}', function (Request $request, $id) {
         ], 404);
     }
 
-    // ការពារដាច់ខាតមិនឱ្យលុប Master Admin ណាម្នាក់ឡើយ
     if ($targetUser->role === 'admin') {
         return response()->json([
             'status' => false,
@@ -731,23 +709,19 @@ Route::delete('/sub-admins/{id}', function (Request $request, $id) {
     ]);
 });
 
-    // Auth & Student / Lecturer Protected Routes
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/user/change-password', [AuthController::class, 'changePassword']);
     Route::post('/profile/avatar', [AuthController::class, 'uploadAvatar']);
     Route::get('/student/classes', [ClassController::class, 'index']);
 
-    // Class routes
     Route::post('/classes', [ClassController::class, 'store']);
     Route::post('/classes/{id}/toggle-qr', [ClassController::class, 'toggleQr']);
 
-    // Attendance routes for students
     Route::post('/attendances/scan', [AttendanceController::class, 'scan']);
     Route::post('/attendances/face-checkin', [AttendanceController::class, 'faceCheckIn']);
     Route::get('/student/attendances', [AttendanceController::class, 'studentHistory']);
 
-    // Admin Reset Student Device Binding
     Route::post('/admin/students/{id}/reset-device', function (Request $request, $id) {
         if (!$request->user() || !$request->user()->isAcademicAdmin()) {
             return response()->json([

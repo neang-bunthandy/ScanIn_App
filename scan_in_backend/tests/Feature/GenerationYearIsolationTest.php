@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: GenerationYearIsolationTest.php.
 
 namespace Tests\Feature;
 
@@ -82,7 +83,6 @@ class GenerationYearIsolationTest extends TestCase
             'is_qr_active' => true,
         ]);
 
-        // Year 3 student only sees Year 3 class (not Y1, Y2, Y4)
         $y3Classes = $this->actingAs($year3Student)->getJson('/api/student/classes')
             ->assertStatus(200)
             ->json('data');
@@ -92,7 +92,6 @@ class GenerationYearIsolationTest extends TestCase
         $this->assertNotContains($classYear2->id, $y3Ids);
         $this->assertNotContains($classYear4->id, $y3Ids);
 
-        // Year 2 student only sees Year 2 class (not Y1, Y3, Y4)
         $y2Classes = $this->actingAs($year2Student)->getJson('/api/student/classes')
             ->assertStatus(200)
             ->json('data');
@@ -102,17 +101,14 @@ class GenerationYearIsolationTest extends TestCase
         $this->assertNotContains($classYear3->id, $y2Ids);
         $this->assertNotContains($classYear4->id, $y2Ids);
 
-        // Year 3 student cannot scan Year 2 or Year 1 QR (403)
         $this->actingAs($year3Student)->postJson('/api/attendances/scan', [
             'qr_token' => 'QR-Y2-01',
         ])->assertStatus(403);
 
-        // Year 3 student CAN scan Year 3 QR (200)
         $this->actingAs($year3Student)->postJson('/api/attendances/scan', [
             'qr_token' => 'QR-Y3-01',
         ])->assertStatus(200);
 
-        // Admin /classes checks dynamic student_count per year_level
         $adminClasses = $this->actingAs($admin)->getJson('/api/classes')
             ->assertStatus(200)
             ->json('data');
@@ -169,7 +165,6 @@ class GenerationYearIsolationTest extends TestCase
             'is_qr_active' => true,
         ]);
 
-        // Only Gen 15 student can see & scan gen15Class
         $gen15Visible = collect($this->actingAs($stuGen15)->getJson('/api/student/classes')->json('data'))
             ->pluck('id')->all();
         $this->assertContains($gen15Class->id, $gen15Visible);
@@ -182,7 +177,6 @@ class GenerationYearIsolationTest extends TestCase
             'qr_token' => 'QR-GEN15-LAB',
         ])->assertStatus(403);
 
-        // Admin promotes only Gen 16 from Year 2 to Year 3
         $promoteRes = $this->actingAs($admin)->postJson('/api/students/promote', [
             'department' => $dept,
             'generation' => $gen16,
@@ -194,4 +188,3 @@ class GenerationYearIsolationTest extends TestCase
         $this->assertEquals(2, $stuGen15->fresh()->year_level);
     }
 }
-

@@ -1,4 +1,5 @@
 <?php
+// Manages classes, QR toggling, and class student rosters.
 
 namespace App\Http\Controllers\Api;
 
@@ -8,20 +9,17 @@ use Illuminate\Http\Request;
 
 class ClassController extends Controller
 {
-    /**
-     * បង្ហាញបញ្ជីថ្នាក់រៀនទាំងអស់ (Get list of classes)
-     */
+
     public function index(Request $request)
     {
         $query = ClassModel::with('lecturer');
         $user = $request->user();
 
-        // បើមាន User Login និងជាគ្រូ Filter យកតែថ្នាក់របស់គាត់
         if ($user && $user->role === 'lecturer') {
             $query->where('user_id', $user->id);
         } elseif ($user && $user->role === 'student') {
             $studentStatus = strtolower(trim((string)($user->status ?? 'active')));
-            // សិស្សម្នាក់ៗឃើញតែថ្នាក់រៀនតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី (1-4) + ជំនាន់ និងត្រូវតែមានស្ថានភាព active
+
             $dept = trim((string)($user->department ?? ''));
             if ($dept !== '' && $studentStatus === 'active') {
                 $query->where('department', $dept);
@@ -64,12 +62,10 @@ class ClassController extends Controller
             }
         }
 
-        // Filter តាមកាលបរិច្ឆេទជាក់លាក់ (Specific Date Filter: YYYY-MM-DD)
         if ($request->filled('date')) {
             $query->whereDate('class_date', $request->date);
         }
 
-        // ទាញសិស្សកំពុងសិក្សា (active) ដើម្បីគណនាចំនួនសិស្សពិតប្រាកដតាម ដេប៉ាតឺម៉ង់ + ឆ្នាំទី + ជំនាន់
         $allStudents = \App\Models\User::where('role', 'student')
             ->whereNotNull('department')
             ->where(function ($q) {
@@ -79,7 +75,6 @@ class ClassController extends Controller
             ->select('department', 'year_level', 'generation')
             ->get();
 
-        // គណនាចំនួនថ្ងៃ/សប្តាហ៍ដែលបានស្កេនវត្តមានពិតប្រាកដក្នុង DB សម្រាប់ថ្នាក់នីមួយៗ
         $sessionCounts = \App\Models\Attendance::selectRaw('class_id, COUNT(DISTINCT date) as total_days')
             ->groupBy('class_id')
             ->pluck('total_days', 'class_id');
@@ -139,12 +134,9 @@ class ClassController extends Controller
         ], 200);
     }
 
-    /**
-     * បង្កើតថ្នាក់រៀនថ្មី (Create New Class - Admin Only)
-     */
     public function store(Request $request)
     {
-        // ធានាសុវត្ថិភាព៖ មានតែ Admin ឬ Sub-Admin ប៉ុណ្ណោះដែលអាចបង្កើតថ្នាក់រៀនបាន គ្រូមិនអាចបង្កើតបានទេ
+
         if ($request->user() && !$request->user()->isAcademicAdmin()) {
             return response()->json([
                 'status' => false,
@@ -173,7 +165,6 @@ class ClassController extends Controller
             'qr_token' => 'nullable|string',
         ]);
 
-        // ប្រសិនបើ Admin ជាអ្នកបង្កើត និងបានជ្រើសរើសគ្រូ យក lecturer_id
         $userId = $request->input('lecturer_id') ?? $request->user()?->id ?? 1;
         $department = $request->filled('department')
             ? trim($request->department)
@@ -210,9 +201,6 @@ class ClassController extends Controller
         ], 201);
     }
 
-    /**
-     * បង្ហាញព័ត៌មានលម្អិតនៃថ្នាក់រៀន (Class Detail)
-     */
     public function show(Request $request, $id)
     {
         $class = ClassModel::with('lecturer')->find($id);
@@ -237,9 +225,6 @@ class ClassController extends Controller
         ], 200);
     }
 
-    /**
-     * បើក / បិទ QR Code សម្រាប់ថ្នាក់រៀន (Toggle QR Code)
-     */
     public function toggleQr(Request $request, $id)
     {
         $class = ClassModel::find($id);
@@ -279,9 +264,6 @@ class ClassController extends Controller
         ], 200);
     }
 
-    /**
-     * កែសម្រួលព័ត៌មានថ្នាក់រៀន (Update Class - Admin Only)
-     */
     public function update(Request $request, $id)
     {
         if ($request->user() && !$request->user()->isAcademicAdmin()) {
@@ -344,9 +326,6 @@ class ClassController extends Controller
         ], 200);
     }
 
-    /**
-     * លុបថ្នាក់រៀន (Delete Class - Admin Only)
-     */
     public function destroy(Request $request, $id)
     {
         if ($request->user() && !$request->user()->isAcademicAdmin()) {
@@ -364,7 +343,6 @@ class ClassController extends Controller
             ], 404);
         }
 
-        // លុបកំណត់ត្រាវត្តមានដែលពាក់ព័ន្ធនឹងថ្នាក់នេះ
         \App\Models\Attendance::where('class_id', $id)->delete();
         $class->delete();
 
@@ -374,9 +352,6 @@ class ClassController extends Controller
         ], 200);
     }
 
-    /**
-     * ទាញយកបញ្ជីឈ្មោះនិស្សិតក្នុងថ្នាក់រៀនតាមដេប៉ាតឺម៉ង់ (Class Roster - DB)
-     */
     public function students(Request $request, $id)
     {
         $class = ClassModel::find($id);

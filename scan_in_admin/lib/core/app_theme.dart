@@ -1,3 +1,4 @@
+// Light and Dark Material theme definitions.
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'app_colors.dart';
@@ -17,13 +18,10 @@ class NoTransitionsOnWebBuilder extends PageTransitionsBuilder {
   }
 }
 
-/// ថ្នាក់គ្រប់គ្រង Theme (Light Mode និង Dark Mode)
-/// ប្រើប្រាស់ `ValueNotifier<bool>` សាមញ្ញ ងាយស្រួលយល់ និងងាយស្រួលពន្យល់
 class AppTheme {
-  // ស្ថានភាព Dark Mode (true = Dark, false = Light)
+
   static final ValueNotifier<bool> isDarkMode = ValueNotifier<bool>(false);
 
-  // ផ្ទុកទិន្នន័យពី SharedPreferences ពេលបើក App
   static Future<void> init() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -31,7 +29,6 @@ class AppTheme {
     } catch (_) {}
   }
 
-  // ប្តូរ Theme ទៅ Dark ឬ Light
   static Future<void> toggleTheme(bool value) async {
     isDarkMode.value = value;
     try {
@@ -40,7 +37,6 @@ class AppTheme {
     } catch (_) {}
   }
 
-  // Light Theme (ពណ៌ភ្លឺ)
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
@@ -74,7 +70,6 @@ class AppTheme {
     ),
   );
 
-  // Dark Theme (ពណ៌ងងឹត)
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,

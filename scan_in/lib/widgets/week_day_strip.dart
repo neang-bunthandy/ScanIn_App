@@ -1,11 +1,10 @@
+// Weekly calendar strip widget for schedule filtering.
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_datetime.dart';
 import '../models/class_model.dart';
 
-/// របាររើសថ្ងៃផ្ដេក Week Day Strip បែប Modern (ដូច iOS / Notion Calendar)
-/// សម្រាប់ជ្រើសរើសថ្ងៃ និងត្រួតពិនិត្យកាលវិភាគសិក្សាជាក់ស្តែង
 class WeekDayStrip extends StatefulWidget {
   final DateTime selectedDate;
   final ValueChanged<DateTime> onSelectDate;
@@ -68,14 +67,14 @@ class _WeekDayStripState extends State<WeekDayStrip> {
 
     final now = DateTime.now();
     final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
-    // បង្ហាញ ១៤ ថ្ងៃ (២ សប្តាហ៍៖ សប្តាហ៍នេះ និងសប្តាហ៍ក្រោយ)
+
     final days = List.generate(14, (i) => monday.add(Duration(days: i)));
     final isTodaySelected = AppDateTime.isSameDay(widget.selectedDate, now);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // --- Header Row: ចំណងជើង & ប៊ូតុងត្រឡប់មកថ្ងៃនេះ ---
+
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -133,7 +132,6 @@ class _WeekDayStripState extends State<WeekDayStrip> {
 
         const SizedBox(height: 12),
 
-        // --- Horizontal Scrollable Strip (១៤ ថ្ងៃ) ---
         SizedBox(
           height: 80,
           child: ListView.builder(
@@ -187,7 +185,7 @@ class _WeekDayStripState extends State<WeekDayStrip> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // ឈ្មោះថ្ងៃ (ច័ន្ទ, អង្គារ...)
+
                         Text(
                           AppDateTime.dayOfWeekShort(day),
                           style: TextStyle(
@@ -198,7 +196,7 @@ class _WeekDayStripState extends State<WeekDayStrip> {
                                 : (isToday ? AppColors.primary : subTextCol),
                           ),
                         ),
-                        // លេខថ្ងៃ (16, 17, 18...)
+
                         Text(
                           '${day.day}',
                           style: TextStyle(
@@ -209,7 +207,7 @@ class _WeekDayStripState extends State<WeekDayStrip> {
                                 : (isToday ? AppColors.primary : textCol),
                           ),
                         ),
-                        // Indicator Dot (បើថ្ងៃនោះមានថ្នាក់រៀន)
+
                         Container(
                           width: 6,
                           height: 6,
@@ -235,7 +233,6 @@ class _WeekDayStripState extends State<WeekDayStrip> {
 
         const SizedBox(height: 10),
 
-        // --- Sub-indicator ថ្ងៃដែលកំពុងជ្រើសរើស (Current Filter Label) ---
         Row(
           children: [
             Icon(Icons.event_note_rounded, size: 14, color: subTextCol),

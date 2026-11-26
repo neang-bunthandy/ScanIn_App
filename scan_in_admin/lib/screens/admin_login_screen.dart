@@ -1,3 +1,4 @@
+// Web Admin & Lecturer login screen.
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
@@ -13,7 +14,7 @@ class AdminLoginScreen extends StatefulWidget {
 }
 
 class _AdminLoginScreenState extends State<AdminLoginScreen> {
-  String _selectedRole = 'admin'; // 'admin' or 'lecturer'
+  String _selectedRole = 'admin';
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -39,7 +40,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     final result = await AuthService.login(
       email: email,
       password: password,
-      role: _selectedRole, // ផ្ទៀងផ្ទាត់ Role ផ្ទាល់ពី Backend
+      role: _selectedRole,
     );
 
     if (!mounted) return;
@@ -47,7 +48,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     if (result.success) {
       final userRole = result.user?.role;
 
-      // ញែកសិទ្ធិដាច់ដោយឡែក៖ សាកលវិទ្យាធិការ (Master Admin) vs គ្រូ / បុគ្គលិក
       if (_selectedRole == 'admin' && userRole != 'admin') {
         await AuthService.logout();
         setState(() {
@@ -77,7 +77,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
         return;
       }
 
-      // សិស្សមិនអាចចូលប្រើប្រាស់ Web បានឡើយ
       if (userRole == 'student') {
         await AuthService.logout();
         setState(() {
@@ -92,11 +91,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
 
       ClassService.clearCache();
 
-      // ប្រសិនបើជាគ្រូ បញ្ជូនត្រង់ទៅកាន់ផ្ទាំងថ្នាក់បង្រៀន (Classes & Projector)
       if (userRole == 'lecturer') {
         Navigator.pushReplacementNamed(context, AppRoutes.classes);
       } else {
-        // ប្រសិនបើជា សាកលវិទ្យាធិការ ឬ Sub-Admin បញ្ជូនទៅកាន់ Admin Dashboard
+
         Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
       }
     } else {
@@ -139,7 +137,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Top Tab Selector: ញែកឱ្យដាច់រវាង Admin និង គ្រូបង្រៀន
+
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
@@ -227,7 +225,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Logo Icon
                 Center(
                   child: Container(
                     width: 56,
@@ -255,7 +252,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 Text(
                   isAdminMode
                       ? AppLanguage.tr(
-                          'ផ្ទាំងគ្រប់គ្រងសម្រាប់សាកលវិទ្យាធិការ និងរដ្ឋបាល', 
+                          'ផ្ទាំងគ្រប់គ្រងសម្រាប់សាកលវិទ្យាធិការ និងរដ្ឋបាល',
                           'Admin Panel for Rector and Administration'
                         )
                       : AppLanguage.tr(
@@ -289,7 +286,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   const SizedBox(height: 16),
                 ],
 
-                // Email
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -305,7 +301,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Password (ជាមួយ True/False Toggle បើក/បិទមើល Password)
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -335,7 +330,6 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Submit Button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(

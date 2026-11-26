@@ -1,7 +1,7 @@
+// Reusable search bar widget for Web Admin tables.
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 
-/// ប្រអប់ស្វែងរករួមសម្រាប់ផ្ទាំងគ្រប់គ្រង Web Admin (Search Bar)
 class AdminSearchField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;

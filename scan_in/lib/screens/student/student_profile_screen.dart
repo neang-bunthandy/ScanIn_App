@@ -1,3 +1,4 @@
+// Student profile, photo upload, and settings screen.
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/app_colors.dart';
@@ -9,8 +10,6 @@ import '../../models/attendance_model.dart';
 import '../../services/auth_service.dart';
 import '../login_screen.dart';
 
-/// អេក្រង់ព័ត៌មានផ្ទាល់ខ្លួនសិស្ស (Tab 3: ខ្ញុំ)
-/// គាំទ្រទាំង Light Mode និង Dark Mode យ៉ាងពេញលេញ
 class StudentProfileScreen extends StatefulWidget {
   final UserModel student;
   final List<AttendanceModel> attendances;
@@ -85,7 +84,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       );
 
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop(); // pop loading
+      Navigator.of(context, rootNavigator: true).pop();
 
       setState(() {
         _isUploadingAvatar = false;
@@ -273,10 +272,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                 );
 
                 if (!mounted) return;
-                Navigator.of(context, rootNavigator: true).pop(); // Close loading
+                Navigator.of(context, rootNavigator: true).pop();
 
                 if (result['success'] == true) {
-                  if (ctx.mounted) Navigator.pop(ctx); // Close password dialog
+                  if (ctx.mounted) Navigator.pop(ctx);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -490,7 +489,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
     final dividerCol = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
     final avatarBg = isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9);
 
-    // គណនាស្ថិតិវត្តមានជាក់ស្តែងពី Database (MySQL)
     final int presentCount = widget.attendances.where((a) => a.isPresent).length;
     final int lateCount = widget.attendances.where((a) => a.isLate).length;
     final int absentCount = widget.attendances.where((a) => a.isAbsent).length;
@@ -508,7 +506,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // --- ១. Header Card ព័ត៌មានសិស្ស ---
+
           Card(
             color: cardBg,
             elevation: 0,
@@ -619,7 +617,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
           const SizedBox(height: 16),
 
-          // --- ២. ស្ថិតិវត្តមានសង្ខេប (Attendance Quick Stats) ---
           Card(
             color: cardBg,
             elevation: 0,
@@ -689,7 +686,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
           const SizedBox(height: 16),
 
-          // --- ៣. ព័ត៌មានលម្អិតពីការសិក្សា (Academic Details) ---
           Card(
             color: cardBg,
             elevation: 0,
@@ -778,7 +774,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
           const SizedBox(height: 16),
 
-          // --- ៤. ការកំណត់ និងសុវត្ថិភាព (Settings & Security) ---
           Card(
             color: cardBg,
             elevation: 0,
@@ -797,7 +792,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ),
                   const SizedBox(height: 8),
 
-                  // មុខងារ Dark Mode
                   Material(
                     color: Colors.transparent,
                     child: Theme(
@@ -844,7 +838,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ),
                   Divider(height: 12, color: dividerCol),
 
-                  // Notifications switch
                   Material(
                     color: Colors.transparent,
                     child: Theme(
@@ -900,7 +893,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ),
                   Divider(height: 12, color: dividerCol),
 
-                  // Change Password
                   Material(
                     color: Colors.transparent,
                     child: ListTile(
@@ -921,7 +913,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
                   ),
                   Divider(height: 12, color: dividerCol),
 
-                  // Language
                   Material(
                     color: Colors.transparent,
                     child: ListTile(
@@ -950,7 +941,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
           const SizedBox(height: 16),
 
-          // --- ៥. ជំនួយ និងព័ត៌មានកម្មវិធី (Support & About) ---
           Card(
             color: cardBg,
             elevation: 0,
@@ -996,7 +986,6 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
 
           const SizedBox(height: 24),
 
-          // --- ៦. ប៊ូតុងចាកចេញ (Logout Button) ---
           SizedBox(
             width: double.infinity,
             height: 48,

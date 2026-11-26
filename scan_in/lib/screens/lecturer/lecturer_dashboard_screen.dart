@@ -1,3 +1,4 @@
+// Lecturer home dashboard and teaching statistics.
 import 'package:flutter/material.dart';
 import '../../core/api_config.dart';
 import '../../core/app_colors.dart';
@@ -11,9 +12,6 @@ import 'class_detail_screen.dart';
 import 'show_qr_screen.dart';
 import 'attendance_list_screen.dart';
 
-/// អេក្រង់ទំព័រដើមរបស់គ្រូ (Tab 1: ដើម)
-/// គាំទ្រទាំង Light Mode និង Dark Mode យ៉ាងពេញលេញ
-/// បំពាក់ WeekDayStrip (ជម្រើសទី ២) សម្រាប់រើសថ្ងៃ និងមើលកាលវិភាគបង្រៀនជាក់ស្តែង
 class LecturerDashboardScreen extends StatefulWidget {
   final UserModel lecturer;
   final List<ClassModel> classes;
@@ -68,7 +66,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
     final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
     final avatarBg = isDark ? const Color(0xFF334155) : AppColors.primaryLight;
 
-    // ថ្នាក់ដែលត្រូវបង្ហាញ QR លំនាំដើម (បើមិនទាន់មានថ្នាក់ មិនប្រើថ្នាក់គំរូរបស់គ្រូផ្សេងឡើយ)
     final ClassModel? defaultClass = classes.isEmpty
         ? null
         : classes.firstWhere(
@@ -76,7 +73,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
             orElse: () => classes.first,
           );
 
-    // គណនាស្ថិតិរួម ដោយមិនរាប់ស្ទួនចំពោះមុខវិជ្ជាដដែលៗ (Unique Course Code)
     final Set<String> uniqueCourseCodes = {};
     int totalStudents = 0;
     for (var c in classes) {
@@ -105,7 +101,7 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- 1. Header (សួស្តី & តួនាទី) ---
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +165,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
 
           const SizedBox(height: 20),
 
-          // --- 2. Big Action Button (📱 បង្ហាញ QR កត់វត្តមាន) ---
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -266,7 +261,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // --- 3. Teaching Summary Cards (ស្ថិតិបង្រៀន) ---
           Text(
             AppLanguage.tr('ស្ថិតិបង្រៀន', 'Teaching Statistics'),
             style: TextStyle(
@@ -279,7 +273,7 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
 
           Row(
             children: [
-              // ថ្នាក់បង្រៀន (Classes)
+
               Expanded(
                 child: _buildStatCard(
                   count: '$uniqueClassesCount',
@@ -291,7 +285,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
               ),
               const SizedBox(width: 12),
 
-              // សិស្សសរុប (Total Students)
               Expanded(
                 child: _buildStatCard(
                   count: '$totalStudents',
@@ -303,7 +296,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
               ),
               const SizedBox(width: 12),
 
-              // វត្តមានមធ្យម (Avg Attendance) - Clickable to go to Attendance tab
               Expanded(
                 child: Material(
                   color: Colors.transparent,
@@ -325,7 +317,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // --- 3.5. របាររើសថ្ងៃ Week Day Strip (ជម្រើសទី ២ ទំនើប) ---
           WeekDayStrip(
             selectedDate: _selectedDate,
             classes: classes,
@@ -345,7 +336,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // ច្រោះយកថ្នាក់បង្រៀនតាមថ្ងៃដែលបានជ្រើសរើស
           () {
             final dayClasses = classes.where((c) {
               return AppDateTime.matchesClassSchedule(c.dayOfWeek, c.classDate, _selectedDate);
@@ -355,7 +345,7 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // --- 4. Teaching Classes Section Header ---
+
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -433,7 +423,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // --- 5. Class Cards List ---
                 if (classes.isEmpty)
                   Center(
                     child: Padding(
@@ -542,7 +531,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
     return content;
   }
 
-  // Stat Card Widget
   Widget _buildStatCard({
     required String count,
     required String label,
@@ -581,7 +569,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
     );
   }
 
-  // Class Card Widget for Lecturer
   Widget _buildClassCard(
     BuildContext context,
     ClassModel c, {
@@ -619,7 +606,7 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Row: Subject Code & Name + QR Status + More Options
+
             Row(
               children: [
                 Container(
@@ -650,7 +637,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
                   ),
                 ),
 
-                // QR Status Chip (ចុចដើម្បីបើក/បិទភ្លាមៗ)
                 InkWell(
                   onTap: () => widget.onToggleQr(c),
                   borderRadius: BorderRadius.circular(20),
@@ -689,7 +675,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
                   ),
                 ),
 
-                // Popup Menu
                 PopupMenuButton<String>(
                   icon: Icon(Icons.more_vert, size: 20, color: subTextCol),
                   padding: EdgeInsets.zero,
@@ -744,7 +729,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
 
             const SizedBox(height: 12),
 
-            // Class Schedule & Room Info
             Row(
               children: [
                 Icon(Icons.room_outlined, size: 16, color: subTextCol),
@@ -789,7 +773,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
 
             const SizedBox(height: 12),
 
-            // Progress & Student Count
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -832,10 +815,9 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
             Divider(height: 1, color: isDark ? const Color(0xFF334155) : const Color(0xFFF1F5F9)),
             const SizedBox(height: 12),
 
-            // Card Bottom Actions
             Row(
               children: [
-                // Button 1: បង្ហាញ QR Code
+
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () => widget.onShowQr(c),
@@ -854,7 +836,6 @@ class _LecturerDashboardScreenState extends State<LecturerDashboardScreen> {
                 ),
                 const SizedBox(width: 10),
 
-                // Button 2: ព័ត៌មានលម្អិត & សិស្ស
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () {

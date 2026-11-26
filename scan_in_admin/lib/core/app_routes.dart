@@ -1,3 +1,4 @@
+// Named route constants and route generator.
 import 'package:flutter/material.dart';
 import '../screens/admin_login_screen.dart';
 import '../screens/admin_dashboard_screen.dart';
@@ -8,7 +9,6 @@ import '../screens/admin_attendances_screen.dart';
 import '../screens/admin_student_stats_screen.dart';
 import '../screens/admin_sub_admins_screen.dart';
 
-/// កំណត់ឈ្មោះ Route ទាំងអស់ក្នុង Admin Panel (Web)
 class AppRoutes {
   static const String login = '/login';
   static const String dashboard = '/dashboard';

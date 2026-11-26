@@ -1,4 +1,5 @@
 <?php
+// Handles user authentication, profile, password, and avatar upload.
 
 namespace App\Http\Controllers\Api;
 
@@ -10,20 +11,17 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * User Login API
-     */
+
     public function login(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
-            'role' => 'nullable|string', // 'student', 'lecturer', 'teacher'
+            'role' => 'nullable|string',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
-        // ផ្ទៀងផ្ទាត់ Email & Password
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status' => false,
@@ -31,14 +29,12 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // ផ្ទៀងផ្ទាត់តួនាទី (Role) ប្រសិនបើ Frontend ផ្ញើមក
         if ($request->filled('role')) {
             $expectedRole = strtolower(trim($request->role));
             if ($expectedRole === 'teacher') {
                 $expectedRole = 'lecturer';
             }
 
-            // ១. ផ្ទាំង «សាកលវិទ្យាធិការ» (Rector / Master Admin) - ផ្តាច់មុខសម្រាប់តែ Admin កំពូល CLI តែមួយគត់!
             if (in_array($expectedRole, ['rector', 'admin', 'master_admin'])) {
                 if ($user->role !== 'admin') {
                     $msg = $user->role === 'sub_admin'
@@ -54,7 +50,6 @@ class AuthController extends Controller
                 }
             }
 
-            // ២. ផ្ទាំង «គ្រូ / បុគ្គលិក» (Staff & Lecturers) - សម្រាប់តែ Sub-Admin និង គ្រូបង្រៀន
             if (in_array($expectedRole, ['staff', 'lecturer'])) {
                 if (!in_array($user->role, ['sub_admin', 'lecturer'])) {
                     $msg = $user->role === 'admin'
@@ -68,7 +63,6 @@ class AuthController extends Controller
                 }
             }
 
-            // ៣. ករណី Mobile App Login (student)
             if ($expectedRole === 'student') {
                 if ($user->role !== 'student') {
                     return response()->json([
@@ -79,7 +73,6 @@ class AuthController extends Controller
             }
         }
 
-        // បង្កើត Sanctum Token
         $token = $user->createToken('scan_in_token')->plainTextToken;
 
         return response()->json([
@@ -107,9 +100,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * Get Current Authenticated User Profile
-     */
     public function me(Request $request)
     {
         $user = $request->user();
@@ -136,9 +126,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * Change User Password API
-     */
     public function changePassword(Request $request)
     {
         $request->validate([
@@ -148,7 +135,6 @@ class AuthController extends Controller
 
         $user = $request->user();
 
-        // ផ្ទៀងផ្ទាត់ Password ចាស់
         if (!Hash::check($request->current_password, $user->password)) {
             return response()->json([
                 'status' => false,
@@ -156,7 +142,6 @@ class AuthController extends Controller
             ], 422);
         }
 
-        // Update ពាក្យសម្ងាត់ថ្មី
         $user->password = Hash::make($request->new_password);
         $user->save();
 
@@ -166,9 +151,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * Upload User Profile Avatar
-     */
     public function uploadAvatar(Request $request)
     {
         $request->validate([
@@ -178,13 +160,11 @@ class AuthController extends Controller
         $user = $request->user();
         $file = $request->file('avatar');
 
-        // លុបរូបភាពចាស់ចេញពី Storage ប្រសិនបើមាន
         if ($user->avatar_url && str_starts_with($user->avatar_url, '/storage/avatars/')) {
             $oldRelativePath = str_replace('/storage/', '', $user->avatar_url);
             \Illuminate\Support\Facades\Storage::disk('public')->delete($oldRelativePath);
         }
 
-        // រក្សាទុករូបភាពថ្មីក្នុង storage/app/public/avatars
         $extension = $file->getClientOriginalExtension() ?: 'jpg';
         $filename = 'avatar_' . $user->id . '_' . time() . '_' . \Illuminate\Support\Str::random(6) . '.' . $extension;
         $path = $file->storeAs('avatars', $filename, 'public');
@@ -217,9 +197,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    /**
-     * User Logout API
-     */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

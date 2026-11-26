@@ -1,3 +1,4 @@
+// Classes, students, lecturers, and roster API service.
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
@@ -77,7 +78,6 @@ class ClassService {
     return diff;
   }
 
-  /// បង្កើតជម្រើសឆ្នាំចូលរៀនដោយស្វ័យប្រវត្តិ (ប្រែប្រួលតាមឆ្នាំបច្ចុប្បន្ន + តម្លៃមានស្រាប់ក្នុង DB)
   static List<String> buildIntakeYearOptions([Iterable<String> extra = const []]) {
     final nowYear = DateTime.now().year;
     final set = <String>{
@@ -88,7 +88,6 @@ class ClassService {
     return list;
   }
 
-  /// បង្កើតជម្រើសឆ្នាំសិក្សាដោយស្វ័យប្រវត្តិ (ឧ. 2024-2025 .. 2034-2035 + តម្លៃមានស្រាប់ក្នុង DB)
   static List<String> buildAcademicYearOptions([Iterable<String> extra = const []]) {
     final nowYear = DateTime.now().year;
     final set = <String>{
@@ -99,7 +98,6 @@ class ClassService {
     return list;
   }
 
-  /// បង្កើតជម្រើសជំនាន់ (តម្លៃណែនាំតាមលំដាប់ជំនាន់ + ជំនាន់ដែលធ្លាប់បង្កើតក្នុង DB)
   static List<String> buildGenerationOptions([Iterable<String> extra = const []]) {
     final set = <String>{
       for (int g = 10; g <= 30; g++) 'ជំនាន់ទី $g (Gen $g)',
@@ -108,7 +106,6 @@ class ClassService {
     return set.toList();
   }
 
-  /// កែសម្រួលឈ្មោះដេប៉ាតឺម៉ង់អោយស៊ីគ្នាជាមួយប្រព័ន្ធ (ភាសាអង់គ្លេស ឬកាត់ -> ខ្មែរផ្លូវការ)
   static String normalizeDepartment(String? dept) {
     if (dept == null) return presetDepartments.first;
     final trimmed = dept.trim();
@@ -140,7 +137,6 @@ class ClassService {
   static final Set<String> _dynamicCustomDepartments = <String>{};
   static List<String>? _cachedDepartments;
 
-  /// ចុះឈ្មោះដេប៉ាតឺម៉ង់ថ្មីដែលបានវាយបញ្ចូលដោយដៃ ដើម្បីឱ្យលេចចេញគ្រប់ផ្ទាំង (សិស្ស, ថ្នាក់រៀន, គ្រូ)
   static void registerCustomDepartment(String? dept) {
     if (dept != null) {
       final trimmed = dept.trim();
@@ -150,7 +146,6 @@ class ClassService {
     }
   }
 
-  /// បង្កើតបញ្ជីជម្រើសដេប៉ាតឺម៉ង់ដោយស្វ័យប្រវត្តិ (Preset + តម្លៃដែលបានវាយដោយដៃ + តម្លៃមានស្រាប់ក្នុង DB)
   static List<String> buildDepartmentOptions([Iterable<String?> extra = const []]) {
     final set = <String>{
       ...presetDepartments,
@@ -193,7 +188,6 @@ class ClassService {
     return set.toList();
   }
 
-  /// ទាញយកបញ្ជីដេប៉ាតឺម៉ង់ទាំងអស់ពី DB (GET /api/departments)
   static Future<List<String>> fetchDepartments() async {
     try {
       final token = await AuthService.getToken();
@@ -235,7 +229,6 @@ class ClassService {
     _cachedDepartments = null;
   }
 
-  /// ទាញយកបញ្ជីថ្នាក់រៀនរបស់គ្រូ (Lecturer Classes)
   static Future<List<ClassModel>> getLecturerClasses({String? date}) async {
     try {
       final token = await AuthService.getToken();
@@ -267,7 +260,6 @@ class ClassService {
     return [];
   }
 
-  /// ទាញយកបញ្ជីថ្នាក់រៀនរបស់សិស្ស / Admin (Classes List)
   static Future<List<ClassModel>> getStudentClasses({String? date}) async {
     try {
       final token = await AuthService.getToken();
@@ -299,7 +291,6 @@ class ClassService {
     return [];
   }
 
-  /// បង្កើតថ្នាក់រៀនថ្មី (Create Class)
   static Future<ClassModel> createClass(ClassModel newClass) async {
     try {
       final token = await AuthService.getToken();
@@ -327,7 +318,6 @@ class ClassService {
     return newClass;
   }
 
-  /// បើក / បិទ QR Code សម្រាប់ថ្នាក់រៀន (Toggle QR Code & sync Token)
   static Future<bool> toggleQr(int classId, bool activate, {String? qrToken}) async {
     try {
       final token = await AuthService.getToken();
@@ -355,7 +345,6 @@ class ClassService {
     return false;
   }
 
-  /// ទាញយកបញ្ជីឈ្មោះនិស្សិតក្នុងថ្នាក់តាមដេប៉ាតឺម៉ង់ (Class Roster) ពី Backend
   static Future<List<Map<String, dynamic>>> getClassStudents(int classId) async {
     try {
       final token = await AuthService.getToken();
@@ -377,7 +366,6 @@ class ClassService {
     return [];
   }
 
-  /// ទាញយកបញ្ជីគ្រូបង្រៀនទាំងអស់សម្រាប់ Admin ជ្រើសរើសចាត់តាំងថ្នាក់រៀន
   static Future<List<Map<String, dynamic>>> getLecturers() async {
     try {
       final token = await AuthService.getToken();
@@ -401,7 +389,6 @@ class ClassService {
     return [];
   }
 
-  /// Admin បង្កើតគណនីគ្រូបង្រៀនថ្មី (Khmer Name, Latin Name, Email, Password, Department, StaffId, Phone)
   static Future<Map<String, dynamic>> createLecturer({
     required String name,
     String? latinName,
@@ -445,7 +432,6 @@ class ClassService {
     }
   }
 
-  /// Admin កែសម្រួលគណនីគ្រូបង្រៀន
   static Future<Map<String, dynamic>> updateLecturer({
     required int id,
     required String name,
@@ -492,7 +478,6 @@ class ClassService {
     }
   }
 
-  /// Admin លុបគណនីគ្រូបង្រៀន
   static Future<Map<String, dynamic>> deleteLecturer(int id) async {
     try {
       final token = await AuthService.getToken();
@@ -516,7 +501,6 @@ class ClassService {
     }
   }
 
-  /// ទាញយកបញ្ជីសិស្សទាំងអស់សម្រាប់ Admin គ្រប់គ្រង
   static Future<List<Map<String, dynamic>>> getStudents() async {
     try {
       final token = await AuthService.getToken();
@@ -540,7 +524,6 @@ class ClassService {
     return [];
   }
 
-  /// Admin បង្កើតគណនីសិស្សថ្មី (Khmer Name, Latin Name, Email, Password, StudentCode, Gender, DOB, Department, Generation, IntakeYear, YearLevel, Phone)
   static Future<Map<String, dynamic>> createStudent({
     required String name,
     String? latinName,
@@ -596,7 +579,6 @@ class ClassService {
     }
   }
 
-  /// Admin កែសម្រួលគណនីសិស្ស
   static Future<Map<String, dynamic>> updateStudent({
     required int id,
     required String name,
@@ -655,7 +637,6 @@ class ClassService {
     }
   }
 
-  /// Admin Import បញ្ជីសិស្សជាក្រុមពី Excel/CSV (Bulk Import)
   static Future<Map<String, dynamic>> importStudents(List<Map<String, dynamic>> studentsList) async {
     try {
       final token = await AuthService.getToken();
@@ -689,7 +670,6 @@ class ClassService {
     }
   }
 
-  /// Admin លុបគណនីសិស្ស
   static Future<Map<String, dynamic>> deleteStudent(int id) async {
     try {
       final token = await AuthService.getToken();
@@ -713,7 +693,6 @@ class ClassService {
     }
   }
 
-  /// Admin Reset Device ID របស់សិស្សពេលសិស្សដូរទូរស័ព្ទថ្មី
   static Future<Map<String, dynamic>> resetStudentDevice(int id) async {
     try {
       final token = await AuthService.getToken();
@@ -735,7 +714,6 @@ class ClassService {
     }
   }
 
-  /// Admin ដំឡើងឆ្នាំសិក្សានិស្សិត +1 ឆ្នាំ (Promote Year Level)
   static Future<Map<String, dynamic>> promoteStudents({
     String? generation,
     String? intakeYear,
@@ -775,7 +753,6 @@ class ClassService {
     }
   }
 
-  /// Admin ប្តូរស្ថានភាពសិស្សជាក្រុម (Active / Graduated / Inactive)
   static Future<Map<String, dynamic>> bulkUpdateStudentStatus({
     required String status,
     String? generation,
@@ -817,7 +794,6 @@ class ClassService {
     }
   }
 
-  /// Admin ទាញរបាយការណ៍ស្ថិតិនិស្សិត និងប្រវត្តិតាមឆ្នាំចូលរៀន ជំនាន់ និងដេប៉ាតឺម៉ង់
   static Future<Map<String, dynamic>?> getAdminStudentStats({
     String? intakeYear,
     String? department,
@@ -857,7 +833,6 @@ class ClassService {
     return null;
   }
 
-  /// Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន
   static Future<bool> createClassAdmin({
     required String subjectName,
     required String subjectCode,
@@ -910,7 +885,6 @@ class ClassService {
     return false;
   }
 
-  /// Admin កែសម្រួលព័ត៌មានថ្នាក់រៀន
   static Future<bool> updateClassAdmin({
     required int id,
     required String subjectName,
@@ -967,7 +941,6 @@ class ClassService {
     return false;
   }
 
-  /// Admin លុបថ្នាក់រៀន
   static Future<bool> deleteClassAdmin(int id) async {
     try {
       final token = await AuthService.getToken();

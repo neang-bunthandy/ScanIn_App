@@ -1,3 +1,4 @@
+// Lecturer mobile QR display and live check-in screen.
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -6,8 +7,6 @@ import '../../core/app_language.dart';
 import '../../models/class_model.dart';
 import '../../services/class_service.dart';
 
-/// អេក្រង់បង្ហាញ QR Code កម្រិតពេញអេក្រង់ (Projector / TV Mode)
-/// សម្រាប់លោកគ្រូ អ្នកគ្រូ បញ្ចាំងលើស្លាយ ឬកញ្ចក់ទូរទស្សន៍ក្នុងបន្ទប់រៀន
 class ShowQrScreen extends StatefulWidget {
   final ClassModel classModel;
 
@@ -25,7 +24,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
   late bool _isQrActive;
   int _scannedCount = 0;
   List<Map<String, dynamic>> _students = [];
-  static const int _qrDurationSeconds = 240; // ៤ នាទី (04:00)
+  static const int _qrDurationSeconds = 240;
   late String _currentToken;
 
   @override
@@ -76,7 +75,6 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
       _currentToken = newToken;
     });
 
-    // ធ្វើសមកាលកម្ម Token ថ្មីទៅកាន់ Backend Database
     await ClassService.toggleQr(_class.id, _isQrActive, qrToken: newToken);
 
     if (!mounted) return;
@@ -101,7 +99,6 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
       _isQrActive = newStatus;
     });
 
-    // ធ្វើសមកាលកម្មស្ថានភាព QR ទៅកាន់ Backend Database
     await ClassService.toggleQr(_class.id, newStatus, qrToken: _currentToken);
 
     if (!mounted) return;
@@ -148,7 +145,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
         Navigator.pop(context, _isQrActive);
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F172A), // Dark projector background
+        backgroundColor: const Color(0xFF0F172A),
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -205,7 +202,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Status Pill
+
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 decoration: BoxDecoration(
@@ -242,7 +239,6 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
 
               const SizedBox(height: 24),
 
-              // Main QR Container (White card for high contrast)
               Center(
                 child: Container(
                   width: 310,
@@ -262,7 +258,7 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Simulated QR Pattern Grid
+
                       Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -315,7 +311,6 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                         ],
                       ),
 
-                      // Center Logo / Badge
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
@@ -339,7 +334,6 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
                         ),
                       ),
 
-                      // Paused Overlay if paused
                       if (!_isQrActive)
                         Container(
                           decoration: BoxDecoration(
@@ -371,7 +365,6 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
 
               const SizedBox(height: 20),
 
-              // Timer & Token Info
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
@@ -410,7 +403,6 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
 
               const SizedBox(height: 28),
 
-              // Live Attendance Progress Box
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -484,7 +476,6 @@ class _ShowQrScreenState extends State<ShowQrScreen> {
 
               const SizedBox(height: 20),
 
-              // Recent Scanned Students Preview (Live from Database)
               if (scannedStudents.isNotEmpty) ...[
                 Align(
                   alignment: Alignment.centerLeft,

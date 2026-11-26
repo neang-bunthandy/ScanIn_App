@@ -1,3 +1,4 @@
+// Attendance audit, Excel/PDF export, and GPS settings screen.
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -106,7 +107,6 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
     }
   }
 
-  /// ទាញយកឯកសាររបាយការណ៍វត្តមានជា Excel (.csv UTF-8 BOM) ផ្ទាល់ពី Backend ឬ Fallback Local
   Future<void> _exportExcelCsv() async {
     if (_attendances.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -126,10 +126,8 @@ class _AdminAttendancesScreenState extends State<AdminAttendancesScreen> {
     final today = DateTime.now().toIso8601String().split('T').first;
     final filename = 'attendance_${safeCode}_$today.csv';
 
-    // Try fetching official UTF-8 BOM CSV from Laravel backend first
     Uint8List? bytes = await AttendanceService.fetchExportCsvBytes(classId: _selectedClassId);
 
-    // Fallback to building UTF-8 BOM CSV locally if needed
     if (bytes == null) {
       final header = [
         '#',

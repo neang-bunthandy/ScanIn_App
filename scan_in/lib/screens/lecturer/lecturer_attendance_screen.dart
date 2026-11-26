@@ -1,3 +1,4 @@
+// Lecturer attendance management tab.
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
@@ -5,8 +6,6 @@ import '../../models/attendance_model.dart';
 import '../../models/class_model.dart';
 import 'attendance_list_screen.dart';
 
-/// អេក្រង់គ្រប់គ្រងវត្តមានរបស់គ្រូ (Tab 2: វត្តមាន)
-/// គាំទ្រទាំង Light Mode និង Dark Mode យ៉ាងពេញលេញ
 class LecturerAttendanceScreen extends StatefulWidget {
   final List<ClassModel> classes;
   final List<AttendanceModel> attendanceRecords;
@@ -125,7 +124,6 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
     final textCol = isDark ? Colors.white : AppColors.textPrimary;
     final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
 
-    // Filter attendance records
     var filteredList = widget.attendanceRecords;
     if (_selectedClassFilterId != null) {
       filteredList = filteredList.where((a) => a.classId == _selectedClassFilterId).toList();
@@ -144,7 +142,7 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -202,7 +200,6 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
 
           const SizedBox(height: 12),
 
-          // Search Field
           TextField(
             onChanged: (val) => setState(() => _searchQuery = val),
             style: TextStyle(color: textCol),
@@ -230,7 +227,6 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
 
           const SizedBox(height: 12),
 
-          // Filter Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -261,7 +257,6 @@ class _LecturerAttendanceScreenState extends State<LecturerAttendanceScreen> {
 
           const SizedBox(height: 16),
 
-          // Attendance Records List (Always scrollable for Pull-to-Refresh)
           Expanded(
             child: Builder(
               builder: (context) {

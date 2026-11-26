@@ -1,4 +1,5 @@
 <?php
+// Handles QR/Face ID check-in, attendance history, and status updates.
 
 namespace App\Http\Controllers\Api;
 
@@ -11,9 +12,7 @@ use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
-    /**
-     * សិស្សស្កេនកូដ QR ដើម្បីកត់វត្តមាន (Scan Attendance + GPS Geofencing)
-     */
+
     public function scan(Request $request)
     {
         $request->validate([
@@ -44,9 +43,6 @@ class AttendanceController extends Controller
         return $this->processCheckIn($request, $class, 'qr');
     }
 
-    /**
-     * សិស្សកត់វត្តមានដោយ Face ID + GPS + Device Binding (ពេលគ្រូបើក QR យឺត ឬនៅកង់ទីនក្នុងសាលា)
-     */
     public function faceCheckIn(Request $request)
     {
         $campus = CampusSetting::current();
@@ -84,12 +80,9 @@ class AttendanceController extends Controller
         return $this->processCheckIn($request, $class, 'face_id');
     }
 
-    /**
-     * ដំណើរការផ្ទៀងផ្ទាត់រួមសម្រាប់ទាំង QR Scan និង Face ID Check-In
-     */
     private function processCheckIn(Request $request, ClassModel $class, string $method)
     {
-        // ១. ការពារកម្មវិធីបន្លំទីតាំង (Anti-Fake GPS / Mock Location)
+
         if ($request->boolean('is_mocked')) {
             return response()->json([
                 'status' => false,
@@ -99,7 +92,6 @@ class AttendanceController extends Controller
 
         $user = $request->user();
 
-        // ២. ពិនិត្យស្ថានភាពសិស្ស (អនុញ្ញាតតែសិស្សកំពុងសិក្សា 'active' ប៉ុណ្ណោះ)
         $studentStatus = strtolower(trim((string)($user->status ?? 'active')));
         if ($user->role === 'student' && $studentStatus !== 'active') {
             $statusMsg = $studentStatus === 'graduated'
@@ -111,7 +103,6 @@ class AttendanceController extends Controller
             ], 403);
         }
 
-        // ៣. ពិនិត្យថាតើនិស្សិតស្ថិតក្នុងដេប៉ាតឺម៉ង់ ឆ្នាំសិក្សា និងជំនាន់របស់ថ្នាក់នេះឬទេ
         if (!empty($class->department) && trim((string)($user->department ?? '')) !== trim((string)$class->department)) {
             return response()->json([
                 'status' => false,
@@ -133,7 +124,6 @@ class AttendanceController extends Controller
             ], 403);
         }
 
-        // ៤. ពិនិត្យ Single Device Binding (១ គណនី = ១ ទូរស័ព្ទ)
         $incomingDeviceId = trim((string)($request->input('device_id') ?? ''));
         if ($incomingDeviceId !== '') {
             if (empty($user->device_id)) {
@@ -151,7 +141,6 @@ class AttendanceController extends Controller
         $now = Carbon::now();
         $recordDate = $class->class_date ?: $today;
 
-        // ៥. ពិនិត្យទីតាំង GPS ក្នុងបរិវេណសាលា (GPS Geofencing)
         $campus = CampusSetting::current();
         $scanLat = $request->filled('latitude') ? (float)$request->latitude : null;
         $scanLng = $request->filled('longitude') ? (float)$request->longitude : null;
@@ -188,7 +177,6 @@ class AttendanceController extends Controller
             }
         }
 
-        // ៦. ពិនិត្យម៉ោងចាប់ផ្តើមថ្នាក់រៀន ដើម្បីកំណត់ថាមកទាន់ពេល ឬមកយឺត (> 15 នាទី)
         $status = 'present';
         $note = $method === 'face_id' ? 'បានកត់វត្តមានដោយ Face ID' : 'បានស្កេនតាម QR Code';
 
@@ -200,7 +188,7 @@ class AttendanceController extends Controller
                     $note = ($method === 'face_id' ? 'Face ID យឺត' : 'ស្កេនយឺត') . ' (ម៉ោង ' . $now->format('H:i') . ' លើស ១៥ នាទី)';
                 }
             } catch (\Exception $e) {
-                // រក្សា status = present ប្រសិនបើ parse ម៉ោងមិនចេញ
+
             }
         }
 
@@ -246,9 +234,6 @@ class AttendanceController extends Controller
         ], 200);
     }
 
-    /**
-     * ប្រវត្តិវត្តមានផ្ទាល់ខ្លួនរបស់សិស្ស (Student Attendance History)
-     */
     public function studentHistory(Request $request)
     {
         $user = $request->user();
@@ -284,9 +269,6 @@ class AttendanceController extends Controller
         ], 200);
     }
 
-    /**
-     * បញ្ជីវត្តមានក្នុងថ្នាក់រៀនជាក់លាក់មួយ (សម្រាប់គ្រូមើល)
-     */
     public function classAttendances(Request $request, $classId)
     {
         $class = ClassModel::find($classId);
@@ -333,9 +315,6 @@ class AttendanceController extends Controller
         ], 200);
     }
 
-    /**
-     * គ្រូកែប្រែស្ថានភាពវត្តមានសិស្ស (Update Attendance Status)
-     */
     public function update(Request $request, $id)
     {
         $request->validate([
@@ -395,10 +374,6 @@ class AttendanceController extends Controller
         ], 200);
     }
 
-    /**
-     * គ្រូ ឬ Admin កែសម្រួលវត្តមានសិស្សដោយផ្ទាល់ (Manual Attendance Override)
-     * គាំទ្រ៖ present, late, absent, reset (លុបកំណត់ត្រាដើម្បីឱ្យសិស្សស្កេនឡើងវិញ)
-     */
     public function manual(Request $request)
     {
         $request->validate([
@@ -418,7 +393,7 @@ class AttendanceController extends Controller
         }
 
         $user = $request->user();
-        // សិទ្ធិ៖ មានតែគ្រូបង្រៀនប្រចាំថ្នាក់នេះ ឬ Admin/Sub-Admin ប៉ុណ្ណោះដែលអាចកែប្រែវត្តមានបាន
+
         $isClassTeacher = ($user && $user->role === 'lecturer' && (int)$class->user_id === (int)$user->id);
         $isAdmin = ($user && $user->isAcademicAdmin());
 
@@ -433,7 +408,6 @@ class AttendanceController extends Controller
         $studentId = $request->student_id;
         $targetStatus = strtolower($request->status);
 
-        // ករណី reset៖ លុបកំណត់ត្រាវត្តមានចោល ដើម្បីឱ្យសិស្សត្រឡប់ទៅសភាពដើម "មិនទាន់ស្កេន" ឬអាចស្កេនម្តងទៀត
         if ($targetStatus === 'reset') {
             Attendance::where('class_id', $class->id)
                 ->where('user_id', $studentId)
@@ -453,7 +427,6 @@ class AttendanceController extends Controller
             ], 200);
         }
 
-        // ករណី present, late, absent
         $note = $request->filled('note')
             ? $request->note
             : ($targetStatus === 'present' ? 'កែសម្រួលដោយគ្រូ (មករៀន)' : ($targetStatus === 'late' ? 'កែសម្រួលដោយគ្រូ (មកយឺត)' : 'កែសម្រួលដោយគ្រូ (អវត្តមាន)'));

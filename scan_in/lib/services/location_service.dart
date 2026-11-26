@@ -1,3 +1,4 @@
+// Device GPS location and anti-fake-GPS service.
 import 'package:geolocator/geolocator.dart';
 
 class GpsLocationResult {
@@ -17,7 +18,7 @@ class GpsLocationResult {
 }
 
 class LocationService {
-  /// ចាប់ទីតាំង GPS បច្ចុប្បន្នរបស់ទូរស័ព្ទ និងពិនិត្យ Anti-Fake GPS (isMocked)
+
   static Future<GpsLocationResult> getCurrentPosition() async {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();

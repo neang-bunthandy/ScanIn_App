@@ -1,14 +1,13 @@
+// API endpoint URLs, host detection, and image URL resolver.
 import 'package:flutter/foundation.dart';
 import 'dart:io' show Platform;
 
 class ApiConfig {
-  // Configurable Host & Port
+
   static const String localhost = '127.0.0.1';
   static const String androidEmulatorHost = '10.0.2.2';
   static const int defaultPort = 8000;
 
-  // Manual IP Override (ពេលតេស្តលើទូរស័ព្ទពិតប្រាកដ ឬបណ្តាញ WiFi ជាក់ស្តែង)
-  // ឧទាហរណ៍៖ static String? customIp = '192.168.1.100';
   static String? customIp;
 
   static String? get customHost => customIp;
@@ -16,7 +15,6 @@ class ApiConfig {
 
   static int port = defaultPort;
 
-  /// កំណត់ IP ដោយស្វ័យប្រវត្តិតាមឧបករណ៍ដែលកំពុងដំណើរការ (គាំទ្រទាំង Web, Android, iOS, Desktop)
   static String get host {
     if (customIp != null && customIp!.isNotEmpty) {
       return customIp!;
@@ -28,7 +26,7 @@ class ApiConfig {
 
     try {
       if (Platform.isAndroid) {
-        // Android Emulator ប្រើ 10.0.2.2 ដើម្បីទាក់ទងមក localhost របស់ PC
+
         return androidEmulatorHost;
       } else if (Platform.isIOS) {
         return localhost;
@@ -42,14 +40,12 @@ class ApiConfig {
 
   static String get baseUrl => 'http://$host:$port/api';
 
-  // Auth Endpoints
   static String get loginUrl => '$baseUrl/login';
   static String get meUrl => '$baseUrl/me';
   static String get logoutUrl => '$baseUrl/logout';
   static String get changePasswordUrl => '$baseUrl/user/change-password';
   static String get uploadAvatarUrl => '$baseUrl/profile/avatar';
 
-  /// បម្លែង Relative Path នៃរូបភាពឱ្យទៅជា Full URL ដែលអាចទាញយកបាន
   static String? resolveImageUrl(String? path) {
     if (path == null || path.trim().isEmpty) return null;
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
@@ -61,7 +57,6 @@ class ApiConfig {
     return 'http://$host:$port$cleanPath';
   }
 
-  // Classes & Users Endpoints (Laravel REST API)
   static String get classesUrl => '$baseUrl/classes';
   static String get lecturersUrl => '$baseUrl/lecturers';
   static String get studentsUrl => '$baseUrl/students';
@@ -70,7 +65,6 @@ class ApiConfig {
   static String classToggleQrUrl(int id) => '$baseUrl/classes/$id/toggle-qr';
   static String get studentClassesUrl => '$baseUrl/student/classes';
 
-  // Attendance Endpoints
   static String get attendancesUrl => '$baseUrl/attendances';
   static String classAttendancesUrl(int classId) => '$baseUrl/classes/$classId/attendances';
   static String updateAttendanceUrl(int id) => '$baseUrl/attendances/$id';

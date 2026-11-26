@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: StudentStatusAndReportsTest.php.
 
 namespace Tests\Feature;
 
@@ -23,7 +24,6 @@ class StudentStatusAndReportsTest extends TestCase
         $deptIt = 'TestStats-IT';
         $deptCs = 'TestStats-CS';
 
-        // Year 2022: 2 IT (1 active, 1 graduated), 1 CS (inactive)
         User::factory()->create([
             'role' => 'student',
             'department' => $deptIt,
@@ -55,10 +55,8 @@ class StudentStatusAndReportsTest extends TestCase
             'student_code' => 'ST22-03',
         ]);
 
-        // Lecturer and Student are forbidden (403)
         $this->actingAs($lecturer)->getJson('/api/admin/reports/student-stats')->assertStatus(403);
 
-        // Admin filters by generation Gen 14 + intake_year 2022
         $res = $this->actingAs($admin)->getJson('/api/admin/reports/student-stats?intake_year=2022&generation=' . urlencode('ជំនាន់ទី ១៤ (Gen 14)'))
             ->assertStatus(200)
             ->json('data');
@@ -120,7 +118,6 @@ class StudentStatusAndReportsTest extends TestCase
             'is_qr_active' => true,
         ]);
 
-        // Class student_count and roster count ONLY active student (1)
         $classes = $this->actingAs($admin)->getJson('/api/classes')->assertStatus(200)->json('data');
         $found = collect($classes)->firstWhere('id', $class->id);
         $this->assertEquals(1, $found['student_count']);
@@ -129,16 +126,13 @@ class StudentStatusAndReportsTest extends TestCase
         $this->assertCount(1, $roster);
         $this->assertEquals($activeStu->id, $roster[0]['id']);
 
-        // Graduated & Inactive students cannot see or scan active classes
         $this->assertCount(0, $this->actingAs($gradStu)->getJson('/api/student/classes')->json('data'));
         $this->assertCount(0, $this->actingAs($inactStu)->getJson('/api/student/classes')->json('data'));
         $this->actingAs($gradStu)->postJson('/api/attendances/scan', ['qr_token' => 'QR-STAT-101'])->assertStatus(403);
         $this->actingAs($inactStu)->postJson('/api/attendances/scan', ['qr_token' => 'QR-STAT-101'])->assertStatus(403);
 
-        // Active student CAN scan
         $this->actingAs($activeStu)->postJson('/api/attendances/scan', ['qr_token' => 'QR-STAT-101'])->assertStatus(200);
 
-        // Bulk status update marks students as graduated too -> all 3 remain counted in Admin report!
         $this->actingAs($admin)->postJson('/api/students/bulk-status', [
             'department' => $dept,
             'status' => 'graduated',

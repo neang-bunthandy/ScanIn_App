@@ -1,9 +1,9 @@
+// Browser file download, print/PDF, and file picker helpers.
 import 'dart:async';
 import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:web/web.dart' as web;
 
-/// ទាញយកឯកសារ Bytes (CSV / Excel) ផ្ទាល់នៅលើ Browser
 void downloadBytesFile({
   required Uint8List bytes,
   required String filename,
@@ -24,7 +24,6 @@ void downloadBytesFile({
   web.URL.revokeObjectURL(url);
 }
 
-/// បើកផ្ទាំងរបាយការណ៍ HTML ស្អាត និងហៅ Print / Save as PDF លើ Browser
 void printHtmlReport(String htmlContent) {
   final blob = web.Blob(
     [htmlContent.toJS].toJS,
@@ -39,7 +38,6 @@ void printHtmlReport(String htmlContent) {
   }
 }
 
-/// ជ្រើសរើសឯកសារ (.xlsx, .csv) ពីកុំព្យូទ័រផ្ទាល់នៅលើ Browser
 Future<({String name, Uint8List bytes})?> pickFileBytes({
   String accept = '.csv,.xlsx,.xls',
 }) {

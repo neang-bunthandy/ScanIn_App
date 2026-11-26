@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: AuthApiTest.php.
 
 namespace Tests\Feature;
 
@@ -122,7 +123,6 @@ class AuthApiTest extends TestCase
 
         $token = $loginResponse->json('access_token');
 
-        // Test /api/me
         $meResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->getJson('/api/me');
 
@@ -134,7 +134,6 @@ class AuthApiTest extends TestCase
                 ],
             ]);
 
-        // Test /api/logout
         $logoutResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/logout');
 
@@ -161,7 +160,6 @@ class AuthApiTest extends TestCase
 
         $token = $loginResponse->json('access_token');
 
-        // Call change password API
         $changeResponse = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/user/change-password', [
                 'current_password' => 'oldpassword123',
@@ -173,7 +171,6 @@ class AuthApiTest extends TestCase
                 'status' => true,
             ]);
 
-        // Verify login with new password works
         $newLoginResponse = $this->postJson('/api/login', [
             'email' => $user->email,
             'password' => 'newpassword456',

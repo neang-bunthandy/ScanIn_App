@@ -1,3 +1,4 @@
+// Class roster and manual attendance marking screen.
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
@@ -195,7 +196,7 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- ១. Header Card ព័ត៌មានមុខវិជ្ជា ---
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20.0),
@@ -334,7 +335,6 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
 
             const SizedBox(height: 20),
 
-            // --- ២. ស្ថិតិវគ្គសិក្សា (Sessions & Progress) ---
             Row(
               children: [
                 Expanded(
@@ -361,7 +361,6 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
 
             const SizedBox(height: 20),
 
-            // --- ៣. ការពិពណ៌នាមុខវិជ្ជា (Description) ---
             if (c.description != null) ...[
               Container(
                 width: double.infinity,
@@ -407,7 +406,6 @@ class _ClassDetailScreenState extends State<ClassDetailScreen> {
               const SizedBox(height: 20),
             ],
 
-            // --- ៤. បញ្ជីឈ្មោះសិស្សក្នុងថ្នាក់ (Student Roster - Lecturer/Admin only) ---
             if (!widget.isStudentView) ...[
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,

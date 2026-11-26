@@ -1,3 +1,4 @@
+// Sub-Admin account management screen (Master Admin only).
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
@@ -163,7 +164,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                           const SizedBox(height: 12),
                         ],
 
-                        // ឈ្មោះខ្មែរ
                         TextFormField(
                           controller: nameCtrl,
                           decoration: InputDecoration(
@@ -181,7 +181,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // ឈ្មោះឡាតាំង
                         TextFormField(
                           controller: latinNameCtrl,
                           decoration: InputDecoration(
@@ -193,7 +192,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Email
                         TextFormField(
                           controller: emailCtrl,
                           decoration: InputDecoration(
@@ -214,7 +212,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Password
                         TextFormField(
                           controller: passCtrl,
                           obscureText: obscurePass,
@@ -240,7 +237,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // ការិយាល័យ / ដេប៉ាតឺម៉ង់
                         EditableComboField(
                           controller: deptCtrl,
                           labelText: AppLanguage.tr('ការិយាល័យ / ដេប៉ាតឺម៉ង់ (Department)', 'Department / Office'),
@@ -254,7 +250,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // លេខទូរស័ព្ទ
                         TextFormField(
                           controller: phoneCtrl,
                           decoration: InputDecoration(
@@ -415,7 +410,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                           const SizedBox(height: 12),
                         ],
 
-                        // ឈ្មោះខ្មែរ
                         TextFormField(
                           controller: nameCtrl,
                           decoration: InputDecoration(
@@ -432,7 +426,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // ឈ្មោះឡាតាំង
                         TextFormField(
                           controller: latinNameCtrl,
                           decoration: InputDecoration(
@@ -443,7 +436,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Email
                         TextFormField(
                           controller: emailCtrl,
                           decoration: InputDecoration(
@@ -460,7 +452,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Password (ស្រេចចិត្ត)
                         TextFormField(
                           controller: passCtrl,
                           obscureText: obscurePass,
@@ -482,7 +473,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // ការិយាល័យ / ដេប៉ាតឺម៉ង់
                         EditableComboField(
                           controller: deptCtrl,
                           labelText: AppLanguage.tr('ការិយាល័យ / ដេប៉ាតឺម៉ង់ (Department)', 'Department / Office'),
@@ -496,7 +486,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // លេខទូរស័ព្ទ
                         TextFormField(
                           controller: phoneCtrl,
                           decoration: InputDecoration(
@@ -507,7 +496,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // ស្ថានភាព (Status)
                         DropdownButtonFormField<String>(
                           initialValue: status,
                           decoration: InputDecoration(
@@ -632,7 +620,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
     final subTextCol = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
     final borderCol = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
 
-    // Only Master Admin can access this screen
     final isMasterAdmin = _currentUser?.isMasterAdmin ?? false;
     if (!isMasterAdmin && !_isLoading) {
       return AdminScaffold(
@@ -672,7 +659,7 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Row
+
               Row(
                 children: [
                   Expanded(
@@ -712,7 +699,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Metric Cards Row
               Row(
                 children: [
                   _buildMetricCard(
@@ -751,7 +737,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Search & Filter Card
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -787,7 +772,6 @@ class _AdminSubAdminsScreenState extends State<AdminSubAdminsScreen> {
               ),
               const SizedBox(height: 20),
 
-              // DataTable
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(

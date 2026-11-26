@@ -1,16 +1,17 @@
+// User data model and JSON serialization.
 class UserModel {
   final int id;
   final String name;
-  final String? latinName; // ឈ្មោះជាអក្សរឡាតាំង
+  final String? latinName;
   final String email;
-  final String role; // 'student' ឬ 'lecturer'
-  final String? studentCode; // លេខសម្គាល់សិស្ស (ឧ. STU001)
-  final String? staffId; // លេខសម្គាល់គ្រូ/បុគ្គលិក (ឧ. STF001)
-  final String? department; // មហាវិទ្យាល័យ / ដេប៉ាតឺម៉ង់
-  final String? generation; // ជំនាន់ (ឧ. Gen 15)
-  final String? intakeYear; // ចាប់ពីឆ្នាំ (ឧ. 2024)
-  final int? yearLevel; // ឆ្នាំទី (1-4)
-  final String status; // 'active', 'graduated', 'inactive'
+  final String role;
+  final String? studentCode;
+  final String? staffId;
+  final String? department;
+  final String? generation;
+  final String? intakeYear;
+  final int? yearLevel;
+  final String status;
   final String? phone;
   final String? avatarUrl;
   final DateTime? createdAt;
@@ -37,7 +38,6 @@ class UserModel {
   bool get isLecturer => role == 'lecturer' || role == 'teacher' || role == 'staff';
   bool get isAdmin => role == 'admin';
 
-  // បំលែងពី JSON ដែល Laravel API បាញ់មក (Snake_case)
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as int,
@@ -62,7 +62,6 @@ class UserModel {
     );
   }
 
-  // បំលែងទៅជា JSON សម្រាប់ផ្ញើទៅ Laravel API
   Map<String, dynamic> toJson() {
     return {
       'id': id,

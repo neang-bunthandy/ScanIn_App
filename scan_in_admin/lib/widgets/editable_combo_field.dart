@@ -1,6 +1,6 @@
+// Reusable editable dropdown/combo input widget.
 import 'package:flutter/material.dart';
 
-/// ប្រអប់បញ្ចូលទិន្នន័យដែលអាចទាំងវាយកំណត់ដោយដៃ (Free Text) និងចុចរើសពីបញ្ជីណែនាំ (Quick Pick)
 class EditableComboField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
@@ -62,4 +62,3 @@ class EditableComboField extends StatelessWidget {
     );
   }
 }
-

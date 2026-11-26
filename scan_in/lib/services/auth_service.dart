@@ -1,3 +1,4 @@
+// Authentication, token storage, password, and avatar API service.
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -24,7 +25,6 @@ class AuthService {
   static const String _keyToken = 'scanin_token';
   static const String _keyUser = 'scanin_user';
 
-  /// ចូលប្រើប្រាស់ (Login API)
   static Future<AuthResult> login({
     required String email,
     required String password,
@@ -58,7 +58,6 @@ class AuthService {
         final token = data['access_token'] as String;
         final user = UserModel.fromJson(data['user'] as Map<String, dynamic>);
 
-        // រក្សាទុក Token និង User ក្នុង SharedPreferences
         await _saveAuthData(token: token, user: user);
 
         return AuthResult(
@@ -91,7 +90,6 @@ class AuthService {
     }
   }
 
-  /// រក្សាទុក Token និង User ក្នុង Device
   static Future<void> _saveAuthData({
     required String token,
     required UserModel user,
@@ -101,13 +99,11 @@ class AuthService {
     await prefs.setString(_keyUser, jsonEncode(user.toJson()));
   }
 
-  /// យក Token ដែលបានរក្សាទុក
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_keyToken);
   }
 
-  /// យក User Profile ដែលបានរក្សាទុក
   static Future<UserModel?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString(_keyUser);
@@ -119,19 +115,16 @@ class AuthService {
     }
   }
 
-  /// ពិនិត្យថាតើបាន Login រួចហើយឬនៅ
   static Future<bool> isLoggedIn() async {
     final token = await getToken();
     return token != null && token.isNotEmpty;
   }
 
-  /// រក្សាទុក User Profile ថ្មីក្នុង SharedPreferences
   static Future<void> updateCurrentUser(UserModel user) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyUser, jsonEncode(user.toJson()));
   }
 
-  /// Upload រូបថត Profile (Camera / Gallery)
   static Future<AuthResult> uploadAvatar({
     required List<int> bytes,
     required String filename,
@@ -194,7 +187,6 @@ class AuthService {
     }
   }
 
-  /// ប្តូរពាក្យសម្ងាត់ (Change Password API)
   static Future<Map<String, dynamic>> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -247,7 +239,6 @@ class AuthService {
     }
   }
 
-  /// ចាកចេញពីគណនី (Logout)
   static Future<void> logout() async {
     try {
       final token = await getToken();
@@ -262,7 +253,7 @@ class AuthService {
         ).timeout(const Duration(seconds: 5));
       }
     } catch (_) {
-      // Ignore network errors on logout
+
     } finally {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_keyToken);

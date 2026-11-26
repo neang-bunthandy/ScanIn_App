@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: AvatarUploadTest.php.
 
 namespace Tests\Feature;
 
@@ -21,9 +22,6 @@ class AvatarUploadTest extends TestCase
         Storage::fake('public');
     }
 
-    /**
-     * Helper to create a valid 1x1 PNG file without requiring GD extension
-     */
     private function createFakeImage(string $name = 'avatar.png'): UploadedFile
     {
         $pngContent = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
@@ -147,7 +145,6 @@ class AvatarUploadTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        // Upload first avatar
         $firstFile = $this->createFakeImage('first.png');
         $this->postJson('/api/profile/avatar', ['avatar' => $firstFile]);
 
@@ -155,7 +152,6 @@ class AvatarUploadTest extends TestCase
         $firstAvatarPath = str_replace('/storage/', '', $user->avatar_url);
         Storage::disk('public')->assertExists($firstAvatarPath);
 
-        // Upload second avatar
         $secondFile = $this->createFakeImage('second.png');
         $this->postJson('/api/profile/avatar', ['avatar' => $secondFile]);
 
@@ -163,7 +159,6 @@ class AvatarUploadTest extends TestCase
         $secondAvatarPath = str_replace('/storage/', '', $user->avatar_url);
         Storage::disk('public')->assertExists($secondAvatarPath);
 
-        // The first file should have been deleted
         Storage::disk('public')->assertMissing($firstAvatarPath);
     }
 }

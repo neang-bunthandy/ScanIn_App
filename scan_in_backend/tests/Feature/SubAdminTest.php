@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: SubAdminTest.php.
 
 namespace Tests\Feature;
 
@@ -71,7 +72,6 @@ class SubAdminTest extends TestCase
         $master = $this->createMasterAdmin();
         $sub = $this->createSubAdmin();
 
-        // Test GET /api/sub-admins
         $listResponse = $this->actingAs($master)->getJson('/api/sub-admins');
         $listResponse->assertStatus(200)
             ->assertJson(['status' => true]);
@@ -79,7 +79,6 @@ class SubAdminTest extends TestCase
         $subAdminIds = collect($listResponse->json('data'))->pluck('id')->all();
         $this->assertContains($sub->id, $subAdminIds);
 
-        // Test PUT /api/sub-admins/{id}
         $updateResponse = $this->actingAs($master)->putJson("/api/sub-admins/{$sub->id}", [
             'name' => 'Sub Admin Updated',
             'phone' => '099 111 222',
@@ -113,11 +112,9 @@ class SubAdminTest extends TestCase
         $master1 = $this->createMasterAdmin();
         $master2 = $this->createMasterAdmin();
 
-        // Cannot delete self
         $response1 = $this->actingAs($master1)->deleteJson("/api/sub-admins/{$master1->id}");
         $response1->assertStatus(400);
 
-        // Cannot delete other Master Admin
         $response2 = $this->actingAs($master1)->deleteJson("/api/sub-admins/{$master2->id}");
         $response2->assertStatus(403);
     }
@@ -148,7 +145,6 @@ class SubAdminTest extends TestCase
             'status' => 'active',
         ]);
 
-        // Sub-Admin can create class
         $createClassResponse = $this->actingAs($sub)->postJson('/api/classes', [
             'subject_name' => 'Computer Networks',
             'subject_code' => 'CN101',
@@ -162,7 +158,6 @@ class SubAdminTest extends TestCase
 
         $classId = $createClassResponse->json('data.id');
 
-        // Sub-Admin can create student
         $createStudentResponse = $this->actingAs($sub)->postJson('/api/students', [
             'name' => 'សិស្ស តេស្ត',
             'email' => 'stu_' . Str::random(6) . '@scanin.test',
@@ -171,7 +166,6 @@ class SubAdminTest extends TestCase
         ]);
         $createStudentResponse->assertStatus(201);
 
-        // Sub-Admin can delete class
         $deleteClassResponse = $this->actingAs($sub)->deleteJson("/api/classes/{$classId}");
         $deleteClassResponse->assertStatus(200);
     }
@@ -181,7 +175,6 @@ class SubAdminTest extends TestCase
         $sub = $this->createSubAdmin();
         $email = strtolower('lecturer_' . Str::random(6) . '@scanin.test');
 
-        // 1. Sub-Admin creates lecturer
         $createResponse = $this->actingAs($sub)->postJson('/api/lecturers', [
             'name' => 'លោកគ្រូ តេស្ត សាប់អាដមីន',
             'latin_name' => 'Test Lecturer SubAdmin',
@@ -205,13 +198,11 @@ class SubAdminTest extends TestCase
         $lecturerId = $createResponse->json('data.id');
         $this->assertDatabaseHas('users', ['id' => $lecturerId, 'role' => 'lecturer']);
 
-        // 2. Sub-Admin can list lecturers
         $listResponse = $this->actingAs($sub)->getJson('/api/lecturers');
         $listResponse->assertStatus(200);
         $ids = collect($listResponse->json('data'))->pluck('id')->all();
         $this->assertContains($lecturerId, $ids);
 
-        // 3. Sub-Admin can update lecturer
         $updateResponse = $this->actingAs($sub)->putJson("/api/lecturers/{$lecturerId}", [
             'name' => 'លោកគ្រូ តេស្ត កែប្រែ',
             'phone' => '099 888 777',
@@ -219,7 +210,6 @@ class SubAdminTest extends TestCase
         $updateResponse->assertStatus(200);
         $this->assertDatabaseHas('users', ['id' => $lecturerId, 'name' => 'លោកគ្រូ តេស្ត កែប្រែ']);
 
-        // 4. Sub-Admin can delete lecturer
         $deleteResponse = $this->actingAs($sub)->deleteJson("/api/lecturers/{$lecturerId}");
         $deleteResponse->assertStatus(200);
         $this->assertDatabaseMissing('users', ['id' => $lecturerId]);

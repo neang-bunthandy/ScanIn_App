@@ -1,3 +1,4 @@
+// Named route constants and route generator.
 import 'package:flutter/material.dart';
 import '../screens/login_screen.dart';
 import '../screens/student/student_home_screen.dart';
@@ -5,7 +6,6 @@ import '../screens/lecturer/lecturer_home_screen.dart';
 import '../screens/lecturer/class_detail_screen.dart';
 import '../screens/lecturer/attendance_list_screen.dart';
 
-/// កំណត់ឈ្មោះ Route ទាំងអស់ក្នុងកម្មវិធី ScanIn
 class AppRoutes {
   static const String login = '/login';
   static const String studentHome = '/student/home';

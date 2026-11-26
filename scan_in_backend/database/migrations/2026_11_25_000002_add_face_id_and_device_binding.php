@@ -1,4 +1,5 @@
 <?php
+// Database migration: 2026_11_25_000002_add_face_id_and_device_binding.php.
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

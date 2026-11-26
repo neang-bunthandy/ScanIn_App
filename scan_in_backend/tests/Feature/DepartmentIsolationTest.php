@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: DepartmentIsolationTest.php.
 
 namespace Tests\Feature;
 
@@ -70,7 +71,6 @@ class DepartmentIsolationTest extends TestCase
             'is_qr_active' => true,
         ]);
 
-        // IT student only sees IT class
         $itClasses = $this->actingAs($itStudent)->getJson('/api/student/classes')
             ->assertStatus(200)
             ->json('data');
@@ -79,7 +79,6 @@ class DepartmentIsolationTest extends TestCase
         $this->assertNotContains($csClass->id, $itIds);
         $this->assertNotContains($nullDeptClass->id, $itIds);
 
-        // CS student only sees CS class
         $csClasses = $this->actingAs($csStudent)->getJson('/api/student/classes')
             ->assertStatus(200)
             ->json('data');
@@ -88,7 +87,6 @@ class DepartmentIsolationTest extends TestCase
         $this->assertNotContains($itClass->id, $csIds);
         $this->assertNotContains($nullDeptClass->id, $csIds);
 
-        // Student without department sees empty list
         $noneClasses = $this->actingAs($noDeptStudent)->getJson('/api/student/classes')
             ->assertStatus(200)
             ->json('data');
@@ -129,12 +127,10 @@ class DepartmentIsolationTest extends TestCase
             'is_qr_active' => true,
         ]);
 
-        // Cross-department scan rejected (403)
         $this->actingAs($itStudent)->postJson('/api/attendances/scan', [
             'qr_token' => 'QR-SCAN-CS-999',
         ])->assertStatus(403);
 
-        // Own department scan succeeds (200)
         $this->actingAs($itStudent)->postJson('/api/attendances/scan', [
             'qr_token' => 'QR-SCAN-IT-999',
         ])->assertStatus(200)
@@ -183,12 +179,10 @@ class DepartmentIsolationTest extends TestCase
             'is_qr_active' => true,
         ]);
 
-        // Student A scans attendance
         $this->actingAs($studentA)->postJson('/api/attendances/scan', [
             'qr_token' => 'QR-UNIQ-101',
         ])->assertStatus(200);
 
-        // Lecturer sees dynamic student_count = 2 matching uniqueDept students
         $lecClasses = $this->actingAs($owner)->getJson('/api/classes')
             ->assertStatus(200)
             ->json('data');
@@ -196,7 +190,6 @@ class DepartmentIsolationTest extends TestCase
         $this->assertNotNull($foundClass);
         $this->assertEquals(2, $foundClass['student_count']);
 
-        // Owner lecturer & Admin can fetch class students with today_status
         $roster = $this->actingAs($owner)->getJson("/api/classes/{$class->id}/students")
             ->assertStatus(200)
             ->json('data');
@@ -210,17 +203,14 @@ class DepartmentIsolationTest extends TestCase
         $this->actingAs($admin)->getJson("/api/classes/{$class->id}/students")
             ->assertStatus(200);
 
-        // Student & other lecturer are blocked (403)
         $this->actingAs($studentA)->getJson("/api/classes/{$class->id}/students")
             ->assertStatus(403);
         $this->actingAs($otherLecturer)->getJson("/api/classes/{$class->id}/students")
             ->assertStatus(403);
 
-        // Lecturer also sees completed_sessions = 1 (counted from distinct attendance dates) and default total_sessions = 15
         $this->assertEquals(1, $foundClass['completed_sessions']);
         $this->assertEquals(15, $foundClass['total_sessions']);
 
-        // Admin can customize total_sessions per class (e.g. 12 weeks) or leave default 15
         $customRes = $this->actingAs($admin)->postJson('/api/classes', [
             'subject_name' => 'Short Course',
             'subject_code' => 'SHRT12',

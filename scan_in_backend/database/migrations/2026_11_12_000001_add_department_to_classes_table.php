@@ -1,4 +1,5 @@
 <?php
+// Database migration: 2026_11_12_000001_add_department_to_classes_table.php.
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -20,4 +21,3 @@ return new class extends Migration
         });
     }
 };
-

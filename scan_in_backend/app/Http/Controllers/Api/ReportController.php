@@ -1,4 +1,5 @@
 <?php
+// Generates student statistics and attendance Excel/JSON exports.
 
 namespace App\Http\Controllers\Api;
 
@@ -10,10 +11,7 @@ use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
-    /**
-     * ស្ថិតិនិស្សិត និងប្រវត្តិតាមឆ្នាំចូលរៀន ជំនាន់ និងដេប៉ាតឺម៉ង់ (Admin Only)
-     * រក្សាទុក និងរាប់សិស្សទាំងអស់ (active + graduated + inactive) ដើម្បីកុំឱ្យបាត់ទិន្នន័យប្រវត្តិសាស្ត្រ
-     */
+
     public function studentStats(Request $request)
     {
         if (!$request->user() || !$request->user()->isAcademicAdmin()) {
@@ -27,7 +25,6 @@ class ReportController extends Controller
             ->select('id', 'name', 'latin_name', 'student_code', 'gender', 'department', 'generation', 'intake_year', 'year_level', 'status', 'created_at')
             ->get();
 
-        // Collect unfiltered options for dropdowns
         $allIntakeYears = $allStudents->pluck('intake_year')
             ->map(fn ($v) => trim((string)$v))
             ->filter(fn ($v) => $v !== '')
@@ -52,7 +49,6 @@ class ReportController extends Controller
             ->values()
             ->all();
 
-        // Apply optional filters
         $filtered = $allStudents->filter(function ($s) use ($request) {
             if ($request->filled('intake_year') && trim((string)$s->intake_year) !== trim((string)$request->intake_year)) {
                 return false;
@@ -87,7 +83,6 @@ class ReportController extends Controller
         $femaleCount = $filtered->filter($isFemale)->count();
         $maleCount = $filtered->count() - $femaleCount;
 
-        // 1. Group by intake_year (ចាប់ពីឆ្នាំ)
         $byIntakeYear = $filtered->groupBy(function ($s) {
             $y = trim((string)($s->intake_year ?? ''));
             return $y !== '' ? $y : 'មិនទាន់កំណត់';
@@ -121,7 +116,6 @@ class ReportController extends Controller
             return $row['intake_year'] === 'មិនទាន់កំណត់' ? '' : $row['intake_year'];
         })->values()->all();
 
-        // 2. Group by department (គ្រប់ជំនាញ)
         $byDepartment = $filtered->groupBy(function ($s) {
             $d = trim((string)($s->department ?? ''));
             return $d !== '' ? $d : 'មិនទាន់កំណត់';
@@ -147,7 +141,6 @@ class ReportController extends Controller
             ];
         })->sortByDesc('total')->values()->all();
 
-        // 3. Group by generation (តាមជំនាន់)
         $byGeneration = $filtered->groupBy(function ($s) {
             $g = trim((string)($s->generation ?? ''));
             return $g !== '' ? $g : 'មិនទាន់កំណត់';
@@ -173,7 +166,6 @@ class ReportController extends Controller
             return $row['generation'] === 'មិនទាន់កំណត់' ? '' : $row['generation'];
         })->values()->all();
 
-        // Department list appearing in filtered result for pivot columns
         $activeDepartmentsInResult = $filtered->pluck('department')
             ->map(function ($v) {
                 $t = trim((string)$v);
@@ -211,10 +203,6 @@ class ReportController extends Controller
         ], 200);
     }
 
-    /**
-     * Export របាយការណ៍វត្តមានជា Excel CSV (UTF-8 BOM) ឬ JSON សម្រាប់ PDF
-     * គាំទ្រ Admin, Sub-Admin និង Lecturer (គ្រូអាចទាញបានតែថ្នាក់របស់ខ្លួនឯងប៉ុណ្ណោះ)
-     */
     public function exportAttendance(Request $request)
     {
         $user = $request->user();
@@ -317,7 +305,6 @@ class ReportController extends Controller
             ], 200);
         }
 
-        // Default: UTF-8 BOM CSV compatible with Microsoft Excel (supports Khmer Unicode)
         $escapeCsv = function (?string $val): string {
             $v = str_replace('"', '""', (string)($val ?? ''));
             return '"' . $v . '"';
@@ -355,7 +342,6 @@ class ReportController extends Controller
             ]);
         }
 
-        // Prepend UTF-8 BOM so Excel renders Khmer script properly
         $csvContent = "\xEF\xBB\xBF" . implode("\r\n", $lines);
         $filename = 'attendance_report_' . date('Y-m-d') . '.csv';
 
@@ -365,4 +351,3 @@ class ReportController extends Controller
         ]);
     }
 }
-

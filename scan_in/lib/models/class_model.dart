@@ -1,26 +1,27 @@
+// Class data model and JSON serialization.
 class ClassModel {
   final int id;
   final int lecturerId;
-  final String? lecturerName; // ឈ្មោះគ្រូបង្រៀន (ឧ. Mr. Dara)
+  final String? lecturerName;
   final String? teacherEmail;
   final String? teacherPhone;
-  final String? description; // ការពិពណ៌នាមុខវិជ្ជា
-  final String subjectName; // ឈ្មោះមុខវិជ្ជា
-  final String subjectCode; // កូដមុខវិជ្ជា (ឧ. CS101)
-  final String? department; // ដេប៉ាតឺម៉ង់ / ជំនាញ
-  final String? generation; // ជំនាន់ (ឧ. Gen 15)
-  final int? yearLevel; // ឆ្នាំទី (1-4)
-  final String room; // បន្ទប់រៀន (ឧ. A201)
-  final String dayOfWeek; // ថ្ងៃរៀន (ឧ. ចន្ទ, អង្គារ)
-  final String time; // ម៉ោងរៀន (ឧ. 08:00 - 10:00)
-  final String? classDate; // កាលបរិច្ឆេទនៃ Session ជាក់លាក់ (ឧ. 2026-11-14)
-  final String semester; // ឆមាស
-  final String academicYear; // ឆ្នាំសិក្សា
-  final int studentCount; // ចំនួនសិស្សសរុប
-  final int completedSessions; // ចំនួនសប្តាហ៍ដែលបានរៀន
-  final int totalSessions; // ចំនួនសប្តាហ៍សរុប
-  final String? qrToken; // Token សម្រាប់ QR កត់វត្តមាន
-  final bool isQrActive; // ស្ថានភាព QR
+  final String? description;
+  final String subjectName;
+  final String subjectCode;
+  final String? department;
+  final String? generation;
+  final int? yearLevel;
+  final String room;
+  final String dayOfWeek;
+  final String time;
+  final String? classDate;
+  final String semester;
+  final String academicYear;
+  final int studentCount;
+  final int completedSessions;
+  final int totalSessions;
+  final String? qrToken;
+  final bool isQrActive;
   final DateTime? createdAt;
 
   const ClassModel({
@@ -49,7 +50,6 @@ class ClassModel {
     this.createdAt,
   });
 
-  // បំលែងពី JSON របស់ Laravel API (Snake_case ឬ Eloquent Relationship)
   factory ClassModel.fromJson(Map<String, dynamic> json) {
     return ClassModel(
       id: json['id'] as int,
@@ -83,7 +83,6 @@ class ClassModel {
     );
   }
 
-  // បំលែងទៅជា JSON សម្រាប់ផ្ញើទៅ Laravel API
   Map<String, dynamic> toJson() {
     return {
       'id': id,

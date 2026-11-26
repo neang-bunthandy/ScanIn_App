@@ -1,4 +1,5 @@
 <?php
+// CampusSetting model and Haversine GPS distance calculation.
 
 namespace App\Models;
 
@@ -25,9 +26,6 @@ class CampusSetting extends Model
         'allow_face_id_checkin' => 'boolean',
     ];
 
-    /**
-     * ទាញយកការកំណត់ទីតាំងសាលាបច្ចុប្បន្ន (Singleton Row)
-     */
     public static function current(): self
     {
         $setting = self::first();
@@ -42,9 +40,6 @@ class CampusSetting extends Model
         return $setting;
     }
 
-    /**
-     * គណនាចម្ងាយជាម៉ែត្ររវាងចំណុច GPS ទាំង ២ ដោយប្រើរូបមន្ត Haversine
-     */
     public static function calculateDistanceMeters(
         float $lat1,
         float $lng1,

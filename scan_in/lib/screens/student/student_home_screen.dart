@@ -1,3 +1,4 @@
+// Student bottom navigation shell, QR scan, and Face ID check-in.
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
@@ -11,9 +12,6 @@ import 'student_dashboard_screen.dart';
 import 'student_history_screen.dart';
 import 'student_profile_screen.dart';
 
-/// អេក្រង់មេរបស់សិស្ស (Student Main Shell)
-/// គ្រប់គ្រង BottomNavigationBar និងប្តូររវាងអេក្រង់ទាំង ៣
-/// គាំទ្រ Dark Mode ទាំងស្រុងលើ Scaffold, BottomNavigationBar និងគ្រប់ Tabs
 class StudentHomeScreen extends StatefulWidget {
   final String? studentEmail;
   final UserModel? user;
@@ -68,11 +66,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     }
   }
 
-  // ដំណើរការស្កេន QR Code កត់វត្តមានចូល Database (Step 2)
   Future<void> _processScan(String qrToken) async {
     if (qrToken.trim().isEmpty) return;
 
-    // បង្ហាញ Loading Dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -84,7 +80,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     final result = await AttendanceService.scanAttendance(qrToken.trim());
 
     if (!mounted) return;
-    Navigator.pop(context); // បិទ Loading Dialog
+    Navigator.pop(context);
 
     if (result['success'] == true) {
       final AttendanceModel? att = result['attendance'] as AttendanceModel?;
@@ -95,7 +91,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     }
   }
 
-  // ដំណើរការកត់វត្តមានដោយ Face ID + GPS (មិនបាច់រង់ចាំ QR Code)
   Future<void> _processFaceCheckIn(ClassModel classItem) async {
     showDialog(
       context: context,
@@ -108,7 +103,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     final result = await AttendanceService.faceCheckIn(classItem.id);
 
     if (!mounted) return;
-    Navigator.pop(context); // បិទ Loading Dialog
+    Navigator.pop(context);
 
     if (result['success'] == true) {
       final AttendanceModel? att = result['attendance'] as AttendanceModel?;
@@ -119,7 +114,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     }
   }
 
-  // បង្ហាញផ្ទាំងជោគជ័យក្រោយពេលកត់វត្តមានចូល Database រួចរាល់
   void _showScanSuccessDialog(AttendanceModel? att, String qrToken) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final dialogBg = isDark ? const Color(0xFF1E293B) : Colors.white;
@@ -238,7 +232,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
     );
   }
 
-  // បង្ហាញផ្ទាំង Error បើការស្កេនបរាជ័យ (ឧ. QR បិទ ឬខុស Token)
   void _showScanErrorDialog(String errorMsg) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final dialogBg = isDark ? const Color(0xFF1E293B) : Colors.white;
@@ -346,7 +339,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Handle Bar
+
                     Container(
                       width: 44,
                       height: 4,
@@ -357,7 +350,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Title Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -378,7 +370,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
                     const SizedBox(height: 12),
 
-                    // Camera Viewfinder Simulation
                     Container(
                       width: double.infinity,
                       height: 170,
@@ -419,7 +410,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                               ),
                             ],
                           ),
-                          // Viewfinder Corners
+
                           Positioned(
                             top: 12,
                             left: 12,
@@ -446,7 +437,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
 
                     const SizedBox(height: 18),
 
-                    // Active Broadcasted Classes (1-Tap Fast Scan)
                     if (activeClasses.isNotEmpty) ...[
                       Align(
                         alignment: Alignment.centerLeft,
@@ -529,7 +519,6 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                       const SizedBox(height: 12),
                     ],
 
-                    // Manual Input
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -619,7 +608,7 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
             child: IndexedStack(
               index: _currentIndex,
               children: [
-                // Tab 1: ដើម (Dashboard)
+
                 StudentDashboardScreen(
                   student: student,
                   classes: classes,
@@ -630,9 +619,9 @@ class _StudentHomeScreenState extends State<StudentHomeScreen> {
                   onGoToProfileTab: () => setState(() => _currentIndex = 2),
                   onRefresh: _loadBackendData,
                 ),
-                // Tab 2: ប្រវត្តិ (History)
+
                 StudentHistoryScreen(),
-                // Tab 3: ខ្ញុំ (Profile)
+
                 StudentProfileScreen(
                   student: student,
                   attendances: _attendances,

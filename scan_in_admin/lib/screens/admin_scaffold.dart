@@ -1,3 +1,4 @@
+// Shared Web Admin sidebar, top profile bar, and layout scaffold.
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -375,7 +376,6 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                           const SizedBox(height: 14),
                         ],
 
-                        // Current Password
                         Text(
                           AppLanguage.tr('ពាក្យសម្ងាត់បច្ចុប្បន្ន', 'Current Password'),
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textCol),
@@ -413,7 +413,6 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                         ),
                         const SizedBox(height: 14),
 
-                        // New Password
                         Text(
                           AppLanguage.tr('ពាក្យសម្ងាត់ថ្មី (យ៉ាងតិច ៦ ខ្ទង់)', 'New Password (min 6 chars)'),
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textCol),
@@ -454,7 +453,6 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Confirm New Password
                         Text(
                           AppLanguage.tr('ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី', 'Confirm New Password'),
                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textCol),
@@ -552,20 +550,20 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isCompact = screenWidth < 900;
     final sidebarWidth = isCompact ? 72.0 : 260.0;
-    const double headerHeight = 70.0; // Fixed identical height for both sidebar header and top bar
+    const double headerHeight = 70.0;
 
     return Scaffold(
       backgroundColor: contentBg,
       body: Row(
         children: [
-          // Left Sidebar (Responsive: 72px on tablets/narrow, 260px on wide desktops)
+
           ClipRect(
             child: Container(
               width: sidebarWidth,
               color: sidebarBg,
               child: Column(
               children: [
-                // Header Logo
+
                 Container(
                   height: headerHeight,
                   padding: EdgeInsets.symmetric(
@@ -677,7 +675,6 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                         ),
                 ),
 
-                // Navigation Items: ញែកឱ្យដាច់រវាង Admin និង គ្រូ
                 Expanded(
                   child: ListView(
                     padding: EdgeInsets.symmetric(
@@ -685,7 +682,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                       vertical: 20,
                     ),
                     children: [
-                      // Admin មានសិទ្ធិមើល Dashboard និងគ្រប់គ្រងគណនី (គ្រូមិនអាចមើលបានទេ)
+
                       if (!isLecturer) ...[
                         _buildNavItem(
                           icon: Icons.dashboard_rounded,
@@ -742,7 +739,6 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                   ),
                 ),
 
-                // Footer: Change Password & Logout
                 Container(
                   padding: EdgeInsets.all(isCompact ? 10 : 14),
                   decoration: BoxDecoration(
@@ -807,11 +803,10 @@ class _AdminScaffoldState extends State<AdminScaffold> {
           ),
         ),
 
-          // Right Content Area
           Expanded(
             child: Column(
               children: [
-                // Top Header Bar
+
                 Container(
                   height: headerHeight,
                   padding: EdgeInsets.symmetric(
@@ -862,7 +857,7 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                                     ],
                                   ),
                                 ),
-                              // Top-Right User Profile (Avatar Upload + Name + Role + Change Password)
+
                               InkWell(
                                 onTap: _handleUploadAvatar,
                                 borderRadius: BorderRadius.circular(24),
@@ -939,7 +934,6 @@ class _AdminScaffoldState extends State<AdminScaffold> {
                   ),
                 ),
 
-                // Main Page Body
                 Expanded(
                   child: widget.body,
                 ),
@@ -1101,5 +1095,3 @@ class _AdminScaffoldState extends State<AdminScaffold> {
     );
   }
 }
-
-

@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: GpsGeofencingTest.php.
 
 namespace Tests\Feature;
 
@@ -98,7 +99,7 @@ class GpsGeofencingTest extends TestCase
     public function test_haversine_distance_between_battambang_and_pailin(): void
     {
         $distance = CampusSetting::calculateDistanceMeters(13.0957, 103.2022, 12.8489, 102.6093);
-        // Battambang to Pailin is roughly 69.8 km (69,800m)
+
         $this->assertGreaterThan(68000, $distance);
         $this->assertLessThan(72000, $distance);
     }
@@ -115,7 +116,6 @@ class GpsGeofencingTest extends TestCase
         [$class, $student] = $this->createClassAndStudent();
         Sanctum::actingAs($student);
 
-        // ~22 meters away from campus center (well inside 65m for 45x75m campus)
         $response = $this->postJson('/api/attendances/scan', [
             'qr_token' => $class->qr_token,
             'latitude' => 13.095942,
@@ -143,7 +143,6 @@ class GpsGeofencingTest extends TestCase
         [$class, $student] = $this->createClassAndStudent();
         Sanctum::actingAs($student);
 
-        // Student scanning from Pailin
         $response = $this->postJson('/api/attendances/scan', [
             'qr_token' => $class->qr_token,
             'latitude' => 12.848900,

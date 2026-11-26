@@ -1,15 +1,10 @@
+// Static fallback/sample data definitions.
 import '../models/user_model.dart';
 import '../models/class_model.dart';
 import '../models/attendance_model.dart';
 
-/// MockData ត្រូវបានរៀបចំឡើងតាមទម្រង់ទិន្នន័យ Relational Database (MySQL)
-/// និង JSON Response ស្តង់ដាររបស់ Laravel REST API (snake_case + ID auto-increment)
 class MockData {
-  // ==========================================
-  // ១. គណនីគំរូ (Current Logged-in Users)
-  // ==========================================
 
-  // គណនីសិស្សគំរូ (Sok Vibol)
   static const UserModel currentStudent = UserModel(
     id: 1,
     name: 'Sok Vibol',
@@ -21,7 +16,6 @@ class MockData {
     avatarUrl: null,
   );
 
-  // គណនីគ្រូ / បុគ្គលិកគំរូ
   static const UserModel currentLecturer = UserModel(
     id: 10,
     name: 'Mr. Dara',
@@ -33,16 +27,10 @@ class MockData {
     avatarUrl: null,
   );
 
-  // ==========================================
-  // ២. សង្ខេបវត្តមានប្រចាំខែ (Monthly Attendance Stats)
-  // ==========================================
   static const int presentCount = 18;
   static const int lateCount = 2;
   static const int absentCount = 1;
 
-  // ==========================================
-  // ៣. បញ្ជីថ្នាក់រៀនគំរូ (Classes Table)
-  // ==========================================
   static final List<ClassModel> sampleClasses = [
     const ClassModel(
       id: 101,
@@ -85,9 +73,6 @@ class MockData {
     ),
   ];
 
-  // ==========================================
-  // ៤. បញ្ជីសិស្សក្នុងថ្នាក់ (Class Student Roster)
-  // ==========================================
   static final List<UserModel> enrolledStudents = [
     const UserModel(
       id: 1,
@@ -163,9 +148,6 @@ class MockData {
     ),
   ];
 
-  // ==========================================
-  // ៥. កំណត់ត្រាវត្តមានគំរូ (Attendances Table)
-  // ==========================================
   static final List<AttendanceModel> sampleAttendances = [
     AttendanceModel(
       id: 1001,
@@ -202,9 +184,6 @@ class MockData {
     ),
   ];
 
-  // ==========================================
-  // ៦. មុខងារទាញទិន្នន័យដូច Laravel Controller
-  // ==========================================
   static ClassModel getClassById(int classId) {
     return sampleClasses.firstWhere(
       (c) => c.id == classId,

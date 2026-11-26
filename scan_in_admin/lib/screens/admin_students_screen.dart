@@ -1,3 +1,4 @@
+// Students management, Excel/CSV import, and device reset screen.
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -120,7 +121,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
-  /// បើកផ្ទាំង Admin បង្កើតគណនីសិស្សថ្មី (Khmer Name, Latin Name, Email, Password, StudentCode, Department, Phone)
   Future<void> _openCreateStudentDialog() async {
     final nameCtrl = TextEditingController();
     final latinNameCtrl = TextEditingController();
@@ -189,7 +189,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // ឈ្មោះជាអក្សរខ្មែរ & ឈ្មោះជាអក្សរឡាតាំង
                   Row(
                     children: [
                       Expanded(
@@ -230,7 +229,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // អត្តលេខសិស្ស & ដេប៉ាតឺម៉ង់
                   Row(
                     children: [
                       SizedBox(
@@ -259,7 +257,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // អ៊ីមែល & ពាក្យសម្ងាត់
                   Row(
                     children: [
                       Expanded(
@@ -291,7 +288,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ភេទ & ថ្ងៃខែឆ្នាំកំណើត
                   Row(
                     children: [
                       Expanded(
@@ -329,7 +325,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // លេខទូរស័ព្ទ
                   TextField(
                     controller: phoneCtrl,
                     decoration: InputDecoration(
@@ -341,7 +336,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ជំនាន់ & ចាប់ពីឆ្នាំ & ឆ្នាំទីបច្ចុប្បន្ន (អាចវាយបញ្ចូលដោយដៃ ឬជ្រើសរើសរហ័ស)
                   Row(
                     children: [
                       Expanded(
@@ -509,7 +503,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
-  /// បើកផ្ទាំង Admin កែសម្រួលព័ត៌មានសិស្ស
   Future<void> _openEditStudentDialog(Map<String, dynamic> stu) async {
     final id = stu['id'] as int;
     final nameCtrl = TextEditingController(text: stu['name'] ?? '');
@@ -691,7 +684,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ភេទ & ថ្ងៃខែឆ្នាំកំណើត
                   Row(
                     children: [
                       Expanded(
@@ -904,7 +896,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
-  /// បើកផ្ទាំង Admin Import សិស្សជាក្រុមពី Excel / CSV (គាំទ្រទាញ Template, រើស File ផ្ទាល់ និងពិនិត្យឈ្មោះស្ទួន)
   Future<void> _openImportStudentsDialog() async {
     final csvTextCtrl = TextEditingController();
     List<Map<String, dynamic>> parsedStudents = [];
@@ -959,7 +950,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
         startIndex = 1;
       }
 
-      // ត្រួតពិនិត្យទិន្នន័យដែលមានស្រាប់ក្នុង Database
       final existingCodes = _students
           .map((s) => normKey((s['student_code'] ?? '').toString()))
           .where((v) => v.isNotEmpty)
@@ -973,7 +963,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           .where((v) => v.isNotEmpty)
           .toSet();
 
-      // ត្រួតពិនិត្យទិន្នន័យស្ទួនគ្នាក្នុង File តែមួយ
       final seenCodes = <String>{};
       final seenEmails = <String>{};
       final seenNames = <String>{};
@@ -1194,7 +1183,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // ជម្រើសរួម (Batch Defaults) សម្រាប់សិស្សដែលត្រូវ Import
+
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -1514,7 +1503,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
-  /// ដំឡើងឆ្នាំសិក្សាសិស្ស +1 ឆ្នាំ (Promote Year Level)
   Future<void> _confirmPromoteStudents() async {
     final filterDesc = [
       ?_filterGeneration,
@@ -1591,7 +1579,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
-  /// ប្តូរស្ថានភាពសិស្សជាក្រុម (Active / Graduated / Inactive) ដោយមិនលុបទិន្នន័យចោល
   Future<void> _openBulkStatusDialog() async {
     String targetStatus = 'graduated';
     final filterDesc = [
@@ -1703,7 +1690,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
-  /// បញ្ជាក់ការលុបគណនីសិស្ស
   Future<void> _confirmDeleteStudent(Map<String, dynamic> stu) async {
     final id = stu['id'] as int;
     final name = stu['name'] ?? 'Student #$id';
@@ -1873,7 +1859,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Header Bar
+
                         Padding(
                           padding: const EdgeInsets.all(20),
                           child: LayoutBuilder(
@@ -1994,7 +1980,6 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                         ),
                         const Divider(height: 1),
 
-                        // របារច្រោះទិន្នន័យតាម ជំនាន់, ចាប់ពីឆ្នាំ, ឆ្នាំទី, ដេប៉ាតឺម៉ង់
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                           child: Wrap(
@@ -2392,4 +2377,3 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     );
   }
 }
-

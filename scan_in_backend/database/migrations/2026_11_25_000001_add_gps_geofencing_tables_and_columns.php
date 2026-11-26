@@ -1,4 +1,5 @@
 <?php
+// Database migration: 2026_11_25_000001_add_gps_geofencing_tables_and_columns.php.
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;

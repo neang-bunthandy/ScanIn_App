@@ -1,4 +1,5 @@
 <?php
+// Manages campus GPS geofencing coordinates and radius settings.
 
 namespace App\Http\Controllers\Api;
 
@@ -8,9 +9,7 @@ use Illuminate\Http\Request;
 
 class CampusSettingController extends Controller
 {
-    /**
-     * មើលការកំណត់ទីតាំង GPS សាលាបច្ចុប្បន្ន
-     */
+
     public function show()
     {
         return response()->json([
@@ -19,9 +18,6 @@ class CampusSettingController extends Controller
         ], 200);
     }
 
-    /**
-     * កែប្រែការកំណត់ទីតាំង GPS សាលា (Admin / Sub-Admin Only)
-     */
     public function update(Request $request)
     {
         if (!$request->user() || !$request->user()->isAcademicAdmin()) {

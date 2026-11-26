@@ -1,3 +1,4 @@
+// Classes, students, lecturers, and roster API service.
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../core/api_config.dart';
@@ -5,7 +6,7 @@ import '../models/class_model.dart';
 import 'auth_service.dart';
 
 class ClassService {
-  /// ទាញយកបញ្ជីថ្នាក់រៀនរបស់គ្រូ (Lecturer Classes)
+
   static Future<List<ClassModel>> getLecturerClasses() async {
     try {
       final token = await AuthService.getToken();
@@ -33,7 +34,6 @@ class ClassService {
     return [];
   }
 
-  /// ទាញយកបញ្ជីថ្នាក់រៀនរបស់សិស្ស (Student Classes - filtered by Department on Backend)
   static Future<List<ClassModel>> getStudentClasses() async {
     try {
       final token = await AuthService.getToken();
@@ -60,7 +60,6 @@ class ClassService {
     return [];
   }
 
-  /// ទាញយកបញ្ជីសិស្សពិតក្នុងដេប៉ាតឺម៉ង់របស់ថ្នាក់រៀនពី Database
   static Future<List<Map<String, dynamic>>> getClassStudents(int classId) async {
     try {
       final token = await AuthService.getToken();
@@ -84,7 +83,6 @@ class ClassService {
     return [];
   }
 
-  /// បើក / បិទ QR Code សម្រាប់ថ្នាក់រៀន (Toggle QR Code & sync Token)
   static Future<bool> toggleQr(int classId, bool activate, {String? qrToken}) async {
     try {
       final token = await AuthService.getToken();
@@ -112,7 +110,6 @@ class ClassService {
     return false;
   }
 
-  /// ទាញយកបញ្ជីគ្រូបង្រៀនទាំងអស់សម្រាប់ Admin ជ្រើសរើសចាត់តាំងថ្នាក់រៀន
   static Future<List<Map<String, dynamic>>> getLecturers() async {
     try {
       final token = await AuthService.getToken();
@@ -134,7 +131,6 @@ class ClassService {
     return [];
   }
 
-  /// Admin បង្កើតថ្នាក់រៀនថ្មី និងចាត់តាំងគ្រូបង្រៀន (កំណត់ ឆ្នាំ, ឆមាស, កូដ, ឈ្មោះ, បន្ទប់, ថ្ងៃ, ម៉ោង)
   static Future<bool> createClassAdmin({
     required String subjectName,
     required String subjectCode,

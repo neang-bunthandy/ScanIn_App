@@ -1,3 +1,4 @@
+// Authentication, token storage, password, and avatar API service.
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
@@ -26,11 +27,9 @@ class AuthService {
   static UserModel? _cachedUser;
   static String? _cachedToken;
 
-  /// Cached user in memory for instant access without disk I/O delay
   static UserModel? get cachedUser => _cachedUser;
   static String? get cachedToken => _cachedToken;
 
-  /// ចូលប្រើប្រាស់ (Login API)
   static Future<AuthResult> login({
     required String email,
     required String password,
@@ -64,7 +63,6 @@ class AuthService {
         final token = data['access_token'] as String;
         final user = UserModel.fromJson(data['user'] as Map<String, dynamic>);
 
-        // រក្សាទុក Token និង User ក្នុង SharedPreferences
         await _saveAuthData(token: token, user: user);
 
         return AuthResult(
@@ -97,7 +95,6 @@ class AuthService {
     }
   }
 
-  /// រក្សាទុក Token និង User ក្នុង Device
   static Future<void> _saveAuthData({
     required String token,
     required UserModel user,
@@ -109,7 +106,6 @@ class AuthService {
     await prefs.setString(_keyUser, jsonEncode(user.toJson()));
   }
 
-  /// យក Token ដែលបានរក្សាទុក
   static Future<String?> getToken() async {
     if (_cachedToken != null) return _cachedToken;
     final prefs = await SharedPreferences.getInstance();
@@ -117,7 +113,6 @@ class AuthService {
     return _cachedToken;
   }
 
-  /// យក User Profile ដែលបានរក្សាទុក
   static Future<UserModel?> getCurrentUser() async {
     if (_cachedUser != null) return _cachedUser;
     final prefs = await SharedPreferences.getInstance();
@@ -131,13 +126,11 @@ class AuthService {
     }
   }
 
-  /// ពិនិត្យថាតើបាន Login រួចហើយឬនៅ
   static Future<bool> isLoggedIn() async {
     final token = await getToken();
     return token != null && token.isNotEmpty;
   }
 
-  /// ប្តូរពាក្យសម្ងាត់ (Change Password API)
   static Future<Map<String, dynamic>> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -190,7 +183,6 @@ class AuthService {
     }
   }
 
-  /// Upload រូបថត Profile (Master Admin / Sub-Admin / Lecturer)
   static Future<AuthResult> uploadAvatar({
     required List<int> bytes,
     required String filename,
@@ -237,7 +229,6 @@ class AuthService {
     }
   }
 
-  /// ចាកចេញពីគណនី (Logout)
   static Future<void> logout() async {
     try {
       final token = await getToken();
@@ -252,7 +243,7 @@ class AuthService {
         ).timeout(const Duration(seconds: 5));
       }
     } catch (_) {
-      // Ignore network errors on logout
+
     } finally {
       _cachedUser = null;
       _cachedToken = null;

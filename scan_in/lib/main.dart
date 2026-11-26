@@ -1,3 +1,4 @@
+// Application entry point and root theme/routing setup.
 import 'package:flutter/material.dart';
 
 import 'core/app_colors.dart';

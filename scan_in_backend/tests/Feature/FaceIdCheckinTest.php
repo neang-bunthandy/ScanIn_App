@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: FaceIdCheckinTest.php.
 
 namespace Tests\Feature;
 
@@ -37,7 +38,6 @@ class FaceIdCheckinTest extends TestCase
             'status' => 'active',
         ]);
 
-        // Even when QR is paused/not opened yet, Face ID check-in works for students inside campus!
         $class = ClassModel::create([
             'user_id' => $lecturer->id,
             'subject_name' => 'Hybrid Mobile App',
@@ -107,13 +107,11 @@ class FaceIdCheckinTest extends TestCase
             'device_id' => 'FRIEND-PHONE-999',
         ])->assertStatus(403);
 
-        // Admin resets student's device ID
         Sanctum::actingAs($admin);
         $this->postJson('/api/admin/students/' . $student->id . '/reset-device')
             ->assertStatus(200)
             ->assertJson(['status' => true]);
 
-        // Now student can bind new phone
         Sanctum::actingAs($student->fresh());
         $this->postJson('/api/attendances/face-checkin', [
             'class_id' => $class->id,
@@ -130,14 +128,12 @@ class FaceIdCheckinTest extends TestCase
         [$class, $student] = $this->createClassAndStudent();
         Sanctum::actingAs($student);
 
-        // Biometric failed
         $this->postJson('/api/attendances/face-checkin', [
             'class_id' => $class->id,
             'biometric_verified' => false,
             'device_id' => 'DEVICE-123',
         ])->assertStatus(403);
 
-        // Disabled globally by admin
         CampusSetting::current()->update(['allow_face_id_checkin' => false]);
         $this->postJson('/api/attendances/face-checkin', [
             'class_id' => $class->id,

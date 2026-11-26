@@ -1,4 +1,5 @@
 <?php
+// Automated test suite: DualNameUsersTest.php.
 
 namespace Tests\Feature;
 
@@ -28,7 +29,6 @@ class DualNameUsersTest extends TestCase
         $this->assertEquals('លោកគ្រូ សុខ វិបុល', $createRes['name']);
         $this->assertEquals('Sok Vibol', $createRes['latin_name']);
 
-        // Update both names
         $this->actingAs($admin)->putJson("/api/lecturers/{$createRes['id']}", [
             'name' => 'សាស្ត្រាចារ្យ សុខ វិបុល',
             'latin_name' => 'Prof. Sok Vibol',
@@ -52,7 +52,6 @@ class DualNameUsersTest extends TestCase
         $this->assertEquals('Prof. Sok Vibol', $found['latin_name']);
         $this->assertEquals(1, $found['classes_count']);
 
-        // Auth me/login includes latin_name
         $loginRes = $this->postJson('/api/login', [
             'email' => 'vibol.dual@scanin.app',
             'password' => 'secret123',
@@ -104,4 +103,3 @@ class DualNameUsersTest extends TestCase
         $this->assertEquals('KEO CHANTREA', $found['latin_name']);
     }
 }
-

@@ -1,3 +1,4 @@
+// Detailed attendance list and status edit screen.
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../core/app_language.dart';
@@ -5,7 +6,6 @@ import '../../models/attendance_model.dart';
 import '../../models/class_model.dart';
 import '../../services/attendance_service.dart';
 
-/// អេក្រង់ពិនិត្យ និងកែសម្រួលបញ្ជីវត្តមានសិស្សពេញលេញតាមថ្នាក់
 class AttendanceListScreen extends StatefulWidget {
   final ClassModel? classModel;
 
@@ -18,7 +18,7 @@ class AttendanceListScreen extends StatefulWidget {
 class _AttendanceListScreenState extends State<AttendanceListScreen> {
   List<AttendanceModel> _attendances = [];
   bool _isLoading = true;
-  String _selectedStatusFilter = 'all'; // all, present, late, absent
+  String _selectedStatusFilter = 'all';
   String _searchQuery = '';
 
   @override
@@ -27,7 +27,6 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
     _loadAttendances();
   }
 
-  // ទាញយកបញ្ជីវត្តមានសិស្សតាមថ្នាក់ពី Backend API / Database
   Future<void> _loadAttendances() async {
     setState(() => _isLoading = true);
     try {
@@ -82,7 +81,6 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
       }
     });
 
-    // Save ការកែប្រែចូល Database (MySQL)
     AttendanceService.updateAttendanceStatus(item.id, newStatus, note: note);
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -282,7 +280,7 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
       ),
       body: Column(
         children: [
-          // Header Stats Strip
+
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
             decoration: BoxDecoration(
@@ -323,7 +321,6 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
             ),
           ),
 
-          // Search & Filter Section
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -367,7 +364,6 @@ class _AttendanceListScreenState extends State<AttendanceListScreen> {
             ),
           ),
 
-          // Student Attendance List
           Expanded(
             child: _isLoading
                 ? const Center(

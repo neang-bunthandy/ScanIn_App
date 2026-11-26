@@ -1,3 +1,4 @@
+// Student enrollment and status statistics report screen.
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../core/app_colors.dart';
@@ -160,7 +161,7 @@ class _AdminStudentStatsScreenState extends State<AdminStudentStatsScreen> {
               child: ListView(
                 padding: EdgeInsets.all(MediaQuery.of(context).size.width < 768 ? 16 : 28),
                 children: [
-                  // ១. របារ Filter និងប៊ូតុងសកម្មភាព
+
                   Container(
                     padding: const EdgeInsets.all(18),
                     decoration: BoxDecoration(
@@ -347,7 +348,6 @@ class _AdminStudentStatsScreenState extends State<AdminStudentStatsScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // ២. កាតសង្ខេបទូទៅ
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final cols = constraints.maxWidth > 900 ? 4 : (constraints.maxWidth > 550 ? 2 : 1);
@@ -417,7 +417,6 @@ class _AdminStudentStatsScreenState extends State<AdminStudentStatsScreen> {
                   ),
                   const SizedBox(height: 22),
 
-                  // ៣. តារាងសរុបតាមឆ្នាំចូលរៀន & ជំនាញ (Year × Department Matrix)
                   Container(
                     decoration: BoxDecoration(
                       color: cardBg,
@@ -518,7 +517,6 @@ class _AdminStudentStatsScreenState extends State<AdminStudentStatsScreen> {
                   ),
                   const SizedBox(height: 22),
 
-                  // ៤. សរុបតាមជំនាញ និងតាមជំនាន់
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final isWide = constraints.maxWidth >= 900;
@@ -686,4 +684,3 @@ class _AdminStudentStatsScreenState extends State<AdminStudentStatsScreen> {
     );
   }
 }
-

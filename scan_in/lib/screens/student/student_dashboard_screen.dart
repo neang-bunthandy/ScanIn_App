@@ -1,3 +1,4 @@
+// Student home dashboard and today class schedule.
 import 'package:flutter/material.dart';
 import '../../core/api_config.dart';
 import '../../core/app_colors.dart';
@@ -9,9 +10,6 @@ import '../../models/attendance_model.dart';
 import '../../widgets/week_day_strip.dart';
 import '../lecturer/class_detail_screen.dart';
 
-/// អេក្រង់ទំព័រដើមសិស្ស (Tab 1: ដើម)
-/// គាំទ្រទាំង Light Mode និង Dark Mode យ៉ាងពេញលេញ
-/// បំពាក់ WeekDayStrip (ជម្រើសទី ២) សម្រាប់រើសថ្ងៃ និងមើលកាលវិភាគជាក់ស្តែង
 class StudentDashboardScreen extends StatefulWidget {
   final UserModel student;
   final List<ClassModel> classes;
@@ -62,12 +60,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     final subTextCol = isDark ? const Color(0xFF94A3B8) : AppColors.textSecondary;
     final avatarBg = isDark ? const Color(0xFF334155) : AppColors.primaryLight;
 
-    // គណនាស្ថិតិវត្តមានជាក់ស្តែងពី Database (MySQL)
     final presentCount = attendances.where((a) => a.isPresent).length;
     final lateCount = attendances.where((a) => a.isLate).length;
     final absentCount = attendances.where((a) => a.isAbsent).length;
 
-    // ច្រោះយកថ្នាក់រៀនតាមថ្ងៃដែលបានជ្រើសរើស (Filter by Selected Day)
     final dayClasses = classes.where((c) {
       return AppDateTime.matchesClassSchedule(c.dayOfWeek, c.classDate, _selectedDate);
     }).toList();
@@ -79,7 +75,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- 1. Header (សួស្តី & កាលបរិច្ឆេទ) ---
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +141,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
           const SizedBox(height: 20),
 
-          // --- 2. Big Action Button (📷 ស្កេនវត្តមាន) ---
           SizedBox(
             width: double.infinity,
             height: 64,
@@ -181,7 +176,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // --- 3. Quick Stats (វត្តមានខែនេះ) ---
           Text(
             AppLanguage.tr('វត្តមានខែនេះ៖', 'This Month\'s Attendance:'),
             style: TextStyle(
@@ -194,7 +188,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
           Row(
             children: [
-              // វត្តមាន (Present)
+
               Expanded(
                 child: _buildStatCard(
                   count: '$presentCount',
@@ -206,7 +200,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               ),
               const SizedBox(width: 12),
 
-              // យឺត (Late)
               Expanded(
                 child: _buildStatCard(
                   count: '$lateCount',
@@ -218,7 +211,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               ),
               const SizedBox(width: 12),
 
-              // អវត្តមាន (Absent)
               Expanded(
                 child: _buildStatCard(
                   count: '$absentCount',
@@ -233,7 +225,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // --- 3.5. របាររើសថ្ងៃ Week Day Strip (ជម្រើសទី ២ ទំនើប) ---
           WeekDayStrip(
             selectedDate: _selectedDate,
             classes: classes,
@@ -253,7 +244,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // --- 4. My Classes (ថ្នាក់របស់ខ្ញុំ) ---
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -392,7 +382,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   const SizedBox(height: 10),
                   TextButton.icon(
                     onPressed: () {
-                      // រកមើលថ្នាក់បន្ទាប់ដែលជិតបំផុត
+
                       for (int i = 0; i < 14; i++) {
                         final checkDate = DateTime.now().add(Duration(days: i));
                         if (classes.any((c) => AppDateTime.matchesClassSchedule(c.dayOfWeek, c.classDate, checkDate))) {
@@ -446,7 +436,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return content;
   }
 
-  // Card សង្ខេបវត្តមាន
   Widget _buildStatCard({
     required String count,
     required String label,
@@ -485,7 +474,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  // Card ថ្នាក់រៀនទំនើប (មានកាលបរិច្ឆេទ Session និង Smart Status Badge)
   Widget _buildClassCard(
     BuildContext context,
     ClassModel c, {
@@ -497,12 +485,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }) {
     final iconBg = isDark ? const Color(0xFF334155) : AppColors.primaryLight.withValues(alpha: 0.35);
 
-    // គណនាកាលបរិច្ឆេទ Session ជាក់លាក់
     final String sessionDateText = c.classDate != null && c.classDate!.isNotEmpty
         ? AppDateTime.formatSessionDate(DateTime.tryParse(c.classDate!) ?? _selectedDate)
         : (c.dayOfWeek.isNotEmpty ? c.dayOfWeek : AppDateTime.dayOfWeek(_selectedDate));
 
-    // Smart Status Badge
     final att = widget.attendances.where((a) => a.classId == c.id).firstOrNull;
     final now = DateTime.now();
     final todayDate = DateTime(now.year, now.month, now.day);
@@ -588,7 +574,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ឈ្មោះមុខវិជ្ជា
+
                   Text(
                     c.subjectName,
                     style: TextStyle(
@@ -599,7 +585,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   ),
                   const SizedBox(height: 6),
 
-                  // ម៉ោង និងកាលបរិច្ឆេទ Session
                   Row(
                     children: [
                       Container(
@@ -640,7 +625,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   ),
                   const SizedBox(height: 6),
 
-                  // គ្រូបង្រៀន, បន្ទប់ & Status Badge
                   Row(
                     children: [
                       Icon(Icons.person_outline_rounded, size: 13, color: subTextCol),

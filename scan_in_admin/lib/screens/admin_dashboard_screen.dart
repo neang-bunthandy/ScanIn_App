@@ -1,3 +1,4 @@
+// Web Admin & Lecturer overview dashboard screen.
 import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
@@ -70,7 +71,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: ListView(
                 padding: EdgeInsets.all(MediaQuery.of(context).size.width < 768 ? 16 : 32),
                 children: [
-                  // Stat Cards Grid (Responsive)
+
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final isNarrow = constraints.maxWidth < 750;
@@ -127,7 +128,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Classes Card Table
                   Container(
                     decoration: BoxDecoration(
                       color: cardBg,

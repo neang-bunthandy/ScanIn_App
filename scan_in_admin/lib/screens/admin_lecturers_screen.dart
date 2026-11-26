@@ -1,3 +1,4 @@
+// Lecturers account management screen.
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import '../widgets/admin_search_field.dart';
@@ -90,7 +91,6 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
     }
   }
 
-  /// បើកផ្ទាំង Admin បង្កើតគណនីគ្រូបង្រៀនថ្មី (Khmer Name, Latin Name, Email, Password, Department, Phone)
   Future<void> _openCreateLecturerDialog() async {
     final nameCtrl = TextEditingController();
     final latinNameCtrl = TextEditingController();
@@ -145,7 +145,6 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // ឈ្មោះជាអក្សរខ្មែរ & ឈ្មោះជាអក្សរឡាតាំង
                   Row(
                     children: [
                       Expanded(
@@ -177,7 +176,6 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // អ៊ីមែល & ពាក្យសម្ងាត់
                   Row(
                     children: [
                       Expanded(
@@ -209,7 +207,6 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ (អាចវាយដោយដៃ ឬរើសរហ័ស)
                   EditableComboField(
                     controller: deptCtrl,
                     labelText: AppLanguage.tr('ដេប៉ាតឺម៉ង់ / មហាវិទ្យាល័យ', 'Department / Faculty'),
@@ -219,7 +216,6 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // អត្តលេខ & ទូរស័ព្ទ
                   Row(
                     children: [
                       Expanded(
@@ -325,7 +321,6 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
     }
   }
 
-  /// បើកផ្ទាំង Admin កែសម្រួលព័ត៌មានគ្រូបង្រៀន
   Future<void> _openEditLecturerDialog(Map<String, dynamic> lec) async {
     final id = lec['id'] as int;
     final nameCtrl = TextEditingController(text: lec['name'] ?? '');
@@ -557,7 +552,6 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
     }
   }
 
-  /// បញ្ជាក់ការលុបគណនីគ្រូបង្រៀន
   Future<void> _confirmDeleteLecturer(Map<String, dynamic> lec) async {
     final id = lec['id'] as int;
     final name = lec['name'] ?? 'Lecturer #$id';
@@ -673,7 +667,7 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Header Bar
+
                         Padding(
                           padding: const EdgeInsets.all(20),
                           child: LayoutBuilder(
@@ -936,4 +930,3 @@ class _AdminLecturersScreenState extends State<AdminLecturersScreen> {
     );
   }
 }
-
