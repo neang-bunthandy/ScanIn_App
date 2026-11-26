@@ -11,3 +11,9 @@ void downloadBytesFile({
 void printHtmlReport(String htmlContent) {
   // No-op on non-web platforms
 }
+
+Future<({String name, Uint8List bytes})?> pickFileBytes({
+  String accept = '.csv,.xlsx,.xls',
+}) async {
+  return null;
+}

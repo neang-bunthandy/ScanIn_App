@@ -469,6 +469,13 @@
     - **Mobile App (`scan_in`) ៖**
       - ដំឡើង `local_auth: ^3.0.2`, បង្កើត `BiometricService` (`getOrCreateDeviceId` + `authenticateWithFaceId`), បន្ថែម `AttendanceService.faceCheckIn`, និងបង្ហាញប៊ូតុង **«កត់វត្តមានដោយ Face ID»** ក្នុង `student_dashboard_screen.dart`។
 
+21. **កិច្ចការទី ២១ (Task 21 — រួចរាល់ ១០០% ✅) ៖ មុខងារទាញយក Template Excel (.xlsx), Import File ផ្ទាល់ និងពិនិត្យឈ្មោះស្ទួន**
+    - **Web Admin (`scan_in_admin/lib/screens/admin_students_screen.dart` & `web_export_helper_web.dart`) ៖**
+      - ដំឡើង `excel: ^4.0.6` សម្រាប់បង្កើត និងអានឯកសារ Microsoft Excel (`.xlsx`) ផ្ទាល់លើ Browser។
+      - បន្ថែមប៊ូតុង **«ទាញយក Template (.xlsx)»** បង្កើតឯកសារ `student_import_template.xlsx` មាន Header ទាំង ១១ ជួរឈរ និងជួរគំរូ ១ ជួរស្រាប់ជូនសាលាប្រើប្រាស់។
+      - បន្ថែមប៊ូតុង **«ជ្រើសរើស File (.xlsx / .csv)»** ដោយប្រើ `pickFileBytes()` ឱ្យបុគ្គលិកសាលាអាច Import ឯកសារផ្ទាល់ដោយមិនបាច់ Copy & Paste។
+      - បំពាក់ប្រព័ន្ធ **ពិនិត្យឈ្មោះ កូដ និង Email ស្ទួន** ទាំងជាមួយ Database ដែលមានស្រាប់ និងស្ទួនគ្នាក្នុង File តែមួយ ព្រមទាំងបង្ហាញប្រអប់ព្រមាន និងរំលងទិន្នន័យស្ទួនដោយស្វ័យប្រវត្តិ។
+
 ---
 
 ### 🧹 ការត្រួតពិនិត្យ និងសម្អាត File, Folder & Code (Project Hygiene & Zero Dead Code - FFC Audit)

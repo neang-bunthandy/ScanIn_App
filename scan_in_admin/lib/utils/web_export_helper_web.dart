@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:js_interop';
 import 'dart:typed_data';
 import 'package:web/web.dart' as web;
@@ -36,4 +37,39 @@ void printHtmlReport(String htmlContent) {
       win.print();
     });
   }
+}
+
+/// ជ្រើសរើសឯកសារ (.xlsx, .csv) ពីកុំព្យូទ័រផ្ទាល់នៅលើ Browser
+Future<({String name, Uint8List bytes})?> pickFileBytes({
+  String accept = '.csv,.xlsx,.xls',
+}) {
+  final completer = Completer<({String name, Uint8List bytes})?>();
+  final input = web.document.createElement('input') as web.HTMLInputElement;
+  input.type = 'file';
+  input.accept = accept;
+
+  input.onChange.listen((_) async {
+    final files = input.files;
+    if (files == null || files.length == 0) {
+      if (!completer.isCompleted) completer.complete(null);
+      return;
+    }
+    final file = files.item(0);
+    if (file == null) {
+      if (!completer.isCompleted) completer.complete(null);
+      return;
+    }
+    try {
+      final buffer = await file.arrayBuffer().toDart;
+      final bytes = Uint8List.view(buffer.toDart);
+      if (!completer.isCompleted) {
+        completer.complete((name: file.name, bytes: bytes));
+      }
+    } catch (_) {
+      if (!completer.isCompleted) completer.complete(null);
+    }
+  });
+
+  input.click();
+  return completer.future;
 }

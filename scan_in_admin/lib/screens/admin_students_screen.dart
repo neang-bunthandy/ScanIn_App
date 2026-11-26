@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
+import 'package:excel/excel.dart' hide Border;
 import '../core/app_colors.dart';
 import '../core/app_language.dart';
 import '../core/app_routes.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/class_service.dart';
+import '../utils/web_export_helper.dart';
 import '../widgets/editable_combo_field.dart';
 import 'admin_scaffold.dart';
 
@@ -882,10 +885,12 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     }
   }
 
-  /// បើកផ្ទាំង Admin Import សិស្សជាក្រុមពី Excel / CSV
+  /// បើកផ្ទាំង Admin Import សិស្សជាក្រុមពី Excel / CSV (គាំទ្រទាញ Template, រើស File ផ្ទាល់ និងពិនិត្យឈ្មោះស្ទួន)
   Future<void> _openImportStudentsDialog() async {
     final csvTextCtrl = TextEditingController();
     List<Map<String, dynamic>> parsedStudents = [];
+    List<String> duplicateWarnings = [];
+    String? selectedFileName;
 
     final batchGenCtrl = TextEditingController(text: 'ជំនាន់ទី ១៦ (Gen 16)');
     final batchIntakeCtrl = TextEditingController(text: '2024');
@@ -912,80 +917,227 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
       return '$cleanCode@scanin.app';
     }
 
-    void parseCsv(String text, void Function(void Function()) setDlgState) {
-      final lines = text.split('\n').where((l) => l.trim().isNotEmpty).toList();
+    String normKey(String v) => v.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+
+    void processRows(List<List<String>> allRows, void Function(void Function()) setDlgState) {
       final list = <Map<String, dynamic>>[];
-      if (lines.isEmpty) {
-        setDlgState(() => parsedStudents = []);
+      final warnings = <String>[];
+
+      if (allRows.isEmpty) {
+        setDlgState(() {
+          parsedStudents = [];
+          duplicateWarnings = [];
+        });
         return;
       }
 
       int startIndex = 0;
-      final firstLineLower = lines.first.toLowerCase();
-      if (firstLineLower.contains('name') || firstLineLower.contains('code') || firstLineLower.contains('id') || firstLineLower.contains('ឈ្មោះ')) {
+      final firstLineLower = allRows.first.join(',').toLowerCase();
+      if (firstLineLower.contains('name') ||
+          firstLineLower.contains('code') ||
+          firstLineLower.contains('id') ||
+          firstLineLower.contains('ឈ្មោះ')) {
         startIndex = 1;
       }
 
-      for (int i = startIndex; i < lines.length; i++) {
-        final parts = lines[i].split(',').map((p) => p.trim()).toList();
-        if (parts.length >= 2) {
-          final code = parts[0];
-          final name = parts[1];
-          if (code.isEmpty || name.isEmpty) continue;
+      // ត្រួតពិនិត្យទិន្នន័យដែលមានស្រាប់ក្នុង Database
+      final existingCodes = _students
+          .map((s) => normKey((s['student_code'] ?? '').toString()))
+          .where((v) => v.isNotEmpty)
+          .toSet();
+      final existingEmails = _students
+          .map((s) => normKey((s['email'] ?? '').toString()))
+          .where((v) => v.isNotEmpty)
+          .toSet();
+      final existingNames = _students
+          .map((s) => normKey((s['name'] ?? '').toString()))
+          .where((v) => v.isNotEmpty)
+          .toSet();
 
-          String latinName = '';
-          String gender = 'ប្រុស';
-          String dob = '';
-          String email = '';
-          String dept = batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first;
-          String gen = batchGenCtrl.text.trim();
-          String intake = batchIntakeCtrl.text.trim();
-          int yearLevel = batchYearLevel;
-          String phone = '';
+      // ត្រួតពិនិត្យទិន្នន័យស្ទួនគ្នាក្នុង File តែមួយ
+      final seenCodes = <String>{};
+      final seenEmails = <String>{};
+      final seenNames = <String>{};
 
-          if (parts.length >= 10) {
-            latinName = parts.length > 2 ? parts[2] : '';
-            gender = parts.length > 3 && parts[3].isNotEmpty ? parts[3] : 'ប្រុស';
-            dob = parts.length > 4 ? parts[4] : '';
-            email = parts.length > 5 ? parts[5] : '';
-            dept = parts.length > 6 && parts[6].isNotEmpty ? parts[6] : (batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first);
-            if (parts.length > 7 && parts[7].isNotEmpty) gen = parts[7];
-            if (parts.length > 8 && parts[8].isNotEmpty) intake = parts[8];
-            if (parts.length > 9 && parts[9].isNotEmpty && int.tryParse(parts[9]) != null) {
-              yearLevel = int.parse(parts[9]);
-            }
-            phone = parts.length > 10 ? parts[10] : '';
-          } else {
-            gender = parts.length > 2 && parts[2].isNotEmpty ? parts[2] : 'ប្រុស';
-            dob = parts.length > 3 ? parts[3] : '';
-            email = parts.length > 4 ? parts[4] : '';
-            dept = parts.length > 5 && parts[5].isNotEmpty ? parts[5] : (batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first);
-            phone = parts.length > 6 ? parts[6] : '';
-            if (parts.length > 7) latinName = parts[7];
+      for (int i = startIndex; i < allRows.length; i++) {
+        final parts = allRows[i].map((p) => p.trim()).toList();
+        if (parts.length < 2) continue;
+
+        final code = parts[0];
+        final name = parts[1];
+        if (code.isEmpty || name.isEmpty) continue;
+
+        String latinName = '';
+        String gender = 'ប្រុស';
+        String dob = '';
+        String email = '';
+        String dept = batchDeptCtrl.text.trim().isNotEmpty
+            ? batchDeptCtrl.text.trim()
+            : ClassService.presetDepartments.first;
+        String gen = batchGenCtrl.text.trim();
+        String intake = batchIntakeCtrl.text.trim();
+        int yearLevel = batchYearLevel;
+        String phone = '';
+
+        if (parts.length >= 10) {
+          latinName = parts.length > 2 ? parts[2] : '';
+          gender = parts.length > 3 && parts[3].isNotEmpty ? parts[3] : 'ប្រុស';
+          dob = parts.length > 4 ? parts[4] : '';
+          email = parts.length > 5 ? parts[5] : '';
+          dept = parts.length > 6 && parts[6].isNotEmpty
+              ? parts[6]
+              : (batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first);
+          if (parts.length > 7 && parts[7].isNotEmpty) gen = parts[7];
+          if (parts.length > 8 && parts[8].isNotEmpty) intake = parts[8];
+          if (parts.length > 9 && parts[9].isNotEmpty && int.tryParse(parts[9]) != null) {
+            yearLevel = int.parse(parts[9]);
           }
-
-          dept = ClassService.normalizeDepartment(dept);
-          if (email.isEmpty || !email.contains('@')) {
-            email = generateStudentEmail(latinName, code);
-          }
-
-          list.add({
-            'student_code': code,
-            'name': name,
-            if (latinName.isNotEmpty) 'latin_name': latinName,
-            'gender': gender,
-            'date_of_birth': dob,
-            'email': email,
-            'department': dept,
-            'generation': gen,
-            'intake_year': intake,
-            'year_level': yearLevel,
-            'status': 'active',
-            'phone': phone,
-          });
+          phone = parts.length > 10 ? parts[10] : '';
+        } else {
+          gender = parts.length > 2 && parts[2].isNotEmpty ? parts[2] : 'ប្រុស';
+          dob = parts.length > 3 ? parts[3] : '';
+          email = parts.length > 4 ? parts[4] : '';
+          dept = parts.length > 5 && parts[5].isNotEmpty
+              ? parts[5]
+              : (batchDeptCtrl.text.trim().isNotEmpty ? batchDeptCtrl.text.trim() : ClassService.presetDepartments.first);
+          phone = parts.length > 6 ? parts[6] : '';
+          if (parts.length > 7) latinName = parts[7];
         }
+
+        dept = ClassService.normalizeDepartment(dept);
+        if (email.isEmpty || !email.contains('@')) {
+          email = generateStudentEmail(latinName, code);
+        }
+
+        final codeKey = normKey(code);
+        final nameKey = normKey(name);
+        final emailKey = normKey(email);
+
+        if (existingCodes.contains(codeKey) || existingNames.contains(nameKey) || existingEmails.contains(emailKey)) {
+          warnings.add('$code — $name (${AppLanguage.tr('មានក្នុងប្រព័ន្ធរួចហើយ', 'Already in system')})');
+          continue;
+        }
+        if (seenCodes.contains(codeKey) || seenNames.contains(nameKey) || seenEmails.contains(emailKey)) {
+          warnings.add('$code — $name (${AppLanguage.tr('ស្ទួនគ្នាក្នុង File', 'Duplicate in file')})');
+          continue;
+        }
+
+        seenCodes.add(codeKey);
+        seenNames.add(nameKey);
+        seenEmails.add(emailKey);
+
+        list.add({
+          'student_code': code,
+          'name': name,
+          if (latinName.isNotEmpty) 'latin_name': latinName,
+          'gender': gender,
+          'date_of_birth': dob,
+          'email': email,
+          'department': dept,
+          'generation': gen,
+          'intake_year': intake,
+          'year_level': yearLevel,
+          'status': 'active',
+          'phone': phone,
+        });
       }
-      setDlgState(() => parsedStudents = list);
+
+      setDlgState(() {
+        parsedStudents = list;
+        duplicateWarnings = warnings;
+      });
+    }
+
+    void parseCsv(String text, void Function(void Function()) setDlgState) {
+      final cleanText = text.replaceFirst('\uFEFF', '');
+      final lines = cleanText.split(RegExp(r'\r?\n')).where((l) => l.trim().isNotEmpty).toList();
+      final rows = lines.map((l) => l.split(',').toList()).toList();
+      processRows(rows, setDlgState);
+    }
+
+    void downloadExcelTemplate() {
+      final excel = Excel.createExcel();
+      final sheetName = excel.getDefaultSheet() ?? 'Sheet1';
+      final sheet = excel[sheetName];
+
+      final headers = [
+        'Student Code',
+        'Full Name',
+        'Latin Name',
+        'Gender',
+        'Date of Birth',
+        'Email',
+        'Department',
+        'Generation',
+        'Intake Year',
+        'Year Level',
+        'Phone',
+      ];
+      sheet.appendRow(headers.map((h) => TextCellValue(h)).toList());
+
+      final sample = [
+        'IT20-001',
+        'កាទិក វីរ៉ាច',
+        'KATHIK VIRAJ',
+        'ប្រុស',
+        '2005-06-06',
+        'kathik.viraj@scanin.app',
+        'ព័ត៌មានវិទ្យា (IT)',
+        'ជំនាន់ទី 20 (Gen 20)',
+        '2023',
+        '4',
+        '012345001',
+      ];
+      sheet.appendRow(sample.map((v) => TextCellValue(v)).toList());
+
+      final savedBytes = excel.save();
+      if (savedBytes != null) {
+        downloadBytesFile(
+          bytes: Uint8List.fromList(savedBytes),
+          filename: 'student_import_template.xlsx',
+          mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+      }
+    }
+
+    Future<void> pickAndParseFile(void Function(void Function()) setDlgState) async {
+      final picked = await pickFileBytes(accept: '.xlsx,.xls,.csv,.txt');
+      if (picked == null) return;
+
+      final lowerName = picked.name.toLowerCase();
+      if (lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls')) {
+        try {
+          final excel = Excel.decodeBytes(picked.bytes);
+          final sheetName = excel.tables.keys.first;
+          final table = excel.tables[sheetName];
+          if (table != null) {
+            final rows = <List<String>>[];
+            for (final row in table.rows) {
+              final strRow = row.map((cell) => (cell?.value?.toString() ?? '').trim()).toList();
+              if (strRow.any((v) => v.isNotEmpty)) {
+                rows.add(strRow);
+              }
+            }
+            csvTextCtrl.text = rows.map((r) => r.join(',')).join('\n');
+            setDlgState(() => selectedFileName = picked.name);
+            processRows(rows, setDlgState);
+          }
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLanguage.tr('មិនអាចអាន File Excel បានទេ៖ $e', 'Failed to read Excel file: $e')),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        }
+      } else {
+        final content = utf8.decode(picked.bytes, allowMalformed: true);
+        csvTextCtrl.text = content.replaceFirst('\uFEFF', '');
+        setDlgState(() => selectedFileName = picked.name);
+        parseCsv(content, setDlgState);
+      }
     }
 
     final imported = await showDialog<bool>(
@@ -1128,26 +1280,37 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                   AppLanguage.tr('ទម្រង់ជួរឈរ Excel / CSV៖', 'Excel / CSV Column Format:'),
                                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                                 ),
-                                TextButton.icon(
-                                  icon: const Icon(Icons.copy_rounded, size: 14),
-                                  label: Text(AppLanguage.tr('ចម្លងទម្រង់ Header CSV', 'Copy CSV Header'), style: const TextStyle(fontSize: 12)),
-                                  onPressed: () async {
-                                    const headerTemplate = 'Student Code,Full Name,Latin Name,Gender,Date of Birth,Email,Department,Generation,Intake Year,Year Level,Phone\n'
-                                        'IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,kathik.viraj@scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ២០ (Gen 20),2023,4,012345001';
-                                    await Clipboard.setData(const ClipboardData(text: headerTemplate));
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(AppLanguage.tr(
-                                            'បានចម្លងទម្រង់គំរូ CSV ទៅក្នុង Clipboard រួចរាល់!',
-                                            'Copied CSV template to Clipboard!',
-                                          )),
-                                          backgroundColor: const Color(0xFF10B981),
-                                          behavior: SnackBarBehavior.floating,
-                                        ),
-                                      );
-                                    }
-                                  },
+                                Wrap(
+                                  spacing: 4,
+                                  children: [
+                                    TextButton.icon(
+                                      icon: const Icon(Icons.download_rounded, size: 15),
+                                      label: Text(AppLanguage.tr('ទាញយក Template (.xlsx)', 'Download Template (.xlsx)'), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                      style: TextButton.styleFrom(foregroundColor: const Color(0xFF16A34A)),
+                                      onPressed: downloadExcelTemplate,
+                                    ),
+                                    TextButton.icon(
+                                      icon: const Icon(Icons.copy_rounded, size: 14),
+                                      label: Text(AppLanguage.tr('ចម្លង Header CSV', 'Copy CSV Header'), style: const TextStyle(fontSize: 12)),
+                                      onPressed: () async {
+                                        const headerTemplate = 'Student Code,Full Name,Latin Name,Gender,Date of Birth,Email,Department,Generation,Intake Year,Year Level,Phone\n'
+                                            'IT20-001,កាទិក វីរ៉ាច,KATHIK VIRAJ,ប្រុស,2005-06-06,kathik.viraj@scanin.app,ព័ត៌មានវិទ្យា (IT),ជំនាន់ទី ២០ (Gen 20),2023,4,012345001';
+                                        await Clipboard.setData(const ClipboardData(text: headerTemplate));
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(AppLanguage.tr(
+                                                'បានចម្លងទម្រង់គំរូ CSV ទៅក្នុង Clipboard រួចរាល់!',
+                                                'Copied CSV template to Clipboard!',
+                                              )),
+                                              backgroundColor: const Color(0xFF10B981),
+                                              behavior: SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -1160,17 +1323,51 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      Text(
-                        AppLanguage.tr(
-                          'បិទភ្ជាប់ (Paste) ទិន្នន័យពី Excel ឬ CSV ចូលក្នុងប្រអប់ខាងក្រោម៖',
-                          'Paste CSV rows or exported Excel data below:',
-                        ),
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      Row(
+                        children: [
+                          ElevatedButton.icon(
+                            icon: const Icon(Icons.folder_open_rounded, size: 18),
+                            label: Text(AppLanguage.tr('ជ្រើសរើស File (.xlsx / .csv)', 'Choose File (.xlsx / .csv)')),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onPressed: () => pickAndParseFile(setDlgState),
+                          ),
+                          const SizedBox(width: 10),
+                          if (selectedFileName != null)
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF16A34A).withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '📄 $selectedFileName',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(color: Color(0xFF16A34A), fontWeight: FontWeight.w600, fontSize: 12),
+                                ),
+                              ),
+                            )
+                          else
+                            Expanded(
+                              child: Text(
+                                AppLanguage.tr(
+                                  'ឬបិទភ្ជាប់ (Paste) ទិន្នន័យខាងក្រោម៖',
+                                  'Or paste rows below:',
+                                ),
+                                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       TextField(
                         controller: csvTextCtrl,
-                        maxLines: 7,
+                        maxLines: 6,
                         onChanged: (val) => parseCsv(val, setDlgState),
                         decoration: InputDecoration(
                           hintText: AppLanguage.tr(
@@ -1193,8 +1390,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                           const SizedBox(width: 8),
                           Text(
                             AppLanguage.tr(
-                              'រកឃើញសិស្សត្រឹមត្រូវ៖  នាក់',
-                              'Detected valid students: ',
+                              'រកឃើញសិស្សត្រឹមត្រូវ៖ ${parsedStudents.length} នាក់',
+                              'Detected valid students: ${parsedStudents.length}',
                             ),
                             style: TextStyle(
                               fontSize: 13,
@@ -1204,6 +1401,47 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                           ),
                         ],
                       ),
+                      if (duplicateWarnings.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.45)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706), size: 18),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    AppLanguage.tr(
+                                      'រកឃើញឈ្មោះ/កូដស្ទួនចំនួន ${duplicateWarnings.length} នាក់ (ត្រូវបានរំលងស្វ័យប្រវត្តិ)៖',
+                                      'Skipped ${duplicateWarnings.length} duplicate entries:',
+                                    ),
+                                    style: const TextStyle(color: Color(0xFFD97706), fontWeight: FontWeight.bold, fontSize: 12.5),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              ...duplicateWarnings.take(5).map(
+                                    (w) => Text('• $w', style: const TextStyle(fontSize: 11.5, color: Color(0xFFB45309))),
+                                  ),
+                              if (duplicateWarnings.length > 5)
+                                Text(
+                                  AppLanguage.tr(
+                                    '... និង ${duplicateWarnings.length - 5} នាក់ទៀត',
+                                    '... and ${duplicateWarnings.length - 5} more',
+                                  ),
+                                  style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: Color(0xFFB45309)),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
