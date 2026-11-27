@@ -6,169 +6,132 @@
 I. គោលបំណងរួមនៃកម្មវិធី (Overall Purpose & Objectives)
 --------------------------------------------------------------------------------
 កម្មវិធី ScanIn ត្រូវបានបង្កើតឡើងក្នុងគោលបំណងផ្លាស់ប្តូរ និងធ្វើទំនើបកម្មប្រព័ន្ធ
-កត់ត្រាវត្តមានសិស្ស/និស្សិត ពីការប្រើប្រាស់ក្រដាស ឬវិធីសាស្ត្របុរាណ មកជាប្រព័ន្ធ
-ឌីជីថលស្វ័យប្រវត្តិតាមរយៈ Dynamic QR Code ដែលមានភាពរហ័ស សុក្រឹតភាព និងសុវត្ថិភាពខ្ពស់។
+កត់ត្រាវត្តមានសិស្ស/និស្សិត ពីការប្រើប្រាស់ក្រដាស មកជាប្រព័ន្ធឌីជីថលឆ្លាតវៃ
+តាមរយៈ Dynamic QR Code, GPS Geofencing និង Face ID Check-In ដែលមានសុក្រឹតភាព
+ល្បឿនលឿន និងសុវត្ថិភាពខ្ពស់ ភ្ជាប់ផ្ទាល់ទៅកាន់ MySQL Database (Laravel API)។
 
 * បញ្ហាប្រឈមនៃវិធីសាស្ត្រចាស់ (Traditional Problems):
   - ចំណាយពេលយូរក្នុងការហៅឈ្មោះសិស្សម្តងមួយៗក្នុងថ្នាក់រៀន (ខាតពេលបង្រៀន ១៥-២០ នាទី)។
-  - ងាយស្រួលក្នុងការចុះឈ្មោះជំនួសគ្នា (Proxy Attendance) ឬបន្លំវត្តមាន។
-  - ក្រដាសស្រង់វត្តមានងាយនឹងបាត់បង់ ខូចខាត ឬពិបាកក្នុងការរក្សាទុករយៈពេលវែង។
-  - ពិបាក និងស៊ីពេលច្រើនក្នុងការបូកសរុបស្ថិតិ និងធ្វើរបាយការណ៍ប្រចាំខែ/ឆមាស។
-  - បង្កើតបន្ទុកបន្ថែមដល់គ្រូបង្រៀនក្នុងការបង្កើត ឬរៀបចំកូដមុខវិជ្ជា និងបន្ទប់ដោយខ្លួនឯង។
+  - ងាយស្រួលក្នុងការចុះឈ្មោះជំនួសគ្នា (Proxy Attendance) ឬស្កេនពីក្រៅបរិវេណសាលា។
+  - ក្រដាសស្រង់វត្តមានងាយនឹងបាត់បង់ ខូចខាត និងពិបាកបូកសរុបស្ថិតិប្រចាំឆមាស។
 
-* ដំណោះស្រាយ និងអត្ថប្រយោជន៍របស់ ScanIn:
-  - ភាពរហ័ស (Speed): សិស្សចំណាយពេលត្រឹមតែ ១-២ វិនាទីប៉ុណ្ណោះក្នុងការស្កេនកត់វត្តមាន។
-  - សុក្រឹតភាព និងសុវត្ថិភាព (High Security): ប្រើប្រាស់ប្រព័ន្ធ Dynamic QR Code
-    ដែលមាន Token ជាក់លាក់ និងកំណត់សុពលភាព (Countdown ៤ នាទី) ការពារការលួចថតផ្ញើបន្តគ្នា។
-  - ស្វ័យប្រវត្តិកម្មទិន្នន័យ (Real-time Sync): ទិន្នន័យស្កេនត្រូវបានបញ្ជូនផ្ទាល់ទៅកាន់
-    Database (MySQL) ភ្លាមៗ ជួយឱ្យគ្រូ និងរដ្ឋបាលអាចតាមដានបានគ្រប់ពេលវេលា។
-  - ការគ្រប់គ្រងគណនីស្ថាប័នកណ្តាល (Centralized Institutional Account Provisioning):
-    * ខាងសាលា (Admin) ជាអ្នកបង្កើត និងផ្តល់គណនី (Email & Password) ជូនទាំងគ្រូ និងសិស្ស។
-      មិនអនុញ្ញាតឱ្យចុះឈ្មោះក្រៅប្រព័ន្ធដោយសេរីឡើយ ដើម្បីធានាសុក្រឹតភាព និងសុវត្ថិភាពទិន្នន័យ។
-    * អ្នកគ្រប់គ្រងសាលា (Admin)៖ កាន់កាប់ផ្ទាំង Admin Panel ផ្តាច់មុខ ជាអ្នកបង្កើតគណនីគ្រូ 
-      បង្កើតគណនីសិស្ស បង្កើតថ្នាក់រៀន និងចាត់តាំងគ្រូ។
-    * គ្រូបង្រៀន (Lecturers)៖ ទទួលបានគណនីពី Admin (មិនមែនជាអ្នកគ្រប់គ្រងទេ)។ គ្រូប្រើប្រាស់ Laptop 
-      ក្នុងថ្នាក់រៀន គ្រាន់តែដើម្បីបញ្ចាំង QR Code លើ Projector និងកែប្រែវត្តមានជាក់ស្តែងក្នុងថ្នាក់។
-    * សិស្ស (Students)៖ ទទួលបានគណនីពីសាលា រួចប្រើប្រាស់ទូរស័ព្ទដៃ (Mobile App) ដើម្បីស្កេនកត់វត្តមាន។
+* ដំណោះស្រាយ និងសុវត្ថិភាពរបស់ ScanIn:
+  - ភាពរហ័ស (Speed): សិស្សចំណាយពេលត្រឹម ១-២ វិនាទីក្នុងការស្កេន QR ឬ Face ID។
+  - ការពារការស្កេនពីចម្ងាយ (GPS Geofencing & Anti-Fake GPS): គណនាចម្ងាយពិតដោយ
+    រូបមន្ត Haversine និងទប់ស្កាត់កម្មវិធី Mock Location (Fake GPS) ភ្លាមៗ។
+  - ការពារការស្កេនជំនួសគ្នា (Face ID + Single Device Binding): ១ គណនី = ១ ទូរស័ព្ទ
+    និងប្រើប្រាស់ Face ID / Biometric របស់ទូរស័ព្ទផ្ទាល់។
+  - រចនាសម្ព័ន្ធ ១ QR = ១ Session (៩០ នាទី): គាំទ្រ ៦ Sessions ស្តង់ដារក្នុង ១ ថ្ងៃ
+    (07:00-08:30, 08:50-10:20, 10:30-12:00, 13:00-14:30, 14:40-16:10, 16:20-17:50)។
+  - Clean Production Provisioning: គណនី Master Admin បង្កើតតាម CLI (`php artisan make:admin`)
+    ចំណែក Sub-Admin, គ្រូ និងសិស្ស ត្រូវបានបង្កើត និងគ្រប់គ្រងដោយរដ្ឋបាលសាលា។
 
 
-II. មុខងារសម្រាប់សិស្ស / និស្សិត (Student Features - Mobile App)
+II. មុខងារសម្រាប់សិស្ស / និស្សិត (Student Features - Mobile App `scan_in`)
 --------------------------------------------------------------------------------
-១. ការចូលប្រើប្រាស់ និងសុវត្ថិភាព (Authentication & Security):
-   - សិស្សទទួលបាន Email និង Password ដំបូងពីខាងសាលា/រដ្ឋបាល ដើម្បីចូលប្រើកម្មវិធី។
-   - ចូលប្រើប្រាស់ដោយសុវត្ថិភាពតាមរយៈ Laravel Sanctum Bearer Token។
-   - មុខងារផ្លាស់ប្តូរពាក្យសម្ងាត់ផ្ទាល់ខ្លួន (Change Password)៖ សិស្សអាចប្តូរពីពាក្យសម្ងាត់ដំបូង
-     របស់សាលា មកជាពាក្យសម្ងាត់ផ្ទាល់ខ្លួនបានគ្រប់ពេលវេលា ដោយភ្ជាប់ផ្ទាល់ទៅ Database។
-   - មើលព័ត៌មានផ្ទាល់ខ្លួន (ឈ្មោះ, អត្តលេខសិស្ស STU, ដេប៉ាតឺម៉ង់, លេខទូរស័ព្ទ)។
-   - គាំទ្រការប្តូរភាសា (ខ្មែរ / English) និងប្តូរផ្ទាំងពណ៌ (Light Mode / Dark Mode)។
+១. ការចូលប្រើប្រាស់ និងព័ត៌មានផ្ទាល់ខ្លួន:
+   - ចូលប្រើដោយ Laravel Sanctum Bearer Token និងកំណត់ Server IP (Emulator / Wi-Fi PC / Localhost)។
+   - បង្ហាញរូបថត Profile លើ Home Screen (ចុចលើរូបដើម្បីចូលទៅ Profile Screen ភ្លាមៗ)។
+   - Upload / ប្តូររូបថត Profile តាម Camera ឬ Gallery (`POST /api/profile/avatar`)។
+   - ប្តូរពាក្យសម្ងាត់ផ្ទាល់ខ្លួន, ប្តូរភាសា (ខ្មែរ / English) និង Light / Dark Mode។
 
-២. ទំព័រដើម និងស្ថិតិវត្តមាន (Dashboard Overview):
-   - បង្ហាញស្ថិតិវត្តមានជាក់ស្តែងគណនាចេញពី Database រួមមាន៖
-     * ចំនួនវត្តមានមកទាន់ពេល (Present)
-     * ចំនួនវត្តមានមកយឺត (Late)
-     * ចំនួនអវត្តមាន (Absent)
-   - មើលកាលវិភាគថ្នាក់រៀន និងមុខវិជ្ជាដែលត្រូវរៀនប្រចាំថ្ងៃ។
-   - Pull-to-Refresh: ទាញចុះក្រោមដើម្បី refresh ទាញយកទិន្នន័យថ្មីចុងក្រោយ។
+២. ទំព័រដើម កាលវិភាគ និងស្ថិតិ (Dashboard & Schedule):
+   - WeekDayStrip: ជ្រើសរើសថ្ងៃតាមប្រតិទិន ដើម្បីមើលមុខវិជ្ជាត្រូវរៀនតាមកាលបរិច្ឆេទជាក់ស្តែង។
+   - បង្ហាញស្ថិតិវត្តមានជាក់ស្តែងពី Database (Present, Late, Absent) និង Pull-to-Refresh។
 
-៣. ការស្កេនកត់វត្តមាន (QR Code Attendance Scanning):
-   - បើក Camera ក្នុងកម្មវិធីទូរស័ព្ទដើម្បីស្កេន Dynamic QR Code ដែលគ្រូបញ្ចាំងលើ Projector។
-   - គាំទ្រការវាយបញ្ចូលលេខកូដ QR Token ដោយផ្ទាល់ដៃ (ករណីកាមេរ៉ាទូរស័ព្ទមានបញ្ហា)។
-   - បង្ហាញផ្ទាំងជូនដំណឹងភ្លាមៗនៅពេលកត់ត្រាបានជោគជ័យ ឬបញ្ជាក់ពីមូលហេតុបើបរាជ័យ។
+៣. ជម្រើសកត់វត្តមាន ២ របៀប (Dual Check-In Modes):
+   - របៀបទី ១ — QR Code Scan (`POST /api/attendances/scan`):
+     * ស្កេន Dynamic QR Code របស់គ្រូ (ឬវាយ Token ដោយដៃ) + ផ្ទៀងផ្ទាត់ GPS & Device ID
+       (មិនចាំបាច់ស្កេន Face ID ទៀតទេ ដើម្បីសន្សំសំចៃពេលវេលា)។
+   - របៀបទី ២ — Face ID Check-In (`POST /api/attendances/face-checkin`):
+     * ប្រើនៅពេលគ្រូបើក QR យឺត ឬសិស្សកំពុងនៅក្នុងបរិវេណសាលា (ឧ. នៅកង់ទីន)។
+     * ផ្ទៀងផ្ទាត់ Face ID / Biometric (`local_auth`) + GPS Geofencing + Device ID ភ្លាមៗ។
 
-៤. ពិនិត្យប្រវត្តិវត្តមានផ្ទាល់ខ្លួន (Attendance History):
-   - មើលកំណត់ត្រាវត្តមានកន្លងមកទាំងអស់តាមកាលបរិច្ឆេទ មុខវិជ្ជា និងម៉ោងស្កេន។
-   - ពិនិត្យមើលស្ថានភាពនីមួយៗ (មកទាន់ពេល, មកយឺត, ឬអវត្តមាន) ព្រមទាំងសម្គាល់ (Note)។
+៤. ប្រវត្តិវត្តមានផ្ទាល់ខ្លួន (Attendance History):
+   - មើលកំណត់ត្រាវត្តមានទាំងអស់តាមកាលបរិច្ឆេទ មុខវិជ្ជា ម៉ោងស្កេន ស្ថានភាព និង Note។
 
 
-III. មុខងារសម្រាប់គ្រូបង្រៀន (Lecturer Classroom Features - Laptop & Mobile)
+III. មុខងារសម្រាប់គ្រូបង្រៀន (Lecturer Features - Mobile & Web)
 --------------------------------------------------------------------------------
-គ្រូបង្រៀនមិនមែនជាអ្នកគ្រប់គ្រងប្រព័ន្ធឡើយ (គ្រូទទួលបានគណនី Email/Password ពី Admin)។ 
-គ្រូប្រើ Laptop ក្នុងថ្នាក់រៀនភ្ជាប់ HDMI ទៅកាន់ Projector ដើម្បីសម្រួលដល់ការបង្រៀន៖
+១. ទំព័រដើម និងស្ថិតិមិនរាប់ស្ទួន (Dashboard & Distinct Stats):
+   - ឃើញតែមុខវិជ្ជា និងកាលវិភាគបង្រៀនដែល Admin បានចាត់តាំងឱ្យខ្លួនប៉ុណ្ណោះ។
+   - រាប់ចំនួន «ថ្នាក់បង្រៀន» និង «សិស្សសរុប» តាម Distinct Course Code (មិនរាប់ស្ទួនតាមចំនួន Session)។
+   - បង្ហាញរូបថត Profile លើ Home Screen (ចុចដើម្បីចូល Profile) និង Upload Profile Photo ។
 
-១. ពិនិត្យថ្នាក់រៀនដែល Admin បានចាត់តាំង (Assigned Classes View):
-   - គ្រូឃើញតែមុខវិជ្ជា/ថ្នាក់រៀនណាដែល Admin បានចាត់តាំងឱ្យខ្លួនបង្រៀនប៉ុណ្ណោះ។
-   - គ្រូគ្មានសិទ្ធិបង្កើត លុប ឬកែប្រែកូដមុខវិជ្ជាមេរបស់សាលាឡើយ (កិច្ចការនេះជាសិទ្ធិរបស់ Admin)។
-   - ពិនិត្យព័ត៌មានលម្អិតនៃមុខវិជ្ជា៖ កូដ, ឈ្មោះ, បន្ទប់រៀន, ម៉ោង, ឆមាស, និងឆ្នាំសិក្សា។
+២. ការបញ្ចាំង Dynamic QR Code & Projector Mode (Web & Mobile):
+   - Projector Mode (Web): ប្លង់ ២ ជួរឈរ បង្ហាញ QR Code ទំហំធំ (Countdown ៤ នាទី, Regenerate,
+     Pause/Resume) អមដោយផ្ទាំង **Live Check-in Feed (Auto-Refresh រៀងរាល់ ៣ វិនាទី)**។
 
-២. ការបញ្ចាំង Dynamic QR Code លើ Projector ក្នុងថ្នាក់ (Projector Fullscreen Mode):
-   - ប៊ូតុង "បញ្ចាំង QR (Project QR)" បើកផ្ទាំង Projector ទំហំធំ កម្រិត Contrast ខ្ពស់។
-   - បង្ហាញ Countdown Timer (៤ នាទី) និងមុខងារប្តូរ Token ថ្មីស្វ័យប្រវត្តិ (Regenerate QR)។
-   - ប៊ូតុងផ្អាកដំណើរការ (Pause) និងបើកដំណើរការឡើងវិញ (Resume) គ្រប់គ្រងបានរហ័ស។
-
-៣. តាមដានវត្តមានផ្ទាល់ក្នុងថ្នាក់ (Real-time Live Attendance Monitoring):
-   - មើលបញ្ជីឈ្មោះសិស្សដែលកំពុងស្កេនចូលរៀនជាក់ស្តែងភ្លាមៗ (Real-time Update)។
-   - ដឹងច្បាស់ពីពេលវេលាស្កេនជាក់ស្តែងរបស់សិស្សម្នាក់ៗ។
-
-៤. កែប្រែស្ថានភាពវត្តមានជាក់ស្តែងដោយផ្ទាល់ដៃ (Manual Attendance Update & Notes):
-   - គ្រូអាចចុចប៊ូតុង "កែប្រែ" លើសិស្សម្នាក់ៗដើម្បីប្តូរស្ថានភាព៖ វត្តមាន, មកយឺត, ឬ អវត្តមាន។
-   - បញ្ចូលមូលហេតុ ឬ Note ដូចជា៖ សិស្សមានច្បាប់ឈឺ, ធុរៈគ្រួសារ, ឬទូរស័ព្ទអស់ថ្ម។
-   - ទិន្នន័យកែប្រែត្រូវបាន Save ចូល MySQL Database ភ្លាមៗ។
+៣. ការគ្រប់គ្រង និងកែប្រែវត្តមានសិស្ស (Manual Update & Export):
+   - កែប្រែស្ថានភាពវត្តមានសិស្សដោយផ្ទាល់ (`Present`, `Late`, `Absent`, `Reset`) ជាមួយ Note
+     ទាំងលើ Mobile App (`class_detail_screen`, `attendance_list_screen`) និង Web (`admin_attendances_screen`)។
+   - ទាញយករបាយការណ៍វត្តមានជា **Excel (.csv UTF-8 BOM)** ឬ **Print / Save as PDF** ។
 
 
-IV. មុខងារសម្រាប់ផ្នែកគ្រប់គ្រង / រដ្ឋបាល (Admin Panel Features - Web Dashboard)
+IV. មុខងារសម្រាប់ផ្នែកគ្រប់គ្រង (Admin & Sub-Admin Portal - `scan_in_admin`)
 --------------------------------------------------------------------------------
-ផ្ទាំងគ្រប់គ្រង Admin Panel គឺសម្រាប់តែអ្នកគ្រប់គ្រងសាលា/រដ្ឋបាល (Admin) តែប៉ុណ្ណោះ 
-**គ្រូ និងសិស្ស មិនអាចចូលជា Admin បានដាច់ខាត (Strict Access Control)**៖
+១. ការបែងចែកសិទ្ធិ ៣ កម្រិតលើ Web (Strict Role Guard):
+   - **Master Admin (`admin`) ៖** សិទ្ធិពេញលេញ ១០០% រួមទាំងការគ្រប់គ្រង Sub-Admin។
+   - **Sub-Admin (`sub_admin`) ៖** គ្រប់គ្រងគ្រូ, សិស្ស, ថ្នាក់រៀន, វត្តមាន និងរបាយការណ៍ (គ្មានសិទ្ធិប៉ះពាល់ Master Admin)។
+   - **Top-Right Profile & Interactive Crop ៖** ឈ្មោះ និង Avatar នៅជ្រុងខាងស្ដាំខាងលើ អាចចុច Upload & Crop/Zoom រូបភាព Profile ផ្ទាល់ ព្រមទាំងប៊ូតុង Change Password & Logout នៅខាងក្រោម Sidebar។
 
-១. បង្កើត និងគ្រប់គ្រងគណនីគ្រូបង្រៀន (Lecturer Account Management by Admin):
-   - Admin ជាអ្នកបង្កើត កែប្រែ និងលុបគណនីគ្រូបង្រៀនម្នាក់ៗ ដោយកំណត់៖ ឈ្មោះ, អ៊ីមែល, ពាក្យសម្ងាត់ដំបូង
-     (Initial Password), ដេប៉ាតឺម៉ង់, លេខសម្គាល់គ្រូ (Staff ID), និងលេខទូរស័ព្ទ។
-   - គ្រូទទួលបាន Email និង Password ពីរដ្ឋបាលសាលាដើម្បីចូលប្រើប្រាស់។
-   - ពិនិត្យបញ្ជីគ្រូបង្រៀនទាំងអស់ និងចំនួនថ្នាក់ដែលគ្រូនីមួយៗកំពុងទទួលបន្ទុកបង្រៀន។
+២. គ្រប់គ្រងសិស្ស/និស្សិត (`admin_students_screen.dart`):
+   - គាំទ្រឈ្មោះ ២ ភាសា (ខ្មែរ + ឡាតាំង), ភេទ, ថ្ងៃខែឆ្នាំកំណើត, ដេប៉ាតឺម៉ង់, ជំនាន់, ឆ្នាំចូលរៀន, ឆ្នាំទី (១-៤) និងស្ថានភាព (`active`, `graduated`, `inactive`)។
+   - **ទាញយក Template Excel (`.xlsx`) & Import File ផ្ទាល់ ៖** បុគ្គលិកសាលាអាច Download គំរូ `.xlsx`, បំពេញឈ្មោះ, ជ្រើសរើស File (`.xlsx`/`.csv`) Upload ផ្ទាល់ និងមានប្រព័ន្ធ **ពិនិត្យឈ្មោះ/កូដ/Email ស្ទួនដោយស្វ័យប្រវត្តិ**។
+   - **Promote Year Level & Bulk Status ៖** ដំឡើងឆ្នាំសិក្សា (+1 ឆ្នាំ) និងប្តូរស្ថានភាពសិស្សជាក្រុម។
+   - **Reset Device ID ៖** ដោះលែងការភ្ជាប់ទូរស័ព្ទពេលសិស្សប្តូរទូរស័ព្ទថ្មី។
+   - **Live Search Bar & Multi-Filters ៖** ស្វែងរកតាមឈ្មោះ, កូដ, Email, ទូរស័ព្ទ។
 
-២. បង្កើត និងគ្រប់គ្រងគណនីសិស្ស/និស្សិត (Student Account Management by Admin):
-   - Admin ជាអ្នកបង្កើត កែប្រែ និងលុបគណនីសិស្សម្នាក់ៗ ដោយកំណត់៖ ឈ្មោះសិស្ស, អត្តលេខសិស្ស (Student ID: ឧ. STU001), 
-     ភេទ (Gender: ប្រុស/ស្រី), ថ្ងៃខែឆ្នាំកំណើត (DOB: YYYY-MM-DD), អ៊ីមែល (Email), ពាក្យសម្ងាត់ដំបូង (Initial Password: ឧ. password123), 
-     ដេប៉ាតឺម៉ង់, និងលេខទូរស័ព្ទ។
-   - **មុខងារនាំចូលទិន្នន័យសិស្សជាក្រុមពី Excel / CSV (Bulk Student Import from Excel/CSV):**
-     * Admin អាច Copy & Paste ឬ Import តារាងពី Excel ចូលក្នុងប្រព័ន្ធបានរាប់រយនាក់ក្នុងពេលតែមួយ។
-     * គាំទ្រព័ត៌មានលម្អិត៖ ឈ្មោះសិស្ស (Name), អត្តលេខ (Student ID), ភេទ (Gender: ប្រុស/ស្រី/Male/Female), 
-       ថ្ងៃខែឆ្នាំកំណើត (Date of Birth), ដេប៉ាតឺម៉ង់, និងលេខទូរស័ព្ទ។
-     * ប្រព័ន្ធបង្កើត Email ស្វ័យប្រវត្តតាមអត្តលេខ (ឧ. `{code}@student.scanin.app`) និងពាក្យសម្ងាត់ដំបូង `password123` ប្រសិនបើពុំមានបញ្ជាក់។
-     * ត្រួតពិនិត្យទិន្នន័យស្វ័យប្រវត្តិ ព្រមទាំងរំលងសិស្សដែលមានលេខកូដស្ទួនរួចជាស្រេចក្នុង DB។
-   - សាលាប្រគល់ Email និង Password ជូនសិស្សដើម្បីយកទៅ Log In លើ Mobile App។
-   - ពិនិត្យ និងគ្រប់គ្រងបញ្ជីសិស្សទូទាំងសាកលវិទ្យាល័យ។
+៣. គ្រប់គ្រងគ្រូបង្រៀន & Sub-Admin (`admin_lecturers_screen.dart`, `admin_sub_admins_screen.dart`):
+   - CRUD គណនីគ្រូ និង Sub-Admin ជាមួយ Live Search Bar និងតារាងពេញទទឹង។
 
-៣. បង្កើត កែប្រែ និងចាត់តាំងគ្រូបង្រៀនលើថ្នាក់រៀន (Centralized Class Creation, Edit, Delete & Assignment):
-   - មានតែ Admin ប៉ុណ្ណោះដែលអាចបង្កើត កែប្រែព័ត៌មាន ឬលុបថ្នាក់រៀនទូទាំងសាលា ដោយបញ្ជាក់លម្អិត៖
-     * ឆ្នាំសិក្សា (Academic Year: ឧ. 2025-2026)
-     * ឆមាស (Semester: ឆមាសទី ១ / ឆមាសទី ២)
-     * កូដមុខវិជ្ជា (Subject Code: ឧ. CS101, IT202)
-     * ឈ្មោះមុខវិជ្ជា (Subject Name: ឧ. Mobile App Development)
-     * បន្ទប់រៀន (Room: ឧ. Room A-301)
-     * ថ្ងៃរៀន (Day of Week: ច័ន្ទ ដល់ អាទិត្យ)
-     * ម៉ោងរៀន (Time: ឧ. 08:00 - 11:00)
-     * ជ្រើសរើសចាត់តាំងគ្រូបង្រៀន (Assign Lecturer) ពីបញ្ជីសាស្រ្តាចារ្យដែលបានបង្កើត។
-   - ទប់ស្កាត់ការបង្កើតកូដមុខវិជ្ជាជាន់គ្នា ឬការកក់បន្ទប់រៀនជាន់ម៉ោងគ្នា។
+៤. គ្រប់គ្រងថ្នាក់រៀន & Smart Subject Auto-Fill (`admin_classes_screen.dart`):
+   - ពេលវាយកូដមុខវិជ្ជា (ឧ. `HMA-Y4`) ប្រព័ន្ធទាញទិន្នន័យ Default (ឈ្មោះមុខវិជ្ជា, ដេប៉ាតឺម៉ង់, ជំនាន់, គ្រូ, បន្ទប់, ម៉ោង, ឆមាស, និង +7 ថ្ងៃ) មកបំពេញដោយស្វ័យប្រវត្តិ។
+   - គាំទ្រ Live Search Bar, Filter និង Grouped Class Sessions ។
 
-៤. ទិដ្ឋភាពទូទៅនៃប្រព័ន្ធ (System Overview Dashboard):
-   - ពិនិត្យស្ថិតិសរុបទូទាំងសាលា៖ ចំនួនថ្នាក់រៀនសរុប, ចំនួនគ្រូបង្រៀនសរុប, ចំនួនសិស្សសរុប, 
-     ចំនួន QR កំពុងដំណើរការ, និងចំនួនកំណត់ត្រាវត្តមានសរុបទាំងអស់ក្នុងប្រព័ន្ធ។
-   - មើលទិន្នន័យគ្រប់ដេប៉ាតឺម៉ង់ និងសាស្រ្តាចារ្យទាំងអស់។
-
-៥. របាយការណ៍ និងសវនកម្មវត្តមាន (Attendance Reports & Auditing):
-   - ជ្រើសរើសថ្នាក់រៀនតាម Dropdown ដើម្បីទាញយកបញ្ជីវត្តមានលម្អិត។
-   - បង្ហាញតារាងវត្តមានសិស្ស៖ អត្តលេខ, ឈ្មោះ, ស្ថានភាពវត្តមាន, កាលបរិច្ឆេទ, ម៉ោងស្កេន, និង Note។
-   - ងាយស្រួលបូកសរុប និងនាំចេញរបាយការណ៍គណនាពិន្ទុវត្តមានសិស្សសម្រាប់ការប្រឡងបញ្ចប់ឆមាស។
-
-៦. សុវត្ថិភាព និងការបែងចែកសិទ្ធិដាច់ខាត (Strict Role-Based Access Control):
-   - **ញែកដាច់ពីគ្នា ១០០%៖** 
-     * ផ្ទាំងចូលគ្រប់គ្រង Admin (Admin Portal)៖ អនុញ្ញាតសម្រាប់តែគណនី `admin` ប៉ុណ្ណោះ។
-     * បើគណនីគ្រូបង្រៀន (`lecturer`) ព្យាយាមចូលជា Admin ប្រព័ន្ធនឹងបដិសេធភ្លាមៗ ដោយជូនដំណឹងថា៖
-       *"គណនីនេះជាគណនីគ្រូបង្រៀន! គ្រូមិនអាចចូលជាអ្នកគ្រប់គ្រង (Admin) បានឡើយ។"*
-   - គណនីសិស្ស (`student`) មិនអាចចូលប្រើលើ Web បានឡើយ (តម្រូវឱ្យប្រើ Mobile App ប៉ុណ្ណោះ)។
-   - សុវត្ថិភាពផ្ទៀងផ្ទាត់ដោយ Laravel Sanctum Token & Multi-level Role Guard។
+៥. វត្តមាន, GPS Geofencing & របាយការណ៍ (`admin_attendances_screen.dart`, `admin_student_stats_screen.dart`):
+   - **កំណត់ GPS សាលា (Campus GPS Settings) ៖** Paste `Lat, Lng` ពី Google Maps, កំណត់កាំរង្វង់ (`allowed_radius_meters`), និងបើក/បិទ `enforce_gps`។
+   - បង្ហាញផ្លាកវិធីស្កេន (`QR` / `Face ID`) និងចម្ងាយ (`📍 Xm`) ក្នុងតារាងវត្តមាន។
+   - **Export Excel (`.csv` UTF-8 BOM) & Print/PDF A4** គាំទ្រអក្សរខ្មែរ ១០០%។
+   - **របាយការណ៍ស្ថិតិនិស្សិត ៖** សង្ខេបចំនួននិស្សិតតាមឆ្នាំចូលរៀន, ដេប៉ាតឺម៉ង់, ជំនាន់ និងស្ថានភាព។
 
 
-V. ស្ថាបត្យកម្មបច្ចេកវិទ្យា (System Architecture & Tech Stack)
+V. ស្ថាបត្យកម្មបច្ចេកវិទ្យា (Tech Stack, Endpoints & Database)
 --------------------------------------------------------------------------------
-1. Mobile App (សិស្ស និងគ្រូចល័ត)៖
-   - បច្ចេកវិទ្យា៖ Flutter (Dart) — `scan_in` (Android & iOS)
-   - តួនាទី៖ សិស្សប្រើគណនីដែលសាលាបានផ្តល់ឱ្យដើម្បី Log In, បើកកាមេរ៉ាស្កេន QR និងប្តូរពាក្យសម្ងាត់ផ្ទាល់ខ្លួន។
+1. Frontend Mobile: Flutter (Dart) — `scan_in` (Android & iOS)
+   Packages: `http`, `shared_preferences`, `image_picker`, `geolocator`, `local_auth`
+2. Frontend Web Admin: Flutter for Web (Dart) — `scan_in_admin`
+   Packages: `http`, `shared_preferences`, `web`, `excel`
+3. Backend Server: Laravel 12 (PHP) + Sanctum Token Auth (`scan_in_backend`)
+   - Auth & Profile: `POST /api/login`, `GET /api/me`, `POST /api/logout`,
+     `POST /api/user/change-password`, `POST /api/profile/avatar`, `GET /api/avatars/{filename}`
+   - Sub-Admins: `GET|POST /api/sub-admins`, `PUT|DELETE /api/sub-admins/{id}` (Master Admin)
+   - Lecturers: `GET|POST /api/lecturers`, `PUT|DELETE /api/lecturers/{id}`
+   - Students: `GET|POST /api/students`, `POST /api/students/import`, `POST /api/students/promote`,
+     `POST /api/students/bulk-status`, `PUT|DELETE /api/students/{id}`,
+     `POST /api/admin/students/{id}/reset-device`
+   - Classes: `GET|POST /api/classes`, `PUT|DELETE /api/classes/{id}`, `GET /api/classes/{id}/students`,
+     `POST /api/classes/{id}/toggle-qr`, `GET /api/student/classes`, `GET /api/departments`
+   - Attendances: `GET /api/classes/{id}/attendances`, `POST /api/attendances/scan`,
+     `POST /api/attendances/face-checkin`, `PUT /api/attendances/{id}`,
+     `POST /api/attendances/manual`, `GET /api/student/attendances`
+   - Reports & GPS: `GET /api/admin/reports/student-stats`, `GET /api/reports/attendance/export`,
+     `GET /api/campus-settings`, `PUT /api/admin/campus-settings`
 
-2. Web Portal (ញែកតាមតួនាទី Role Guard)៖
-   - បច្ចេកវិទ្យា៖ Flutter for Web (Dart) — `scan_in_admin`
-   - **Admin Portal:** សម្រាប់អ្នកគ្រប់គ្រងបង្កើតគណនីគ្រូ, បង្កើតគណនីសិស្ស, បង្កើតថ្នាក់ ចាត់តាំងគ្រូ និងមើលស្ថិតិទូទាំងសាលា។
-   - **Lecturer Classroom View:** សម្រាប់គ្រូបញ្ចាំង QR លើ Projector និងកែវត្តមានជាក់ស្តែងក្នុងថ្នាក់។
-
-3. Backend Server (ម៉ាស៊ីនបម្រើការ API)៖
-   - បច្ចេកវិទ្យា៖ Laravel 12 (PHP) — RESTful API Architecture។
-   - សុវត្ថិភាព៖ Laravel Sanctum (Bearer Token Authentication) & Role Guard Middleware។
-   - Endpoints សំខាន់ៗ៖
-     * Auth: `POST /api/login`, `POST /api/logout`, `POST /api/user/change-password`
-     * Lecturers: `GET /api/lecturers`, `POST /api/lecturers`, `PUT /api/lecturers/{id}`, `DELETE /api/lecturers/{id}` (Admin Only)
-     * Students: `GET /api/students`, `POST /api/students`, `PUT /api/students/{id}`, `DELETE /api/students/{id}`, `POST /api/students/import` (Admin Only)
-     * Classes: `GET /api/classes`, `POST /api/classes`, `PUT /api/classes/{id}`, `DELETE /api/classes/{id}` (Admin Only), `POST /api/classes/{id}/toggle-qr`
-     * Attendances: `GET /api/classes/{id}/attendances`, `POST /api/attendances/scan`, `PUT /api/attendances/{id}`
-
-4. Database (មូលដ្ឋានទិន្នន័យ)៖
-   - បច្ចេកវិទ្យា៖ MySQL (ឈ្មោះ DB: scan_in)
-   - តារាងចម្បង៖ 
-     * `users`: `id`, `name`, `email`, `role` (admin/lecturer/student), `code` (Staff/Student ID), `gender` (ប្រុស/ស្រី), `date_of_birth` (YYYY-MM-DD), `department`, `phone`, `password`, `created_at`, `updated_at`
-     * `classes`: `id`, `name`, `code`, `room`, `lecturer_id`, `day_of_week`, `time`, `semester`, `academic_year`, `qr_token`, `qr_token_expires_at`, `qr_is_paused`, `created_at`, `updated_at`
-     * `attendances`: `id`, `class_id`, `student_id`, `status` (Present/Late/Absent), `scanned_at`, `note`, `created_at`, `updated_at`
+4. Database (MySQL — ឈ្មោះ DB: `scan_in`)
+   - `users`: `id`, `name`, `latin_name`, `email`, `password`, `role` (`admin`/`sub_admin`/`lecturer`/`student`),
+     `student_code`, `staff_id`, `gender`, `date_of_birth`, `department`, `generation`, `intake_year`,
+     `year_level`, `status`, `phone`, `avatar_url`, `device_id`, `created_at`, `updated_at`
+   - `classes`: `id`, `user_id`, `subject_name`, `subject_code`, `department`, `generation`, `year_level`,
+     `room`, `day_of_week`, `time`, `class_date`, `semester`, `academic_year`, `student_count`,
+     `completed_sessions`, `total_sessions`, `is_qr_active`, `qr_token`, `created_at`, `updated_at`
+   - `attendances`: `id`, `class_id`, `user_id`, `status` (`present`/`late`/`absent`),
+     `check_in_method` (`qr`/`face_id`), `date`, `scanned_at`, `note`,
+     `scan_lat`, `scan_lng`, `distance_meters`, `created_at`, `updated_at`
+   - `campus_settings`: `id`, `campus_name`, `campus_lat`, `campus_lng`,
+     `allowed_radius_meters`, `enforce_gps`, `allow_face_id_checkin`, `created_at`, `updated_at`
 
 ================================================================================
-កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព៖ 10 វិច្ឆិកា 2026
+កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព៖ 27 វិច្ឆិកា 2026
 ScanIn Attendance System - រក្សាសិទ្ធិគ្រប់យ៉ាង
 ================================================================================
