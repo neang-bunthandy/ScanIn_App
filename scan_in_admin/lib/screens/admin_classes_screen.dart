@@ -679,13 +679,13 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                             child: DropdownButtonFormField<int>(
                               key: ValueKey('year_$selectedYearLevel'),
                               isExpanded: true,
-                              initialValue: [1, 2, 3, 4].contains(selectedYearLevel) ? selectedYearLevel : 1,
+                              initialValue: ClassService.yearLevels.contains(selectedYearLevel) ? selectedYearLevel : 1,
                               decoration: InputDecoration(
                                 labelText: AppLanguage.tr('សម្រាប់ឆ្នាំទី (Year Level)', 'Target Year Level'),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                               ),
-                              items: const [1, 2, 3, 4]
+                              items: ClassService.yearLevels
                                   .map((y) => DropdownMenuItem<int>(
                                         value: y,
                                         child: Text(ClassService.yearLevelLabel(y), overflow: TextOverflow.ellipsis),
@@ -840,7 +840,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
           ? c.department!
           : ClassService.presetDepartments.first,
     );
-    int selectedYearLevel = (c.yearLevel != null && c.yearLevel! >= 1 && c.yearLevel! <= 4)
+    int selectedYearLevel = (c.yearLevel != null && c.yearLevel! >= 1 && c.yearLevel! <= 5)
         ? c.yearLevel!
         : 1;
     final genOptions = ClassService.buildGenerationOptions(
@@ -1117,7 +1117,7 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                               ),
-                              items: const [1, 2, 3, 4]
+                              items: ClassService.yearLevels
                                   .map((y) => DropdownMenuItem<int>(
                                         value: y,
                                         child: Text(ClassService.yearLevelLabel(y), overflow: TextOverflow.ellipsis),
@@ -2082,9 +2082,9 @@ class _AdminClassesScreenState extends State<AdminClassesScreen> {
                                   items: [
                                     DropdownMenuItem<int?>(
                                       value: null,
-                                      child: Text(AppLanguage.tr('គ្រប់ឆ្នាំទី (1-4)', 'All Levels')),
+                                      child: Text(AppLanguage.tr('គ្រប់ឆ្នាំទី (1-5)', 'All Levels')),
                                     ),
-                                    ...[1, 2, 3, 4].map(
+                                    ...ClassService.yearLevels.map(
                                       (y) => DropdownMenuItem<int?>(value: y, child: Text(ClassService.yearLevelLabel(y))),
                                     ),
                                   ],

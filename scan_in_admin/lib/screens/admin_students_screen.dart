@@ -381,7 +381,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                           ),
-                          items: const [1, 2, 3, 4]
+                          items: ClassService.yearLevels
                               .map((y) => DropdownMenuItem<int>(
                                     value: y,
                                     child: Text(ClassService.yearLevelLabel(y), overflow: TextOverflow.ellipsis),
@@ -534,7 +534,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
     final existingYear = stu['year_level'] is int
         ? stu['year_level'] as int
         : int.tryParse(stu['year_level']?.toString() ?? '');
-    int selectedYearLevel = (existingYear != null && existingYear >= 1 && existingYear <= 4)
+    int selectedYearLevel = (existingYear != null && existingYear >= 1 && existingYear <= 5)
         ? existingYear
         : ClassService.suggestYearLevelFromIntake(intakeYearCtrl.text);
     final rawStatus = (stu['status'] ?? 'active').toString().toLowerCase();
@@ -773,7 +773,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                           ),
-                          items: const [1, 2, 3, 4]
+                          items: ClassService.yearLevels
                               .map((y) => DropdownMenuItem<int>(
                                     value: y,
                                     child: Text(ClassService.yearLevelLabel(y), overflow: TextOverflow.ellipsis),
@@ -1244,7 +1244,7 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                                       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                                     ),
-                                    items: [1, 2, 3, 4].map(
+                                    items: ClassService.yearLevels.map(
                                       (y) => DropdownMenuItem(value: y, child: Text(ClassService.yearLevelLabel(y))),
                                     ).toList(),
                                     onChanged: (val) {
@@ -1531,8 +1531,8 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
           content: Text(
             filterDesc.isEmpty
                 ? AppLanguage.tr(
-                    'តើអ្នកចង់ដំឡើងឆ្នាំសិក្សា +1 ឆ្នាំ (ឆ្នាំទី ១→២, ២→៣, ៣→៤) សម្រាប់សិស្សទាំងអស់ក្នុងប្រព័ន្ធមែនទេ?',
-                    'Promote all students in Year 1-3 up by 1 year?',
+                    'តើអ្នកចង់ដំឡើងឆ្នាំសិក្សា +1 ឆ្នាំ (ឆ្នាំទី ១→២, ២→៣, ៣→៤, ៤→៥) សម្រាប់សិស្សទាំងអស់ក្នុងប្រព័ន្ធមែនទេ?',
+                    'Promote all students in Year 1-4 up by 1 year?',
                   )
                 : AppLanguage.tr(
                     'តើអ្នកចង់ដំឡើងឆ្នាំសិក្សា +1 ឆ្នាំ សម្រាប់សិស្សតាមលក្ខខណ្ឌ ($filterDesc) មែនទេ?',
@@ -2057,9 +2057,9 @@ class _AdminStudentsScreenState extends State<AdminStudentsScreen> {
                                   items: [
                                     DropdownMenuItem<int?>(
                                       value: null,
-                                      child: Text(AppLanguage.tr('គ្រប់ឆ្នាំទី (1-4)', 'All Levels')),
+                                      child: Text(AppLanguage.tr('គ្រប់ឆ្នាំទី (1-5)', 'All Levels')),
                                     ),
-                                    ...[1, 2, 3, 4].map(
+                                    ...ClassService.yearLevels.map(
                                       (y) => DropdownMenuItem<int?>(value: y, child: Text(ClassService.yearLevelLabel(y))),
                                     ),
                                   ],

@@ -345,7 +345,7 @@ Route::post('/students/import', function (Request $request) {
 
         if ($yearLevel === null && !empty($intakeYear) && is_numeric($intakeYear)) {
             $diff = (int)date('Y') - (int)$intakeYear + 1;
-            $yearLevel = max(1, min(4, $diff));
+            $yearLevel = max(1, min(5, $diff));
         }
         $statusRaw = strtolower(trim($row['status'] ?? 'active'));
         $statusVal = in_array($statusRaw, ['active', 'graduated', 'inactive'], true) ? $statusRaw : 'active';
@@ -476,7 +476,7 @@ Route::post('/students/promote', function (Request $request) {
             $q->whereNull('status')->orWhere('status', 'active');
         })
         ->whereNotNull('year_level')
-        ->where('year_level', '<', 4);
+        ->where('year_level', '<', 5);
 
     if ($request->filled('generation')) {
         $query->where('generation', trim($request->generation));

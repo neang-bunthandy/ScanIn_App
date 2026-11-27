@@ -35,6 +35,8 @@ class ClassService {
     '2027',
   ];
 
+  static const List<int> yearLevels = [1, 2, 3, 4, 5];
+
   static String yearLevelLabel(int? level) {
     switch (level) {
       case 1:
@@ -45,6 +47,8 @@ class ClassService {
         return 'ឆ្នាំទី ៣ (Year 3)';
       case 4:
         return 'ឆ្នាំទី ៤ (Year 4)';
+      case 5:
+        return 'ឆ្នាំទី ៥ (Year 5)';
       default:
         return 'មិនទាន់កំណត់ឆ្នាំទី';
     }
@@ -74,7 +78,7 @@ class ClassService {
     final currentYear = DateTime.now().year;
     final diff = currentYear - start + 1;
     if (diff < 1) return 1;
-    if (diff > 4) return 4;
+    if (diff > 5) return 5;
     return diff;
   }
 
