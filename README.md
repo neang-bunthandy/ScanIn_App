@@ -1,60 +1,79 @@
 # 🚀 ប្រព័ន្ធគ្រប់គ្រងវត្តមានសិស្សឆ្លាតវៃ (ScanIn Attendance System)
 
-កម្មវិធីកត់ត្រាវត្តមានសិស្សស្វ័យប្រវត្តិតាមរយៈ **Dynamic QR Code** ដែលមានសុវត្ថិភាព និងសុក្រឹតភាពខ្ពស់ ភ្ជាប់ដោយផ្ទាល់ទៅកាន់ MySQL Database តាមរយៈ Laravel RESTful API។
+កម្មវិធីកត់ត្រាវត្តមានសិស្សស្វ័យប្រវត្តិតាមរយៈ **Dynamic QR Code**, **GPS Geofencing** និង **Face ID Check-In** ដែលមានសុវត្ថិភាព និងសុក្រឹតភាពខ្ពស់ ភ្ជាប់ដោយផ្ទាល់ទៅកាន់ MySQL Database តាមរយៈ Laravel RESTful API។
 
 ---
 
 ## 📁 រចនាសម្ព័ន្ធគម្រោង (Project Architecture)
 
 * **`scan_in/`** ៖ កម្មវិធីទូរស័ព្ទដៃ (Flutter Mobile App សម្រាប់ Android & iOS)
-  * **សិស្ស (Student)៖** ស្កេន Dynamic QR Code, មើលស្ថិតិវត្តមាន, ពិនិត្យប្រវត្តិវត្តមាន, និងប្តូរពាក្យសម្ងាត់ផ្ទាល់ខ្លួន។
-  * **គ្រូបង្រៀន (Lecturer)៖** ពិនិត្យថ្នាក់ដែលបានចាត់តាំង, បញ្ចាំង Fullscreen QR លើ Projector/ទូរស័ព្ទ, និងកែប្រែវត្តមានជាក់ស្តែងក្នុងថ្នាក់។
+  * **សិស្ស (Student) ៖** ស្កេន Dynamic QR Code ឬប្រើ **Face ID Check-In** (ផ្ទៀងផ្ទាត់ទីតាំង GPS ក្នុងបរិវេណសាលា + Single Device Binding), មើលកាលវិភាគ, ពិនិត្យប្រវត្តិវត្តមាន, Upload រូបថត Profile និងប្តូរពាក្យសម្ងាត់។
+  * **គ្រូបង្រៀន (Lecturer) ៖** ពិនិត្យថ្នាក់ដែលបានចាត់តាំង, បញ្ចាំង Fullscreen QR Code, កែប្រែវត្តមានសិស្សដោយដៃ (`Present`, `Late`, `Absent`, `Reset`) និង Upload រូបថត Profile។
 * **`scan_in_admin/`** ៖ ផ្ទាំងគ្រប់គ្រងរដ្ឋបាលលើកុំព្យូទ័រ (Flutter for Web)
-  * **Admin ផ្តាច់មុខ៖** បង្កើត/កែប្រែ/លុបគណនីគ្រូ, បង្កើត/កែប្រែ/លុបគណនីសិស្ស, នាំចូលសិស្សជាក្រុមពី **Excel / CSV (Bulk Import)**, បង្កើតថ្នាក់រៀន ចាត់តាំងគ្រូ និងពិនិត្យរបាយការណ៍ទូទាំងសាលា។
+  * **Master Admin (Rector) ៖** គ្រប់គ្រង Sub-Admin, គ្រូ, សិស្ស, ថ្នាក់រៀន, កំណត់ទីតាំង GPS សាលា, ទាញយក Template Excel (`.xlsx`) & Import សិស្សផ្ទាល់ (មានពិនិត្យឈ្មោះស្ទួន), បញ្ចាំង **Projector QR Mode (Live Auto-Refresh 3s)**, Export របាយការណ៍ **Excel / Print PDF** និងមើលស្ថិតិសិស្សទូទាំងសាលា។
+  * **Sub-Admin (Academic Affairs) ៖** គ្រប់គ្រងគ្រូ, សិស្ស, ថ្នាក់រៀន, វត្តមាន និងរបាយការណ៍។
+  * **Lecturer (Web) ៖** គ្រប់គ្រងថ្នាក់រៀនរបស់ខ្លួនឯង បញ្ចាំង Projector QR និងកែប្រែ/Export វត្តមានសិស្ស។
 * **`scan_in_backend/`** ៖ ម៉ាស៊ីនបម្រើការ API (Laravel 12 RESTful API + MySQL)
   * ផ្ទៀងផ្ទាត់សិទ្ធិដោយ Laravel Sanctum Bearer Token និង Strict Role Guard Middleware។
 
 ---
 
-## 🔑 គណនីសម្រាប់ Login សាកល្បង (Test Credentials)
+## 🔐 គោលការណ៍គណនីប្រព័ន្ធ (Clean Production Architecture)
 
-| តួនាទី (Role) | អ៊ីមែល (Email) | ពាក្យសម្ងាត់ (Password) | ឧបករណ៍ដែលត្រូវប្រើ | សម្គាល់ |
-| :--- | :--- | :--- | :--- | :--- |
-| **🎓 សិស្ស (Student)** | `student@scanin.app` | `12345678` | **Mobile App (`scan_in`)** | ជ្រើសរើស Role Toggle **"សិស្ស"** |
-| **👤 គ្រូបង្រៀន (Lecturer)** | `dara@scanin.app` | `223232323` | **Mobile App & Web** | ជ្រើសរើស Role Toggle **"គ្រូ / បុគ្គលិក"** |
-| **⚡ អ្នកគ្រប់គ្រង (Admin)** | `admin@scanin.app` | `password123` | **Web Admin (`scan_in_admin`)** | សម្រាប់ Web Admin ប៉ុណ្ណោះ (មិនអាចចូល Mobile បានទេ) |
+ប្រព័ន្ធនេះប្រើទម្រង់ **Clean Production Database** (គ្មានទិន្នន័យគំរូ Fake/Demo ក្នុង Seeder ឡើយ)៖
 
----
-
-## 🌐 ការកំណត់ Server IP សម្រាប់តេស្តគ្រប់ឧបករណ៍ (Server IP Setup)
-
-នៅលើ Mobile App មានប្រអប់ **"កំណត់ Server IP"** ងាយស្រួលចុចប្តូរដោយមិនបាច់កែកូដ៖
-
-### ១. តេស្តលើ Android Emulator (ម៉ាស៊ីននិម្មិតលើ PC)
-* **ជ្រើសរើសប៊ូតុង៖** `Emulator (10.0.2.2)`
-* **ហេតុផល៖** នៅក្នុង Android Emulator វាមិនស្គាល់ `localhost` ឬ `127.0.0.1` របស់ PC ឡើយ (វានឹងរុករកក្នុងទូរស័ព្ទនិម្មិតខ្លួនឯង)។ លេខកូដពិសេស `10.0.2.2` គឺជាច្រកភ្ជាប់មកកាន់កុំព្យូទ័រ host។
-
-### ២. តេស្តលើទូរស័ព្ទដៃពិតប្រាកដ (Physical Phone / File APK)
-1. **ភ្ជាប់ Wi-Fi តែមួយ៖** ទូរស័ព្ទដៃ និងកុំព្យូទ័រ (PC) ត្រូវតែភ្ជាប់បណ្តាញ Wi-Fi ដូចគ្នា (ឬបើក Mobile Hotspot ពីទូរស័ព្ទឱ្យ PC ភ្ជាប់)។
-2. **បើក Laravel Server ឱ្យទទួលការតភ្ជាប់ពីខាងក្រៅ៖**
-   ```bash
-   cd scan_in_backend
-   php artisan serve --host=0.0.0.0 --port=8000
-   ```
-   *(ការដាក់ `--host=0.0.0.0` គឺចាំបាច់បំផុត ដើម្បីកុំឱ្យ Laravel ចាក់សោទទួលតែម៉ាស៊ីនខ្លួនឯង)*។
-3. **ពិនិត្យ IP របស់កុំព្យូទ័រ៖** បើក PowerShell ឬ CMD វាយ `ipconfig` រួចមើលត្រង់ **IPv4 Address** (ឧ. `192.168.42.165` ឬ `192.168.1.xxx`)។
-4. **កំណត់លើទូរស័ព្ទ៖** ជ្រើសរើសប៊ូតុង **`Wi-Fi PC`** ឬវាយលេខ IPv4 នោះចូលក្នុងប្រអប់ រួចចុច **"រក្សាទុក"**។
-
-### ៣. តេស្តលើ Windows Desktop ឬ Chrome Web
-* **ជ្រើសរើសប៊ូតុង៖** `Localhost (127.0.0.1)`។
+| តួនាទី (Role) | របៀបបង្កើតគណនី | ឧបករណ៍ដែលត្រូវប្រើ | សម្គាល់ |
+| :--- | :--- | :--- | :--- |
+| **👑 Master Admin** | បង្កើតតាម Terminal (`php artisan make:admin`) | **Web Admin (`scan_in_admin`)** | ជ្រើសរើសផ្ទាំង **"សាកលវិទ្យាធិការ"** (សម្រាប់ Web Admin ប៉ុណ្ណោះ) |
+| **🛡️ Sub-Admin** | Master Admin បង្កើតក្នុង Web Admin | **Web Admin (`scan_in_admin`)** | ជ្រើសរើសផ្ទាំង **"គ្រូ / បុគ្គលិក"** |
+| **👤 គ្រូបង្រៀន (Lecturer)** | Admin / Sub-Admin បង្កើតក្នុង Web Admin | **Mobile App & Web** | ជ្រើសរើស Role **"គ្រូ / បុគ្គលិក"** |
+| **🎓 សិស្ស (Student)** | Admin បង្កើត ឬ Import Excel (`.xlsx`/`.csv`) | **Mobile App (`scan_in`)** | ជ្រើសរើស Role **"សិស្ស"** (មិនអាចចូល Web Admin បានទេ) |
 
 ---
 
-## 🛠️ របៀបបើកដំណើរការគម្រោង (How to Run the Project)
+## 🛠️ របៀបដំឡើងលើកុំព្យូទ័រថ្មី (New Machine Setup Guide)
 
-### ១. បើកដំណើរការ Backend API (Laravel & MySQL)
+នៅពេលទាញយក Code ពី GitHub មកដំឡើងលើកុំព្យូទ័រថ្មី (GitHub ផ្ទេរតែ Code មិនផ្ទេរ MySQL Data និង File `.env` ទេ) សូមអនុវត្តតាមជំហានខាងក្រោម៖
+
+### ១. បង្កើត Database ក្នុង MySQL (phpMyAdmin)
+1. បើក **XAMPP Control Panel** រួចចុច Start **Apache** និង **MySQL**។
+2. ចូលទៅកាន់ `http://localhost/phpmyadmin` ➔ ចុច **`New`** ➔ បង្កើត Database ឈ្មោះ **`scan_in`** (Collation: `utf8mb4_unicode_ci`)។
+
+### ២. កំណត់ File `.env` របស់ Laravel Backend
+ចូលទៅក្នុងថត `scan_in_backend/` រួច Copy File `.env.example` ទៅជា `.env` (ឬបើក `.env` ដែលមានស្រាប់) ហើយកែត្រង់ផ្នែក Database ពី `sqlite` មក `mysql` ដូចខាងក្រោម៖
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=scan_in
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### ៣. Run Command ដំឡើង Database និង Master Admin
+បើក Terminal ក្នុង `scan_in_backend` រួចវាយ Command ទាំង ៥ ខាងក្រោមតាមលំដាប់៖
 ```bash
-# ត្រូវប្រាកដថាបានបើក MySQL ក្នុង XAMPP / WampServer ជាមុនសិន
+composer install
+php artisan key:generate
+php artisan config:clear
+php artisan migrate
+php artisan make:admin
+php artisan storage:link
+```
+
+**តួនាទីនៃ Command នីមួយៗ ៖**
+* `php artisan key:generate` ៖ បង្កើតសោរសម្ងាត់ (`APP_KEY`) ក្នុង `.env` សម្រាប់ Encrypt ទិន្នន័យសុវត្ថិភាព និង Token។
+* `php artisan config:clear` ៖ លុប Cache ចាស់ៗដើម្បីឱ្យ Laravel អានការកំណត់ MySQL ថ្មីពី `.env` ភ្លាមៗ។
+* `php artisan migrate` ៖ បង្កើត Tables ទាំងអស់ (`users`, `classes`, `attendances`, `campus_settings`, `personal_access_tokens`...) ចូលក្នុង MySQL `scan_in` ដោយស្វ័យប្រវត្តិ។
+* `php artisan make:admin` ៖ បើក Form ក្នុង Terminal ដើម្បីបង្កើតគណនី **Master Admin** ដំបូងគេបង្អស់សម្រាប់ Login ចូល Web Admin។
+* `php artisan storage:link` ៖ បង្កើតផ្លូវតភ្ជាប់ពី `public/storage` ទៅ `storage/app/public` ដើម្បីឱ្យរូបថត Profile (`avatars`) អាចបង្ហាញបានត្រឹមត្រូវ។
+
+---
+
+## ▶️ របៀបបើកដំណើរការប្រព័ន្ធ (Run All Apps)
+
+### ១. បើកដំណើរការ Backend API (`scan_in_backend`)
+```bash
 cd scan_in_backend
 php artisan serve --host=0.0.0.0 --port=8000
 ```
@@ -63,29 +82,29 @@ php artisan serve --host=0.0.0.0 --port=8000
 ### ២. បើកដំណើរការ Admin Web Portal (`scan_in_admin`)
 ```bash
 cd scan_in_admin
+flutter pub get
 flutter run -d chrome
 ```
 
 ### ៣. បើកដំណើរការ Mobile App (`scan_in`)
 ```bash
 cd scan_in
-# Run លើ Android Emulator ឬ Device ដែលបានដោតភ្ជាប់
+flutter pub get
 flutter run
 ```
 
 ---
 
-## 🗄️ ការគ្រប់គ្រងទិន្នន័យគំរូ Seeder (Production DB Guide)
+## 🌐 ការកំណត់ Server IP សម្រាប់តេស្តគ្រប់ឧបករណ៍ (Server IP Setup)
 
-* **ទីតាំង File Seeder៖** [`scan_in_backend/database/seeders/DatabaseSeeder.php`](file:///d:/Flutter_Project/Scan_In_App/scan_in_backend/database/seeders/DatabaseSeeder.php)
-* **នៅពេលចង់លុបទិន្នន័យគំរូចោលទាំងអស់ពេល Launch ប្រើពិតប្រាកដ (Production)៖**
-  1. ចូលទៅកាន់ `DatabaseSeeder.php` លុបផ្នែកបង្កើតគ្រូ និងសិស្សគំរូចេញ ដោយទុកតែគណនី Admin ម្នាក់គត់។
-  2. រត់ Command: `php artisan migrate:fresh --seed`
-* ⚠️ **ការព្រមានសំខាន់៖** ហាមលុបគណនី Admin (`admin@scanin.app`) ចោលជាដាច់ខាត ព្រោះបើគ្មាន Admin ទេ នោះនឹងគ្មានអ្នកណាអាចចូលទៅបង្កើតថ្នាក់ ឬបង្កើតគណនីគ្រូ/សិស្សបានឡើយ។ នៅពេលប្រើពិតប្រាកដ គ្រាន់តែប្តូរ Password របស់ Admin ឱ្យមានសុវត្ថិភាពខ្ពស់ជាការស្រេច។
+នៅលើ Mobile App មានប្រអប់ **"កំណត់ Server IP"** ងាយស្រួលចុចប្តូរដោយមិនបាច់កែកូដ៖
+* **Android Emulator ៖** ជ្រើសរើស `Emulator (10.0.2.2)`
+* **ទូរស័ព្ទដៃពិត (Physical Phone / APK) ៖** ភ្ជាប់ Wi-Fi តែមួយជាមួយ PC, Run `php artisan serve --host=0.0.0.0 --port=8000`, រកមើល IPv4 តាម `ipconfig` រួចបញ្ចូលក្នុងប៊ូតុង **`Wi-Fi PC`**។
+* **Windows Desktop ឬ Chrome Web ៖** ជ្រើសរើស `Localhost (127.0.0.1)`។
 
 ---
 
-## 📚 ឯកសារយោង និងកំណត់ត្រាបន្ថែម (Documentation & Tracking)
+## 📚 ឯកសារយោងបន្ថែម (Documentation)
 
-* 📘 **[NOTEBOOK.md](file:///d:/Flutter_Project/Scan_In_App/NOTEBOOK.md)** ៖ បញ្ជីតាមដានការងារលម្អិត **UI-to-DB Connection Checklist** (តាមដានគ្រប់អេក្រង់ទាំង ៣២ មុខងារ ថាតើមួយណាបានភ្ជាប់ Database រួច និងមួយណានៅសល់)។
-* 📄 **[APP_OVERVIEW.txt](file:///d:/Flutter_Project/Scan_In_App/APP_OVERVIEW.txt)** ៖ ទិដ្ឋភាពទូទៅនៃប្រព័ន្ធ គោលបំណងចម្បង ការបែងចែកសិទ្ធិតាម Role និងបញ្ជី Endpoints ទាំងអស់។
+* 📘 **[NOTEBOOK.md](file:///C:/Flutter_Project/Scan_In_App/NOTEBOOK.md)** ៖ កំណត់ត្រាការងារលម្អិតគ្រប់ដំណាក់កាល (Tasks 1–22) និង FFC Audit History។
+* 📄 **[APP_OVERVIEW.txt](file:///C:/Flutter_Project/Scan_In_App/APP_OVERVIEW.txt)** ៖ ទិដ្ឋភាពទូទៅនៃប្រព័ន្ធ គោលបំណងចម្បង ការបែងចែកសិទ្ធិតាម Role និងបញ្ជី Endpoints ទាំងអស់។
